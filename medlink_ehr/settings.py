@@ -27,7 +27,15 @@ SECRET_KEY = 'django-insecure-h6z&tn%qq)y80h(0s1uyna31r7l)af#n_n^3_&!+jji+&p4@!1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.*', '*']
+# ALLOWED_HOSTS - Updated for Render.com deployment
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.1.*',
+    'medlink-ehr.onrender.com',  # Added for Render.com
+    'medlink-ehr.onrender.com',  # Keep this for the deployed site
+    '*',  # Optional: allow all hosts (use with caution)
+]
 
 
 # Application definition
@@ -199,18 +207,22 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
-# CORS settings
+# CORS settings - Updated for Render.com
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
     'http://localhost:3000',
+    'https://medlink-ehr.onrender.com',  # Added for Render.com
+    'http://medlink-ehr.onrender.com',   # Added for Render.com (HTTP fallback)
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF settings
+# CSRF settings - Updated for Render.com
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://medlink-ehr.onrender.com',  # Added for Render.com
+    'http://medlink-ehr.onrender.com',   # Added for Render.com (HTTP fallback)
 ]
 
 # Security settings for production (only apply if DEBUG is False)
