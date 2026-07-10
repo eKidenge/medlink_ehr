@@ -44,3 +44,4 @@ gunicorn==21.2.0
 
 # Development
 django-debug-toolbar==4.3.0
+setuptools>=75.0.0
