@@ -1,23 +1,46 @@
 Django==5.0.3
+
+# Django REST Framework
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
-django-cors-headers==4.3.1
 django-filter==24.2
+drf-yasg==1.21.7
+
+# Database
 psycopg2-binary==2.9.9
-pillow==10.2.0
-qrcode==7.4.2
+dj-database-url==2.2.0
+
+# Configuration
 python-decouple==3.8
-django-debug-toolbar==4.3.0
-django-redis==5.4.0
+
+# Static files
+whitenoise==6.6.0
+
+# CORS
+django-cors-headers==4.3.1
+
+# Media & Images
+Pillow==10.2.0
+qrcode==7.4.2
+django-cleanup==8.0.0
+
+# Background Tasks
 celery==5.3.6
 redis==5.0.1
-drf-yasg==1.21.7
+django-redis==5.4.0
+django-celery-beat==2.5.0
+
+# Reports & Export
 openpyxl==3.1.2
 reportlab==4.0.9
 weasyprint==60.1
 django-import-export==3.3.6
-django-celery-beat==2.5.0
+
+# Monitoring
 sentry-sdk==1.44.1
-whitenoise==6.6.0
+
+# Production Server
 gunicorn==21.2.0
-django-cleanup==8.0.0
+
+# Development
+django-debug-toolbar==4.3.0
