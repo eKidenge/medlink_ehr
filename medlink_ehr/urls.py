@@ -9,24 +9,13 @@ from django.views.generic import TemplateView, RedirectView
 from django.contrib.auth.views import LoginView, LogoutView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from rest_framework import permissions
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExample, extend_schema_view
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect
 
-# Schema view for API documentation
-schema_view = get_schema_view(
-    openapi.Info(
-        title="MedLink EHR API",
-        default_version='v1',
-        description="Electronic Health Record System for Kenyan Healthcare Facilities",
-        terms_of_service="https://www.medlink.co.ke/terms/",
-        contact=openapi.Contact(email="support@medlink.co.ke"),
-        license=openapi.License(name="Proprietary License"),
-    ),
-    public=True,
-    permission_classes=(permissions.AllowAny,),
-)
+# Schema view for API documentation is now handled by drf-spectacular
+# No need for get_schema_view as we use SpectacularAPIView directly
 
 # Custom logout view that accepts GET requests
 def custom_logout(request):
@@ -38,10 +27,10 @@ urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),
     
-    # API Documentation
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-    path('api.json/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    # API Documentation - drf-spectacular
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui'),
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='schema-redoc'),
+    path('api.json/', SpectacularAPIView.as_view(), name='schema'),  # Changed from schema-json to schema
     
     # Authentication URLs
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
