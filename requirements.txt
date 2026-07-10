@@ -28,7 +28,7 @@ django-cleanup==8.0.0
 celery==5.3.6
 redis==5.0.1
 django-redis==5.4.0
-django-celery-beat==2.5.0
+django-celery-beat==2.6.0
 
 # Reports & Export
 openpyxl==3.1.2
