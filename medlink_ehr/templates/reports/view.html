@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}View Report - MedLink EHR{% endblock %}
+
+{% block page_title %}Report Viewer{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title" id="reportTitle"></div><button class="btn btn-success" onclick="downloadReport()">Download</button></div>
+    <div id="reportContent" style="padding: 20px;"></div>
+</div>
+
+<script>
+    const jobId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadReport() {
+        showLoading();
+        try {
+            const job = await apiCall(`/reports/jobs/${jobId}/`);
+            document.getElementById('reportTitle').textContent = `Report: ${job.template_name} (${formatDate(job.created_at)})`;
+            if (job.status === 'completed' && job.output_file) {
+                document.getElementById('reportContent').innerHTML = `<iframe src="${job.output_file}" style="width:100%; height:600px; border:none;"></iframe>`;
+            } else if (job.status === 'pending') {
+                document.getElementById('reportContent').innerHTML = '<div class="alert alert-warning">Report is still generating. Please refresh.</div>';
+            } else if (job.status === 'failed') {
+                document.getElementById('reportContent').innerHTML = `<div class="alert alert-danger">Report failed: ${job.error_message}</div>`;
+            }
+        } catch (error) { showAlert('Failed to load report', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function downloadReport() { window.location.href = `/reports/jobs/${jobId}/download/`; }
+    loadReport();
+</script>
+{% endblock %}

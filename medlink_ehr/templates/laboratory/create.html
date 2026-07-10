@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}New Lab Request - MedLink EHR{% endblock %}
+
+{% block page_title %}Create Laboratory Request{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Laboratory Test Request Form</div>
+    </div>
+    
+    <form id="labRequestForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Patient *</label>
+                <select id="patientId" class="form-control" required>
+                    <option value="">Select patient</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Visit (Optional)</label>
+                <select id="visitId" class="form-control">
+                    <option value="">Select visit</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Test Category</label>
+                <select id="categoryId" class="form-control">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Test *</label>
+                <select id="testId" class="form-control" required>
+                    <option value="">Select test</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Priority *</label>
+                <select id="priority" class="form-control" required>
+                    <option value="routine">Routine</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="stat">STAT (Immediate)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Clinical Notes</label>
+            <textarea id="clinicalNotes" class="form-control" rows="3" placeholder="Relevant clinical information..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Diagnosis</label>
+            <textarea id="diagnosis" class="form-control" rows="2" placeholder="Provisional diagnosis..."></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    async function loadPatients() {
+        const response = await apiCall('/patients/patients/?limit=100');
+        const select = document.getElementById('patientId');
+        response.results.forEach(patient => {
+            select.innerHTML += `<option value="${patient.id}">${patient.patient_number} - ${patient.first_name} ${patient.last_name}</option>`;
+        });
+    }
+    
+    document.getElementById('patientId').addEventListener('change', async (e) => {
+        const patientId = e.target.value;
+        if (!patientId) return;
+        
+        const visits = await apiCall(`/visits/visits/?patient=${patientId}&limit=10`);
+        const visitSelect = document.getElementById('visitId');
+        visitSelect.innerHTML = '<option value="">Select visit (optional)</option>';
+        visits.results.forEach(visit => {
+            visitSelect.innerHTML += `<option value="${visit.id}">${visit.visit_number} - ${formatDate(visit.registration_time)}</option>`;
+        });
+    });
+    
+    async function loadCategories() {
+        const categories = await apiCall('/laboratory/tests/categories/');
+        const select = document.getElementById('categoryId');
+        categories.results.forEach(cat => {
+            select.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+        });
+    }
+    
+    document.getElementById('categoryId').addEventListener('change', async (e) => {
+        const categoryId = e.target.value;
+        const params = categoryId ? `?category=${categoryId}` : '';
+        const tests = await apiCall(`/laboratory/tests/${params}`);
+        const testSelect = document.getElementById('testId');
+        testSelect.innerHTML = '<option value="">Select test</option>';
+        tests.results.forEach(test => {
+            testSelect.innerHTML += `<option value="${test.id}">${test.name} (${test.specimen_type}) - KES ${test.cost}</option>`;
+        });
+    });
+    
+    document.getElementById('labRequestForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            patient: document.getElementById('patientId').value,
+            visit: document.getElementById('visitId').value || null,
+            test: document.getElementById('testId').value,
+            priority: document.getElementById('priority').value,
+            clinical_notes: document.getElementById('clinicalNotes').value,
+            diagnosis: document.getElementById('diagnosis').value
+        };
+        
+        if (!data.patient || !data.test) {
+            showAlert('Please select patient and test', 'warning');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const response = await apiCall('/laboratory/requests/', 'POST', data);
+            showAlert('Lab request submitted successfully', 'success');
+            setTimeout(() => {
+                window.location.href = `/laboratory/detail/${response.id}/`;
+            }, 1500);
+        } catch (error) {
+            showAlert(error.message || 'Failed to submit request', 'danger');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    loadPatients();
+    loadCategories();
+</script>
+{% endblock %}

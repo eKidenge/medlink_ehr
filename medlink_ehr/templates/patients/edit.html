@@ -1,0 +1,255 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Patient - MedLink EHR{% endblock %}
+
+{% block page_title %}Edit Patient Information{% endblock %}
+
+{% block content %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div id="editContent">
+    <div style="text-align: center; padding: 50px;">Loading patient data...</div>
+</div>
+
+<script>
+    const patientId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadPatient() {
+        showLoading();
+        
+        try {
+            const patient = await apiCall(`/patients/patients/${patientId}/`);
+            renderEditForm(patient);
+        } catch (error) {
+            showAlert('Failed to load patient data', 'danger');
+            document.getElementById('editContent').innerHTML = '<div class="alert alert-danger">Failed to load patient data</div>';
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderEditForm(patient) {
+        const container = document.getElementById('editContent');
+        
+        container.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Edit Patient: ${patient.first_name} ${patient.last_name}</div>
+                    <div>Patient #: ${patient.patient_number}</div>
+                </div>
+                
+                <form id="patientForm">
+                    <!-- Personal Information -->
+                    <div class="form-section">
+                        <div class="form-section-title">Personal Information</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control" value="${patient.first_name || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Middle Name</label>
+                                <input type="text" name="middle_name" class="form-control" value="${patient.middle_name || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" value="${patient.last_name || ''}" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                <input type="date" name="date_of_birth" class="form-control" value="${patient.date_of_birth || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="M" ${patient.gender === 'M' ? 'selected' : ''}>Male</option>
+                                    <option value="F" ${patient.gender === 'F' ? 'selected' : ''}>Female</option>
+                                    <option value="O" ${patient.gender === 'O' ? 'selected' : ''}>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Marital Status</label>
+                                <select name="marital_status" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="single" ${patient.marital_status === 'single' ? 'selected' : ''}>Single</option>
+                                    <option value="married" ${patient.marital_status === 'married' ? 'selected' : ''}>Married</option>
+                                    <option value="divorced" ${patient.marital_status === 'divorced' ? 'selected' : ''}>Divorced</option>
+                                    <option value="widowed" ${patient.marital_status === 'widowed' ? 'selected' : ''}>Widowed</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Blood Type</label>
+                                <select name="blood_type" class="form-control">
+                                    <option value="">Select</option>
+                                    <option value="A+" ${patient.blood_type === 'A+' ? 'selected' : ''}>A+</option>
+                                    <option value="A-" ${patient.blood_type === 'A-' ? 'selected' : ''}>A-</option>
+                                    <option value="B+" ${patient.blood_type === 'B+' ? 'selected' : ''}>B+</option>
+                                    <option value="B-" ${patient.blood_type === 'B-' ? 'selected' : ''}>B-</option>
+                                    <option value="AB+" ${patient.blood_type === 'AB+' ? 'selected' : ''}>AB+</option>
+                                    <option value="AB-" ${patient.blood_type === 'AB-' ? 'selected' : ''}>AB-</option>
+                                    <option value="O+" ${patient.blood_type === 'O+' ? 'selected' : ''}>O+</option>
+                                    <option value="O-" ${patient.blood_type === 'O-' ? 'selected' : ''}>O-</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Occupation</label>
+                                <input type="text" name="occupation" class="form-control" value="${patient.occupation || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Information -->
+                    <div class="form-section">
+                        <div class="form-section-title">Contact Information</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="phone_primary" class="form-control" value="${patient.phone_primary || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Alternate Phone</label>
+                                <input type="tel" name="phone_secondary" class="form-control" value="${patient.phone_secondary || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" name="email" class="form-control" value="${patient.email || ''}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">County</label>
+                                <input type="text" name="county" class="form-control" value="${patient.county || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Sub-County</label>
+                                <input type="text" name="sub_county" class="form-control" value="${patient.sub_county || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ward/Village</label>
+                                <input type="text" name="ward" class="form-control" value="${patient.ward || ''}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Physical Address</label>
+                                <input type="text" name="physical_address" class="form-control" value="${patient.physical_address || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Landmark</label>
+                                <input type="text" name="landmark" class="form-control" value="${patient.landmark || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Identification & Insurance -->
+                    <div class="form-section">
+                        <div class="form-section-title">Identification & Insurance</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">National ID Number</label>
+                                <input type="text" name="identification_number" class="form-control" value="${patient.identification_number || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">NHIF Number</label>
+                                <input type="text" name="nhif_number" class="form-control" value="${patient.nhif_number || ''}">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Insurance Provider</label>
+                                <input type="text" name="insurance_provider" class="form-control" value="${patient.insurance_provider || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Insurance Number</label>
+                                <input type="text" name="insurance_number" class="form-control" value="${patient.insurance_number || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Insurance Valid Until</label>
+                                <input type="date" name="insurance_valid_until" class="form-control" value="${patient.insurance_valid_until || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Emergency Contact -->
+                    <div class="form-section">
+                        <div class="form-section-title">Emergency Contact</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Contact Name</label>
+                                <input type="text" name="emergency_contact_name" class="form-control" value="${patient.emergency_contact_name || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Relationship</label>
+                                <input type="text" name="emergency_contact_relationship" class="form-control" value="${patient.emergency_contact_relationship || ''}">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" name="emergency_contact_phone" class="form-control" value="${patient.emergency_contact_phone || ''}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                        <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        document.getElementById('patientForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (value && key !== 'csrfmiddlewaretoken') {
+                    data[key] = value;
+                }
+            }
+            
+            showLoading();
+            
+            try {
+                await apiCall(`/patients/patients/${patientId}/`, 'PUT', data);
+                showAlert('Patient information updated successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = `/patients/detail/${patientId}/`;
+                }, 1500);
+            } catch (error) {
+                showAlert(error.message || 'Failed to update patient', 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+    }
+    
+    loadPatient();
+</script>
+{% endblock %}

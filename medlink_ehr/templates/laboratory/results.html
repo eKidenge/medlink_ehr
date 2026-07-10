@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Enter Lab Results - MedLink EHR{% endblock %}
+
+{% block page_title %}Enter Laboratory Results{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Test Results Entry</div>
+    </div>
+    
+    <div id="requestInfo"></div>
+    
+    <form id="resultsForm">
+        <div class="form-group">
+            <label class="form-label">Result Value *</label>
+            <input type="text" id="resultValue" class="form-control" required>
+            <small id="referenceRange" class="form-text text-muted"></small>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Interpretation</label>
+            <textarea id="interpretation" class="form-control" rows="3" placeholder="Clinical interpretation of results..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">
+                <input type="checkbox" id="isAbnormal"> Mark as Abnormal
+            </label>
+        </div>
+        
+        <h4>Detailed Results (Optional)</h4>
+        <div id="detailedResults">
+            <div class="detailed-result" style="margin-bottom: 15px;">
+                <div class="form-row">
+                    <input type="text" placeholder="Component Name" class="form-control" style="width: 30%;">
+                    <input type="text" placeholder="Result" class="form-control" style="width: 30%;">
+                    <input type="text" placeholder="Unit" class="form-control" style="width: 20%;">
+                    <input type="text" placeholder="Reference Range" class="form-control" style="width: 20%;">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="addDetailedResult()">
+            <i class="fas fa-plus"></i> Add Component
+        </button>
+        
+        <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-danger" onclick="rejectTest()">Reject Test</button>
+            <button type="submit" class="btn btn-success">Submit Results</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const requestId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadRequest() {
+        try {
+            const request = await apiCall(`/laboratory/requests/${requestId}/`);
+            document.getElementById('requestInfo').innerHTML = `
+                <div class="alert alert-info">
+                    <strong>Test:</strong> ${request.test_details.name}<br>
+                    <strong>Patient:</strong> ${request.patient_details.first_name} ${request.patient_details.last_name}<br>
+                    <strong>Specimen:</strong> ${request.test_details.specimen_type}<br>
+                    <strong>Normal Range:</strong> ${request.test_details.normal_range || 'Not specified'}
+                </div>
+            `;
+            document.getElementById('referenceRange').textContent = `Normal range: ${request.test_details.normal_range || 'Not specified'}`;
+        } catch (error) {
+            showAlert('Failed to load request', 'danger');
+        }
+    }
+    
+    function addDetailedResult() {
+        const container = document.getElementById('detailedResults');
+        const div = document.createElement('div');
+        div.className = 'detailed-result';
+        div.style.marginBottom = '15px';
+        div.innerHTML = `
+            <div class="form-row">
+                <input type="text" placeholder="Component Name" class="form-control" style="width: 30%;">
+                <input type="text" placeholder="Result" class="form-control" style="width: 30%;">
+                <input type="text" placeholder="Unit" class="form-control" style="width: 20%;">
+                <input type="text" placeholder="Reference Range" class="form-control" style="width: 20%;">
+                <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.parentElement.remove()">×</button>
+            </div>
+        `;
+        container.appendChild(div);
+    }
+    
+    document.getElementById('resultsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const detailedResults = [];
+        document.querySelectorAll('.detailed-result').forEach(el => {
+            const inputs = el.querySelectorAll('input');
+            if (inputs[0].value && inputs[1].value) {
+                detailedResults.push({
+                    component_name: inputs[0].value,
+                    result_value: inputs[1].value,
+                    unit: inputs[2].value,
+                    reference_range: inputs[3].value,
+                    is_abnormal: false
+                });
+            }
+        });
+        
+        const data = {
+            result_value: document.getElementById('resultValue').value,
+            interpretation: document.getElementById('interpretation').value,
+            is_abnormal: document.getElementById('isAbnormal').checked,
+            detailed_results: detailedResults
+        };
+        
+        showLoading();
+        
+        try {
+            await apiCall(`/laboratory/requests/${requestId}/submit_result/`, 'POST', data);
+            showAlert('Results submitted successfully', 'success');
+            setTimeout(() => {
+                window.location.href = '/laboratory/requests/';
+            }, 1500);
+        } catch (error) {
+            showAlert('Failed to submit results', 'danger');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    async function rejectTest() {
+        const reason = prompt('Enter reason for rejection:');
+        if (!reason) return;
+        
+        showLoading();
+        try {
+            await apiCall(`/laboratory/requests/${requestId}/reject_test/`, 'POST', { reason });
+            showAlert('Test rejected', 'warning');
+            setTimeout(() => {
+                window.location.href = '/laboratory/requests/';
+            }, 1500);
+        } catch (error) {
+            showAlert('Failed to reject test', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    loadRequest();
+</script>
+{% endblock %}

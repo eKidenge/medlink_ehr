@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+
+{% block title %}Pharmacy Inventory - MedLink EHR{% endblock %}
+
+{% block page_title %}Pharmacy Inventory{% endblock %}
+
+{% block content %}
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="showAddMedicationModal()">
+        <i class="fas fa-plus"></i> Add Medication
+    </button>
+    <button class="btn btn-warning" onclick="window.location.href='/pharmacy/inventory/low-stock/'">
+        <i class="fas fa-exclamation-triangle"></i> Low Stock Items
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Medication Inventory</div>
+        <div>
+            <input type="text" id="searchInput" placeholder="Search medication..." class="form-control" style="width: 250px; display: inline-block;">
+            <select id="categoryFilter" class="form-control" style="width: 150px; display: inline-block;">
+                <option value="">All Categories</option>
+                <option value="antibiotic">Antibiotic</option>
+                <option value="analgesic">Analgesic</option>
+                <option value="antihypertensive">Antihypertensive</option>
+                <option value="antidiabetic">Antidiabetic</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadInventory()">Search</button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Drug Code</th>
+                    <th>Generic Name</th>
+                    <th>Brand Name</th>
+                    <th>Category</th>
+                    <th>Stock</th>
+                    <th>Unit Price</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Medication Modal -->
+<div id="addMedicationModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Add New Medication</h3>
+            <span onclick="closeModal('addMedicationModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group"><label>Generic Name *</label><input id="genericName" class="form-control"></div>
+                <div class="form-group"><label>Brand Name</label><input id="brandName" class="form-control"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Category</label><select id="category" class="form-control"><option value="antibiotic">Antibiotic</option><option value="analgesic">Analgesic</option><option value="antihypertensive">Antihypertensive</option></select></div>
+                <div class="form-group"><label>Drug Form</label><select id="drugForm" class="form-control"><option value="tablet">Tablet</option><option value="capsule">Capsule</option><option value="syrup">Syrup</option><option value="injection">Injection</option></select></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Strength</label><input id="strength" class="form-control" placeholder="e.g., 500mg"></div>
+                <div class="form-group"><label>Unit Price (KES)</label><input id="unitPrice" type="number" class="form-control"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Initial Stock</label><input id="initialStock" type="number" class="form-control" value="0"></div>
+                <div class="form-group"><label>Reorder Level</label><input id="reorderLevel" type="number" class="form-control" value="100"></div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addMedicationModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="createMedication()">Add Medication</button>
+        </div>
+    </div>
+</div>
+
+<!-- Stock Update Modal -->
+<div id="stockModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Update Stock</h3>
+            <span onclick="closeModal('stockModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p id="stockMedicationName"></p>
+            <div class="form-group">
+                <label>Transaction Type</label>
+                <select id="transactionType" class="form-control">
+                    <option value="receive">Receive Stock</option>
+                    <option value="issue">Issue Stock</option>
+                    <option value="adjustment">Stock Adjustment</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" id="stockQuantity" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="stockNotes" class="form-control"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('stockModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="updateStock()">Update Stock</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedMedicationId = null;
+    
+    async function loadInventory() {
+        showLoading();
+        const params = new URLSearchParams({
+            search: document.getElementById('searchInput').value,
+            category: document.getElementById('categoryFilter').value
+        });
+        try {
+            const data = await apiCall(`/pharmacy/medications/?${params}`);
+            renderInventory(data.results);
+        } catch (error) { showAlert('Failed to load inventory', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function renderInventory(medications) {
+        const tbody = document.getElementById('inventoryTableBody');
+        if (medications.length === 0) { tbody.innerHTML = '<tr><td colspan="9">No medications found</td></tr>'; return; }
+        
+        tbody.innerHTML = medications.map(med => `
+            <tr>
+                <td>${med.drug_code}</td>
+                <td><strong>${med.generic_name}</strong></td>
+                <td>${med.brand_name || '-'}</td>
+                <td>${med.category}</td>
+                <td><span style="color: ${med.current_stock <= med.reorder_level ? '#f56565' : '#48bb78'}">${med.current_stock}</span></td>
+                <td>KES ${med.unit_price?.toLocaleString()}</td>
+                <td>${med.expiry_date ? formatDate(med.expiry_date) : '-'}</td>
+                <td>${med.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="showStockModal(${med.id}, '${med.generic_name}')">Stock</button>
+                    <button class="btn btn-sm btn-primary" onclick="editMedication(${med.id})">Edit</button>
+                 </td>
+            </tr>
+        `).join('');
+    }
+    
+    function showStockModal(id, name) {
+        selectedMedicationId = id;
+        document.getElementById('stockMedicationName').innerHTML = `<strong>${name}</strong><br>Current stock: ${medications.find(m => m.id === id)?.current_stock || 0}`;
+        document.getElementById('stockModal').style.display = 'flex';
+    }
+    
+    async function updateStock() {
+        const data = {
+            quantity: parseInt(document.getElementById('stockQuantity').value),
+            transaction_type: document.getElementById('transactionType').value,
+            notes: document.getElementById('stockNotes').value
+        };
+        if (!data.quantity) { showAlert('Enter quantity', 'warning'); return; }
+        
+        showLoading();
+        try {
+            await apiCall(`/pharmacy/medications/${selectedMedicationId}/update_stock/`, 'POST', data);
+            showAlert('Stock updated', 'success');
+            closeModal('stockModal');
+            loadInventory();
+        } catch (error) { showAlert('Failed to update stock', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function showAddMedicationModal() { document.getElementById('addMedicationModal').style.display = 'flex'; }
+    
+    async function createMedication() {
+        const data = {
+            generic_name: document.getElementById('genericName').value,
+            brand_name: document.getElementById('brandName').value,
+            category: document.getElementById('category').value,
+            drug_form: document.getElementById('drugForm').value,
+            strength: document.getElementById('strength').value,
+            unit_price: parseFloat(document.getElementById('unitPrice').value),
+            current_stock: parseInt(document.getElementById('initialStock').value),
+            reorder_level: parseInt(document.getElementById('reorderLevel').value)
+        };
+        if (!data.generic_name) { showAlert('Enter generic name', 'warning'); return; }
+        
+        showLoading();
+        try {
+            await apiCall('/pharmacy/medications/', 'POST', data);
+            showAlert('Medication added', 'success');
+            closeModal('addMedicationModal');
+            loadInventory();
+        } catch (error) { showAlert('Failed to add medication', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    loadInventory();
+</script>
+{% endblock %}

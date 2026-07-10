@@ -1,0 +1,229 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Pharmacy Dashboard - HMS{% endblock %}
+
+{% block page_title %}Pharmacy Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+{{ block.super }}
+<a href="/pharmacy/inventory/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-boxes w-5"></i>
+    <span class="ml-3">Inventory</span>
+</a>
+<a href="/pharmacy/prescriptions/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-prescription-bottle w-5"></i>
+    <span class="ml-3">Prescriptions</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .prescription-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        border-left: 4px solid #4299e1;
+        transition: all 0.3s;
+    }
+    .prescription-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .medication-item {
+        background: #f7fafc;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 8px;
+    }
+    .stock-warning {
+        background: #fed7d7;
+        border-left: 4px solid #f56565;
+    }
+    .dispense-btn {
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 5px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .dispense-btn:hover {
+        background: #38a169;
+        transform: scale(1.05);
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-clock" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="pendingPrescriptions">--</h3>
+            <p>Pending Prescriptions</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-check-circle" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="dispensedToday">--</h3>
+            <p>Dispensed Today</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fed7d7;">
+            <i class="fas fa-exclamation-triangle" style="color: #f56565;"></i>
+        </div>
+        <div>
+            <h3 id="lowStock">--</h3>
+            <p>Low Stock Items</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #bee3f8;">
+            <i class="fas fa-dollar-sign" style="color: #4299e1;"></i>
+        </div>
+        <div>
+            <h3 id="todayRevenue">--</h3>
+            <p>Today's Revenue (KES)</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <!-- Pending Prescriptions -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> Pending Prescriptions</h3>
+            <button class="btn btn-sm" onclick="loadPrescriptions()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="prescriptionsList" style="max-height: 550px; overflow-y: auto;">
+            <div class="loading-placeholder">Loading prescriptions...</div>
+        </div>
+    </div>
+    
+    <!-- Low Stock Alerts -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h3>
+        </div>
+        <div id="lowStockList">
+            <div class="loading-placeholder">Checking inventory...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadPrescriptions() {
+    try {
+        const stats = await apiCall('/dashboard/stats/');
+        const response = await apiCall('/pharmacy/prescriptions/pending/');
+        
+        const container = document.getElementById('prescriptionsList');
+        const pendingCount = stats?.pharmacy?.pending_prescriptions || 0;
+        document.getElementById('pendingPrescriptions').textContent = pendingCount;
+        document.getElementById('dispensedToday').textContent = stats?.pharmacy?.today_dispensed || '0';
+        document.getElementById('lowStock').textContent = stats?.pharmacy?.low_stock || '0';
+        document.getElementById('todayRevenue').textContent = stats?.revenue?.today?.toLocaleString() || '0';
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No pending prescriptions</div>';
+            return;
+        }
+        
+        container.innerHTML = response.map(prescription => `
+            <div class="prescription-card">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>${escapeHtml(prescription.patient_name)}</strong>
+                        <div style="font-size: 0.8rem; color: #718096;">
+                            <i class="fas fa-user-md"></i> Dr. ${escapeHtml(prescription.doctor_name)}
+                        </div>
+                    </div>
+                    <button class="dispense-btn" onclick="dispensePrescription(${prescription.id})">
+                        <i class="fas fa-capsules"></i> Dispense
+                    </button>
+                </div>
+                <div style="margin-top: 10px;">
+                    <strong>Medications:</strong>
+                    ${prescription.items ? prescription.items.map(item => `
+                        <div class="medication-item">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>${escapeHtml(item.medication_name)}</span>
+                                <span>${item.quantity} × ${item.dosage}</span>
+                            </div>
+                            <div style="font-size: 0.75rem; color: #718096;">${item.instructions || 'Take as directed'}</div>
+                        </div>
+                    `).join('') : '<div>No items specified</div>'}
+                </div>
+                <div style="font-size: 0.7rem; color: #a0aec0; margin-top: 10px;">
+                    <i class="fas fa-clock"></i> Prescribed: ${new Date(prescription.created_at).toLocaleString()}
+                </div>
+            </div>
+        `).join('');
+        
+    } catch(e) { console.error(e); }
+}
+
+async function loadLowStock() {
+    try {
+        const response = await apiCall('/pharmacy/inventory/low-stock/');
+        const container = document.getElementById('lowStockList');
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">All medications in stock</div>';
+            return;
+        }
+        
+        container.innerHTML = response.map(item => `
+            <div class="prescription-card stock-warning">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${escapeHtml(item.name)}</strong>
+                    <span class="badge badge-danger">Stock: ${item.current_stock}</span>
+                </div>
+                <div style="font-size: 0.8rem; margin-top: 5px;">
+                    Reorder Level: ${item.reorder_level}
+                </div>
+                <button class="btn btn-sm" style="margin-top: 8px; background: #ed8936; color: white;" 
+                    onclick="window.location.href='/pharmacy/inventory/${item.id}/reorder/'">
+                    <i class="fas fa-shopping-cart"></i> Reorder
+                </button>
+            </div>
+        `).join('');
+        
+    } catch(e) { console.error(e); }
+}
+
+async function dispensePrescription(prescriptionId) {
+    if (!confirm('Dispense this prescription?')) return;
+    
+    try {
+        const response = await apiCall(`/pharmacy/prescriptions/${prescriptionId}/dispense/`, 'POST', {
+            dispensed_at: new Date().toISOString()
+        });
+        
+        if (response) {
+            showAlert('Prescription dispensed successfully', 'success');
+            loadPrescriptions();
+            loadLowStock();
+        }
+    } catch(e) {
+        showAlert('Error dispensing prescription', 'danger');
+        console.error(e);
+    }
+}
+
+loadPrescriptions();
+loadLowStock();
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    loadPrescriptions();
+    loadLowStock();
+}, 30000);
+</script>
+{% endblock %}

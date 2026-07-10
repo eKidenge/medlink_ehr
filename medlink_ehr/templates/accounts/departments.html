@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Departments - MedLink EHR{% endblock %}
+
+{% block page_title %}Department Management{% endblock %}
+
+{% block content %}
+<div class="quick-actions"><button class="btn btn-primary" onclick="showAddDeptModal()"><i class="fas fa-plus"></i> Add Department</button></div>
+<div id="departmentsList" class="stats-grid"></div>
+
+<script>
+    async function loadDepartments() {
+        const depts = await apiCall('/accounts/departments/');
+        const container = document.getElementById('departmentsList');
+        container.innerHTML = depts.results.map(d => `<div class="report-card"><h3>${d.name}</h3><p>${d.ward_type || d.type}</p><p><strong>Users:</strong> ${d.users_count || 0}</p><button class="btn btn-sm btn-primary" onclick="editDepartment(${d.id})">Edit</button></div>`).join('');
+    }
+    function showAddDeptModal() { window.location.href = '/accounts/departments/create/'; }
+    loadDepartments();
+</script>
+{% endblock %}

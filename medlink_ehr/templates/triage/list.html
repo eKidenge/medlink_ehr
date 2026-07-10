@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Triage Records - MedLink EHR{% endblock %}
+
+{% block page_title %}Triage Records{% endblock %}
+
+{% block content %}
+<style>
+    .priority-filter {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .filter-chip {
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: #f7fafc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .filter-chip.active {
+        background: #667eea;
+        color: white;
+    }
+    .filter-chip.resuscitation.active { background: #f56565; }
+    .filter-chip.emergency.active { background: #ed8936; }
+    .filter-chip.urgent.active { background: #ecc94b; color: #744210; }
+</style>
+
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="window.location.href='/triage/waiting/'">
+        <i class="fas fa-users"></i> Waiting List
+    </button>
+    <button class="btn btn-success" onclick="exportTriageData()">
+        <i class="fas fa-download"></i> Export Data
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Triage Assessments</div>
+        <div>
+            <input type="date" id="dateFilter" class="form-control" style="display: inline-block; width: auto;">
+            <button class="btn btn-primary" onclick="loadTriageRecords()">Filter</button>
+        </div>
+    </div>
+    
+    <div class="priority-filter">
+        <div class="filter-chip" data-priority="" onclick="filterByPriority('')">All</div>
+        <div class="filter-chip resuscitation" data-priority="resuscitation" onclick="filterByPriority('resuscitation')">Resuscitation</div>
+        <div class="filter-chip emergency" data-priority="emergency" onclick="filterByPriority('emergency')">Emergency</div>
+        <div class="filter-chip urgent" data-priority="urgent" onclick="filterByPriority('urgent')">Urgent</div>
+        <div class="filter-chip" data-priority="less_urgent" onclick="filterByPriority('less_urgent')">Less Urgent</div>
+        <div class="filter-chip" data-priority="non_urgent" onclick="filterByPriority('non_urgent')">Non Urgent</div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Visit #</th>
+                    <th>Patient</th>
+                    <th>Age/Gender</th>
+                    <th>Vitals</th>
+                    <th>Priority</th>
+                    <th>Score</th>
+                    <th>Triage Officer</th>
+                    <th>Date/Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="triageTableBody">
+                <tr><td colspan="9" style="text-align: center;">Loading...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination" style="margin-top: 20px;"></div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentPriority = '';
+    
+    async function loadTriageRecords() {
+        showLoading();
+        
+        const params = new URLSearchParams({
+            page: currentPage,
+            priority: currentPriority,
+            date: document.getElementById('dateFilter').value
+        });
+        
+        try {
+            const data = await apiCall(`/triage/triage/?${params}`);
+            totalPages = Math.ceil(data.count / 20);
+            renderTriageTable(data.results);
+            renderPagination();
+        } catch (error) {
+            showAlert('Failed to load triage records', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderTriageTable(records) {
+        const tbody = document.getElementById('triageTableBody');
+        
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No triage records found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = records.map(record => `
+            <tr>
+                <td>${record.visit_number}</td>
+                <td onclick="window.location.href='/patients/detail/${record.visit}/'">${record.patient_name}</td>
+                <td>${record.patient_age} yrs / ${record.patient_gender}</td>
+                <td>
+                    <small>T: ${record.temperature || '-'}°C | BP: ${record.blood_pressure || '-'}<br>
+                    HR: ${record.heart_rate || '-'} | O2: ${record.oxygen_saturation || '-'}%</small>
+                </td>
+                <td><span class="badge badge-${record.priority === 'resuscitation' ? 'danger' : (record.priority === 'emergency' ? 'warning' : 'info')}">${record.priority_display}</span></td>
+                <td><strong>${record.triage_score}/10</strong></td>
+                <td>${record.triage_officer_name || '-'}</td>
+                <td>${formatDate(record.triage_start)}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewTriage(${record.id})">View</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        if (currentPage > 1) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Prev</button>`;
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        if (currentPage < totalPages) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        container.innerHTML = html;
+    }
+    
+    function goToPage(page) { currentPage = page; loadTriageRecords(); }
+    function filterByPriority(priority) { 
+        currentPriority = priority; 
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        currentPage = 1;
+        loadTriageRecords(); 
+    }
+    function viewTriage(id) { window.location.href = `/triage/detail/${id}/`; }
+    async function exportTriageData() {
+        showLoading();
+        try {
+            window.location.href = `/api/triage/triage/export/?priority=${currentPriority}&date=${document.getElementById('dateFilter').value}`;
+            showAlert('Export started', 'success');
+        } catch (error) { showAlert('Export failed', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    loadTriageRecords();
+</script>
+{% endblock %}

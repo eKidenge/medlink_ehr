@@ -1,0 +1,269 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Nurse Dashboard - HMS{% endblock %}
+
+{% block page_title %}Nurse Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+{{ block.super }}
+<a href="/triage/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-thermometer-half w-5"></i>
+    <span class="ml-3">Triage</span>
+</a>
+<a href="/vitals/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-heartbeat w-5"></i>
+    <span class="ml-3">Vital Signs</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .triage-patient {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 1px solid #e2e8f0;
+    }
+    .triage-patient:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+    .priority-emergency { border-left: 4px solid #f56565; background: #fff5f5; }
+    .priority-urgent { border-left: 4px solid #ed8936; background: #fffaf0; }
+    .priority-normal { border-left: 4px solid #48bb78; }
+    .vital-sign {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #edf2f7;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        margin: 2px;
+    }
+    .quick-triage-form {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #2d3748;
+    }
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fed7d7;">
+            <i class="fas fa-clock" style="color: #f56565;"></i>
+        </div>
+        <div>
+            <h3 id="waitingCount">--</h3>
+            <p>Waiting for Triage</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-procedures" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="inTreatment">--</h3>
+            <p>In Treatment</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-check-circle" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="completedToday">--</h3>
+            <p>Completed Today</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e0e7ff;">
+            <i class="fas fa-bed" style="color: #667eea;"></i>
+        </div>
+        <div>
+            <h3 id="admittedCount">--</h3>
+            <p>Admitted</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Triage Queue -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list-ol"></i> Triage Queue</h3>
+            <button class="btn btn-sm" onclick="loadTriageQueue()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="triageQueue" style="max-height: 500px; overflow-y: auto;">
+            <div class="loading-placeholder">Loading queue...</div>
+        </div>
+    </div>
+    
+    <!-- Quick Triage Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-stethoscope"></i> Quick Triage</h3>
+        </div>
+        <div class="quick-triage-form">
+            <div class="form-group">
+                <label>Select Patient</label>
+                <select id="patientSelect" class="form-control">
+                    <option value="">Select from queue...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Priority Level</label>
+                <select id="priorityLevel">
+                    <option value="normal">Normal (Green)</option>
+                    <option value="urgent">Urgent (Yellow)</option>
+                    <option value="emergency">Emergency (Red)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Temperature (°C)</label>
+                <input type="number" id="temperature" step="0.1" placeholder="36.5 - 37.5">
+            </div>
+            <div class="form-group">
+                <label>Blood Pressure</label>
+                <input type="text" id="bloodPressure" placeholder="120/80">
+            </div>
+            <div class="form-group">
+                <label>Heart Rate (bpm)</label>
+                <input type="number" id="heartRate" placeholder="60-100">
+            </div>
+            <div class="form-group">
+                <label>Oxygen Saturation (%)</label>
+                <input type="number" id="oxygenSat" placeholder="95-100">
+            </div>
+            <div class="form-group">
+                <label>Symptoms</label>
+                <textarea id="symptoms" rows="3" placeholder="Describe symptoms..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitTriage()" style="width: 100%;">
+                <i class="fas fa-save"></i> Complete Triage
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadTriageQueue() {
+    try {
+        const response = await apiCall('/dashboard/triage_queue/');
+        const container = document.getElementById('triageQueue');
+        const select = document.getElementById('patientSelect');
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No patients in queue</div>';
+            document.getElementById('waitingCount').textContent = '0';
+            return;
+        }
+        
+        container.innerHTML = response.map(patient => `
+            <div class="triage-patient priority-${patient.priority || 'normal'}" onclick="selectForTriage(${patient.id}, '${escapeHtml(patient.patient_name)}')">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>${escapeHtml(patient.patient_name)}</strong>
+                    <span class="badge badge-${patient.priority === 'emergency' ? 'danger' : patient.priority === 'urgent' ? 'warning' : 'success'}">
+                        ${patient.priority || 'Normal'}
+                    </span>
+                </div>
+                <div style="font-size: 0.85rem; margin-top: 8px;">
+                    ${patient.registration_time ? `<span class="vital-sign"><i class="fas fa-clock"></i> ${patient.registration_time}</span>` : ''}
+                    <span class="vital-sign"><i class="fas fa-hourglass-half"></i> Wait: ${patient.waiting_time || '0'} min</span>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('waitingCount').textContent = response.length;
+        
+        // Populate select dropdown
+        select.innerHTML = '<option value="">Select from queue...</option>' + 
+            response.map(p => `<option value="${p.id}">${escapeHtml(p.patient_name)}</option>`).join('');
+            
+    } catch(e) { console.error(e); }
+}
+
+function selectForTriage(id, name) {
+    document.getElementById('patientSelect').value = id;
+    document.getElementById('priorityLevel').focus();
+    // Scroll to form
+    document.querySelector('.quick-triage-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function submitTriage() {
+    const patientId = document.getElementById('patientSelect').value;
+    if (!patientId) {
+        showAlert('Please select a patient', 'warning');
+        return;
+    }
+    
+    const triageData = {
+        patient: patientId,
+        priority: document.getElementById('priorityLevel').value,
+        vital_signs: {
+            temperature: parseFloat(document.getElementById('temperature').value),
+            blood_pressure: document.getElementById('bloodPressure').value,
+            heart_rate: parseInt(document.getElementById('heartRate').value),
+            oxygen_saturation: parseInt(document.getElementById('oxygenSat').value)
+        },
+        symptoms: document.getElementById('symptoms').value,
+        triage_time: new Date().toISOString()
+    };
+    
+    try {
+        const response = await apiCall('/visits/triage/', 'POST', triageData);
+        if (response) {
+            showAlert('Triage completed successfully', 'success');
+            // Clear form
+            document.getElementById('temperature').value = '';
+            document.getElementById('bloodPressure').value = '';
+            document.getElementById('heartRate').value = '';
+            document.getElementById('oxygenSat').value = '';
+            document.getElementById('symptoms').value = '';
+            document.getElementById('patientSelect').value = '';
+            // Refresh queue
+            loadTriageQueue();
+        }
+    } catch(e) {
+        showAlert('Error submitting triage', 'danger');
+        console.error(e);
+    }
+}
+
+// Load nurse stats
+async function loadNurseStats() {
+    try {
+        const stats = await apiCall('/dashboard/stats/');
+        document.getElementById('inTreatment').textContent = stats.admissions?.current || '0';
+        document.getElementById('completedToday').textContent = stats.visits?.completed || '0';
+        document.getElementById('admittedCount').textContent = stats.admissions?.current || '0';
+    } catch(e) { console.error(e); }
+}
+
+loadTriageQueue();
+loadNurseStats();
+
+// Auto-refresh queue every 15 seconds
+setInterval(() => {
+    loadTriageQueue();
+    loadNurseStats();
+}, 15000);
+</script>
+{% endblock %}

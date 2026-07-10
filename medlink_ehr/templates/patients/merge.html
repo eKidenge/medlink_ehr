@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+
+{% block title %}Merge Patients - MedLink EHR{% endblock %}
+
+{% block page_title %}Merge Patient Records{% endblock %}
+
+{% block content %}
+<style>
+    .merge-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .merge-arrow {
+        font-size: 2rem;
+        text-align: center;
+        padding: 20px;
+        color: #667eea;
+    }
+    .patient-preview {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+    .warning-box {
+        background: #feebc8;
+        border-left: 4px solid #ed8936;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="warning-box">
+    <i class="fas fa-exclamation-triangle"></i>
+    <strong>Warning:</strong> Merging patients is permanent and cannot be undone. The source patient will be marked as merged and all their records will be transferred to the target patient.
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Select Patients to Merge</div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: center;">
+        <!-- Source Patient -->
+        <div>
+            <h3>Source Patient <small style="color: #f56565;">(will be merged INTO target)</small></h3>
+            <div class="form-group">
+                <label class="form-label">Search Source Patient</label>
+                <input type="text" id="sourceSearch" class="form-control" placeholder="Search by name or ID...">
+                <select id="sourcePatient" class="form-control" style="margin-top: 10px;" size="5">
+                    <option value="">Select patient</option>
+                </select>
+            </div>
+            <div id="sourcePreview" class="patient-preview" style="display: none;"></div>
+        </div>
+        
+        <div class="merge-arrow">
+            <i class="fas fa-arrow-right fa-2x"></i>
+        </div>
+        
+        <!-- Target Patient -->
+        <div>
+            <h3>Target Patient <small style="color: #48bb78;">(will receive all records)</small></h3>
+            <div class="form-group">
+                <label class="form-label">Search Target Patient</label>
+                <input type="text" id="targetSearch" class="form-control" placeholder="Search by name or ID...">
+                <select id="targetPatient" class="form-control" style="margin-top: 10px;" size="5">
+                    <option value="">Select patient</option>
+                </select>
+            </div>
+            <div id="targetPreview" class="patient-preview" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <div id="comparisonSection" style="display: none; margin-top: 30px;">
+        <h3>Record Comparison</h3>
+        <div id="comparisonTable"></div>
+    </div>
+    
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 30px;">
+        <button class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+        <button class="btn btn-danger" id="mergeBtn" onclick="performMerge()" disabled>
+            <i class="fas fa-code-branch"></i> Merge Patients
+        </button>
+    </div>
+</div>
+
+<script>
+    let sourcePatients = [];
+    let targetPatients = [];
+    let selectedSource = null;
+    let selectedTarget = null;
+    
+    // Load patients for source
+    document.getElementById('sourceSearch').addEventListener('input', debounce(async (e) => {
+        const search = e.target.value;
+        if (search.length < 2) return;
+        
+        const patients = await searchPatients(search);
+        sourcePatients = patients;
+        const select = document.getElementById('sourcePatient');
+        select.innerHTML = '<option value="">Select patient</option>' + 
+            patients.map(p => `<option value="${p.id}">${p.patient_number} - ${p.first_name} ${p.last_name} (${p.phone_primary || 'No phone'})</option>`).join('');
+    }, 300));
+    
+    // Load patients for target
+    document.getElementById('targetSearch').addEventListener('input', debounce(async (e) => {
+        const search = e.target.value;
+        if (search.length < 2) return;
+        
+        const patients = await searchPatients(search);
+        targetPatients = patients;
+        const select = document.getElementById('targetPatient');
+        select.innerHTML = '<option value="">Select patient</option>' + 
+            patients.map(p => `<option value="${p.id}">${p.patient_number} - ${p.first_name} ${p.last_name} (${p.phone_primary || 'No phone'})</option>`).join('');
+    }, 300));
+    
+    document.getElementById('sourcePatient').addEventListener('change', async (e) => {
+        const id = e.target.value;
+        if (id) {
+            selectedSource = sourcePatients.find(p => p.id == id);
+            await showPatientPreview('source', selectedSource);
+        } else {
+            selectedSource = null;
+            document.getElementById('sourcePreview').style.display = 'none';
+        }
+        checkMergeReady();
+    });
+    
+    document.getElementById('targetPatient').addEventListener('change', async (e) => {
+        const id = e.target.value;
+        if (id) {
+            selectedTarget = targetPatients.find(p => p.id == id);
+            await showPatientPreview('target', selectedTarget);
+        } else {
+            selectedTarget = null;
+            document.getElementById('targetPreview').style.display = 'none';
+        }
+        checkMergeReady();
+    });
+    
+    async function searchPatients(search) {
+        try {
+            const response = await apiCall(`/patients/patients/?search=${encodeURIComponent(search)}&limit=20`);
+            return response.results;
+        } catch (error) {
+            showAlert('Failed to search patients', 'danger');
+            return [];
+        }
+    }
+    
+    async function showPatientPreview(type, patient) {
+        const container = document.getElementById(`${type}Preview`);
+        const summary = await apiCall(`/patients/patients/${patient.id}/summary/`);
+        
+        container.innerHTML = `
+            <strong>${patient.first_name} ${patient.last_name}</strong><br>
+            Patient #: ${patient.patient_number}<br>
+            Age: ${patient.age} years | ${patient.gender === 'M' ? 'Male' : 'Female'}<br>
+            Phone: ${patient.phone_primary || 'N/A'}<br>
+            NHIF: ${patient.nhif_number || 'N/A'}<br>
+            <hr>
+            <small>Visits: ${summary.visit_count} | Admissions: ${summary.admission_count} | Lab Tests: ${summary.lab_count || 0}</small>
+        `;
+        container.style.display = 'block';
+        
+        // Show comparison if both selected
+        if (selectedSource && selectedTarget) {
+            showComparison();
+        }
+    }
+    
+    function showComparison() {
+        const comparisonDiv = document.getElementById('comparisonSection');
+        comparisonDiv.style.display = 'block';
+        
+        document.getElementById('comparisonTable').innerHTML = `
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Source Patient</th>
+                        <th>Target Patient</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Full Name</td>
+                        <td>${selectedSource.first_name} ${selectedSource.last_name}</td>
+                        <td>${selectedTarget.first_name} ${selectedTarget.last_name}</td>
+                        <td>Will use target</td>
+                    </tr>
+                    <tr>
+                        <td>Phone</td>
+                        <td>${selectedSource.phone_primary || '-'}</td>
+                        <td>${selectedTarget.phone_primary || '-'}</td>
+                        <td>Will use target</td>
+                    </tr>
+                    <tr>
+                        <td>NHIF Number</td>
+                        <td>${selectedSource.nhif_number || '-'}</td>
+                        <td>${selectedTarget.nhif_number || '-'}</td>
+                        <td>Will use target</td>
+                    </tr>
+                    <tr style="background: #feebc8;">
+                        <td><strong>Records to Transfer</strong></td>
+                        <td colspan="2">Visits, Admissions, Lab Results, Prescriptions, Referrals</td>
+                        <td>Will move to target</td>
+                    </tr>
+                </tbody>
+            </table>
+        `;
+    }
+    
+    function checkMergeReady() {
+        const mergeBtn = document.getElementById('mergeBtn');
+        if (selectedSource && selectedTarget && selectedSource.id !== selectedTarget.id) {
+            mergeBtn.disabled = false;
+        } else {
+            mergeBtn.disabled = true;
+        }
+    }
+    
+    async function performMerge() {
+        if (!selectedSource || !selectedTarget) {
+            showAlert('Please select both source and target patients', 'warning');
+            return;
+        }
+        
+        if (selectedSource.id === selectedTarget.id) {
+            showAlert('Source and target cannot be the same', 'warning');
+            return;
+        }
+        
+        const confirmed = confirm(`WARNING: This will merge ${selectedSource.first_name} ${selectedSource.last_name} INTO ${selectedTarget.first_name} ${selectedTarget.last_name}. All records from the source will be transferred. This action cannot be undone. Continue?`);
+        
+        if (!confirmed) return;
+        
+        showLoading();
+        
+        try {
+            await apiCall('/patients/patients/merge/', 'POST', {
+                source_patient_id: selectedSource.id,
+                target_patient_id: selectedTarget.id
+            });
+            
+            showAlert('Patients merged successfully!', 'success');
+            setTimeout(() => {
+                window.location.href = `/patients/detail/${selectedTarget.id}/`;
+            }, 2000);
+        } catch (error) {
+            showAlert(error.message || 'Failed to merge patients', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+</script>
+{% endblock %}

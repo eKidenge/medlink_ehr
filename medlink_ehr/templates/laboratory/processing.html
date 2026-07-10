@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab Processing - MedLink EHR{% endblock %}
+
+{% block page_title %}Laboratory Processing Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid" id="processStats"></div>
+
+<div class="card"><div class="card-header"><div class="card-title">Tests in Processing</div></div><div id="processingList"></div></div>
+
+<script>
+    async function loadProcessing() {
+        const data = await apiCall('/laboratory/requests/?status=processing');
+        const container = document.getElementById('processingList');
+        if (data.results.length === 0) { container.innerHTML = '<div class="alert alert-info">No tests in processing</div>'; return; }
+        container.innerHTML = data.results.map(req => `<div class="rx-card pending"><div><strong>${req.request_number}</strong> - ${req.patient_name}</div><div>${req.test_name}</div><div>Started: ${formatDate(req.started_processing_at)}</div><button class="btn btn-sm btn-success" onclick="enterResult(${req.id})">Enter Results</button></div>`).join('');
+    }
+    function enterResult(id) { window.location.href = `/laboratory/results/${id}/`; }
+    loadProcessing();
+</script>
+{% endblock %}

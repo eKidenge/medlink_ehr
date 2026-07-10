@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}New Admission - MedLink EHR{% endblock %}
+
+{% block page_title %}Admit Patient{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Patient Admission Form</div>
+    </div>
+    
+    <form id="admissionForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Select Patient *</label>
+                <select id="patientId" class="form-control" required>
+                    <option value="">Search and select patient...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Admission Type *</label>
+                <select id="admissionType" class="form-control" required>
+                    <option value="emergency">Emergency Admission</option>
+                    <option value="elective">Elective Admission</option>
+                    <option value="transfer">Transfer from another facility</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Select Ward *</label>
+                <select id="wardId" class="form-control" required>
+                    <option value="">Select ward</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Select Bed *</label>
+                <select id="bedId" class="form-control" required>
+                    <option value="">Select bed</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Primary Diagnosis *</label>
+            <input type="text" id="primaryDiagnosis" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Secondary Diagnosis</label>
+            <input type="text" id="secondaryDiagnosis" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Admitting Notes</label>
+            <textarea id="admittingNotes" class="form-control" rows="4" placeholder="Enter clinical notes, reason for admission..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Condition on Admission</label>
+            <textarea id="conditionOnAdmission" class="form-control" rows="3" placeholder="Describe patient's condition..."></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Deposit Amount (KES)</label>
+            <input type="number" id="depositAmount" class="form-control" value="0">
+        </div>
+        
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Admit Patient</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Load patients for selection
+    async function loadPatients() {
+        const response = await apiCall('/patients/patients/?limit=100');
+        const select = document.getElementById('patientId');
+        response.results.forEach(patient => {
+            select.innerHTML += `<option value="${patient.id}">${patient.patient_number} - ${patient.first_name} ${patient.last_name} (${patient.phone_primary})</option>`;
+        });
+    }
+    
+    // Load wards
+    async function loadWards() {
+        const response = await apiCall('/admissions/wards/?is_active=true');
+        const select = document.getElementById('wardId');
+        response.results.forEach(ward => {
+            select.innerHTML += `<option value="${ward.id}" data-total-beds="${ward.total_beds}" data-available-beds="${ward.available_beds}">${ward.name} (${ward.available_beds}/${ward.total_beds} beds available)</option>`;
+        });
+    }
+    
+    // Load beds based on selected ward
+    document.getElementById('wardId').addEventListener('change', async (e) => {
+        const wardId = e.target.value;
+        if (!wardId) return;
+        
+        const response = await apiCall(`/admissions/beds/?ward=${wardId}&is_available=true`);
+        const select = document.getElementById('bedId');
+        select.innerHTML = '<option value="">Select bed</option>';
+        
+        response.results.forEach(bed => {
+            select.innerHTML += `<option value="${bed.id}">Bed ${bed.bed_number} - ${bed.bed_type}</option>`;
+        });
+    });
+    
+    document.getElementById('admissionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const data = {
+            patient: document.getElementById('patientId').value,
+            admission_type: document.getElementById('admissionType').value,
+            ward: document.getElementById('wardId').value,
+            bed: document.getElementById('bedId').value,
+            primary_diagnosis: document.getElementById('primaryDiagnosis').value,
+            secondary_diagnosis: document.getElementById('secondaryDiagnosis').value,
+            admitting_notes: document.getElementById('admittingNotes').value,
+            condition_on_admission: document.getElementById('conditionOnAdmission').value,
+            deposit_amount: parseFloat(document.getElementById('depositAmount').value)
+        };
+        
+        if (!data.patient || !data.ward || !data.bed || !data.primary_diagnosis) {
+            showAlert('Please fill all required fields', 'warning');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const response = await apiCall('/admissions/admissions/', 'POST', data);
+            showAlert('Patient admitted successfully', 'success');
+            setTimeout(() => {
+                window.location.href = `/admissions/detail/${response.id}/`;
+            }, 1500);
+        } catch (error) {
+            showAlert(error.message || 'Failed to admit patient', 'danger');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    loadPatients();
+    loadWards();
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}My Profile - MedLink EHR{% endblock %}
+
+{% block page_title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title">Profile Information</div></div>
+    <form id="profileForm">
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name</label><input type="text" id="firstName" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input type="text" id="lastName" class="form-control"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Email</label><input type="email" id="email" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="phoneNumber" class="form-control"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Department</label><input type="text" id="department" class="form-control" disabled></div>
+        <div class="form-group"><label class="form-label">Role</label><input type="text" id="role" class="form-control" disabled></div>
+        <button type="submit" class="btn btn-primary">Update Profile</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Change Password</div></div>
+    <form id="passwordForm">
+        <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="oldPassword" class="form-control" required></div>
+        <div class="form-group"><label class="form-label">New Password</label><input type="password" id="newPassword" class="form-control" required></div>
+        <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="confirmPassword" class="form-control" required></div>
+        <button type="submit" class="btn btn-warning">Change Password</button>
+    </form>
+</div>
+
+<script>
+    async function loadProfile() {
+        try {
+            const user = await apiCall('/accounts/users/me/');
+            document.getElementById('firstName').value = user.first_name;
+            document.getElementById('lastName').value = user.last_name;
+            document.getElementById('email').value = user.email;
+            document.getElementById('phoneNumber').value = user.phone_number;
+            document.getElementById('department').value = user.department_name || 'Not assigned';
+            document.getElementById('role').value = user.role_display;
+        } catch (error) { showAlert('Failed to load profile', 'danger'); }
+    }
+    
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = { first_name: document.getElementById('firstName').value, last_name: document.getElementById('lastName').value, email: document.getElementById('email').value, phone_number: document.getElementById('phoneNumber').value };
+        showLoading();
+        try { await apiCall('/accounts/users/update_me/', 'PUT', data); showAlert('Profile updated', 'success'); }
+        catch (error) { showAlert('Failed to update', 'danger'); }
+        finally { hideLoading(); }
+    });
+    
+    document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newPass = document.getElementById('newPassword').value;
+        const confirmPass = document.getElementById('confirmPassword').value;
+        if (newPass !== confirmPass) { showAlert('Passwords do not match', 'warning'); return; }
+        const data = { old_password: document.getElementById('oldPassword').value, new_password: newPass, confirm_new_password: confirmPass };
+        showLoading();
+        try { await apiCall('/accounts/auth/change_password/', 'POST', data); showAlert('Password changed', 'success'); document.getElementById('passwordForm').reset(); }
+        catch (error) { showAlert('Failed to change password', 'danger'); }
+        finally { hideLoading(); }
+    });
+    
+    loadProfile();
+</script>
+{% endblock %}

@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Triage Assessment - MedLink EHR{% endblock %}
+
+{% block page_title %}Triage Assessment Form{% endblock %}
+
+{% block content %}
+<style>
+    .assessment-form {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .vital-signs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+    .priority-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .priority-btn {
+        flex: 1;
+        padding: 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        background: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+    .priority-btn.selected {
+        border-color: #667eea;
+        background: #eef2ff;
+    }
+    .priority-btn.resuscitation.selected { border-color: #f56565; background: #fed7d7; }
+    .priority-btn.emergency.selected { border-color: #ed8936; background: #feebc8; }
+    .priority-btn.urgent.selected { border-color: #ecc94b; background: #fefcbf; }
+</style>
+
+<div class="assessment-form">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Triage Assessment Form</div>
+        </div>
+        
+        <form id="triageForm">
+            <!-- Vital Signs -->
+            <div class="form-section">
+                <h3>Vital Signs</h3>
+                <div class="vital-signs">
+                    <div class="form-group">
+                        <label class="form-label">Temperature (°C)</label>
+                        <input type="number" id="temperature" class="form-control" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Heart Rate (bpm)</label>
+                        <input type="number" id="heartRate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Respiratory Rate</label>
+                        <input type="number" id="respiratoryRate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Blood Pressure</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="number" id="systolicBP" placeholder="Systolic" class="form-control">
+                            <span>/</span>
+                            <input type="number" id="diastolicBP" placeholder="Diastolic" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Oxygen Saturation (%)</label>
+                        <input type="number" id="oxygenSat" class="form-control" step="1" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Blood Glucose (mmol/L)</label>
+                        <input type="number" id="bloodGlucose" class="form-control" step="0.1">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Neurological Assessment -->
+            <div class="form-section">
+                <h3>Neurological Assessment</h3>
+                <div class="form-group">
+                    <label class="form-label">AVPU Scale</label>
+                    <select id="avpuScore" class="form-control">
+                        <option value="A">Alert</option>
+                        <option value="V">Responds to Voice</option>
+                        <option value="P">Responds to Pain</option>
+                        <option value="U">Unresponsive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Glasgow Coma Scale (3-15)</label>
+                    <input type="number" id="gcs" class="form-control" min="3" max="15">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Pain Score (0-10)</label>
+                    <input type="range" id="painScore" min="0" max="10" step="1" value="0">
+                    <span id="painScoreValue">0</span>
+                </div>
+            </div>
+            
+            <!-- Priority Assessment -->
+            <div class="form-section">
+                <h3>Triage Priority</h3>
+                <div class="priority-buttons">
+                    <div class="priority-btn resuscitation" data-priority="resuscitation">
+                        <strong style="color: #f56565;">Resuscitation</strong><br>
+                        <small>Immediate life-threatening</small>
+                    </div>
+                    <div class="priority-btn emergency" data-priority="emergency">
+                        <strong style="color: #ed8936;">Emergency</strong><br>
+                        <small>Very urgent</small>
+                    </div>
+                    <div class="priority-btn urgent" data-priority="urgent">
+                        <strong style="color: #ecc94b;">Urgent</strong><br>
+                        <small>Urgent</small>
+                    </div>
+                    <div class="priority-btn less_urgent" data-priority="less_urgent">
+                        <strong style="color: #48bb78;">Less Urgent</strong><br>
+                        <small>Standard</small>
+                    </div>
+                    <div class="priority-btn non_urgent" data-priority="non_urgent">
+                        <strong style="color: #4299e1;">Non Urgent</strong><br>
+                        <small>Can wait</small>
+                    </div>
+                </div>
+                <input type="hidden" id="priority" value="">
+            </div>
+            
+            <!-- Additional Information -->
+            <div class="form-section">
+                <h3>Additional Information</h3>
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" id="isPregnant"> Is Pregnant
+                    </label>
+                    <div id="pregnancyWeeksDiv" style="display: none; margin-top: 10px;">
+                        <label>Weeks of Pregnancy</label>
+                        <input type="number" id="pregnancyWeeks" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="isDiabetic"> Diabetic</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="isHypertensive"> Hypertensive</label>
+                </div>
+                <div class="form-group">
+                    <label><input type="checkbox" id="isAsthmatic"> Asthmatic</label>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Triage Notes</label>
+                    <textarea id="triageNotes" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Complete Triage</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const visitId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    // Pain score display
+    document.getElementById('painScore').addEventListener('input', (e) => {
+        document.getElementById('painScoreValue').textContent = e.target.value;
+    });
+    
+    // Pregnancy checkbox
+    document.getElementById('isPregnant').addEventListener('change', (e) => {
+        document.getElementById('pregnancyWeeksDiv').style.display = e.target.checked ? 'block' : 'none';
+    });
+    
+    // Priority selection
+    document.querySelectorAll('.priority-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.priority-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            document.getElementById('priority').value = btn.dataset.priority;
+        });
+    });
+    
+    // Calculate triage score automatically
+    function calculateTriageScore() {
+        let score = 0;
+        
+        const hr = parseInt(document.getElementById('heartRate').value);
+        if (hr) {
+            if (hr < 40 || hr > 140) score += 3;
+            else if (hr < 50 || hr > 120) score += 2;
+            else if (hr < 60 || hr > 100) score += 1;
+        }
+        
+        const sbp = parseInt(document.getElementById('systolicBP').value);
+        if (sbp && sbp < 90) score += 3;
+        
+        const rr = parseInt(document.getElementById('respiratoryRate').value);
+        if (rr) {
+            if (rr < 8 || rr > 30) score += 3;
+            else if (rr < 10 || rr > 24) score += 2;
+        }
+        
+        const o2 = parseInt(document.getElementById('oxygenSat').value);
+        if (o2 && o2 < 90) score += 3;
+        
+        const gcs = parseInt(document.getElementById('gcs').value);
+        if (gcs && gcs < 13) score += 3;
+        
+        const pain = parseInt(document.getElementById('painScore').value);
+        if (pain >= 7) score += 2;
+        else if (pain >= 4) score += 1;
+        
+        return Math.min(score, 10);
+    }
+    
+    document.getElementById('triageForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const triageScore = calculateTriageScore();
+        const priority = document.getElementById('priority').value;
+        
+        if (!priority) {
+            showAlert('Please select a triage priority', 'warning');
+            return;
+        }
+        
+        const data = {
+            temperature: parseFloat(document.getElementById('temperature').value),
+            heart_rate: parseInt(document.getElementById('heartRate').value),
+            respiratory_rate: parseInt(document.getElementById('respiratoryRate').value),
+            systolic_bp: parseInt(document.getElementById('systolicBP').value),
+            diastolic_bp: parseInt(document.getElementById('diastolicBP').value),
+            oxygen_saturation: parseInt(document.getElementById('oxygenSat').value),
+            blood_glucose: parseFloat(document.getElementById('bloodGlucose').value),
+            avpu_score: document.getElementById('avpuScore').value,
+            glasgow_coma_score: parseInt(document.getElementById('gcs').value) || null,
+            pain_score: parseInt(document.getElementById('painScore').value),
+            is_pregnant: document.getElementById('isPregnant').checked,
+            pregnancy_weeks: parseInt(document.getElementById('pregnancyWeeks').value) || null,
+            is_diabetic: document.getElementById('isDiabetic').checked,
+            is_hypertensive: document.getElementById('isHypertensive').checked,
+            is_asthmatic: document.getElementById('isAsthmatic').checked,
+            triage_notes: document.getElementById('triageNotes').value,
+            priority: priority,
+            triage_score: triageScore
+        };
+        
+        showLoading();
+        
+        try {
+            await apiCall(`/triage/triage/${visitId}/complete_triage/`, 'POST', data);
+            showAlert('Triage assessment completed', 'success');
+            window.location.href = `/visits/detail/${visitId}/`;
+        } catch (error) {
+            showAlert('Failed to complete triage', 'danger');
+        } finally {
+            hideLoading();
+        }
+    });
+</script>
+{% endblock %}

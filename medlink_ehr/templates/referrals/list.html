@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Referrals - MedLink EHR{% endblock %}
+
+{% block page_title %}Referral Management{% endblock %}
+
+{% block content %}
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="window.location.href='/referrals/create/'">
+        <i class="fas fa-plus"></i> New Referral
+    </button>
+</div>
+
+<div class="stats-grid" id="referralStats"></div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Referrals</div>
+        <div>
+            <select id="statusFilter" class="form-control" style="width: 150px;">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadReferrals()">Filter</button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead><tr><th>Referral #</th><th>Patient</th><th>To Facility</th><th>Reason</th><th>Priority</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="referralsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    async function loadStats() {
+        try {
+            const stats = await apiCall('/referrals/referrals/statistics/');
+            document.getElementById('referralStats').innerHTML = `
+                <div class="stat-card"><div class="stat-info"><h3>${stats.overall.total}</h3><p>Total</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.overall.pending}</h3><p>Pending</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.overall.completed}</h3><p>Completed</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.by_type.external}</h3><p>External</p></div></div>
+            `;
+        } catch (error) { console.error('Failed to load stats:', error); }
+    }
+    
+    async function loadReferrals() {
+        showLoading();
+        try {
+            const data = await apiCall(`/referrals/referrals/?status=${document.getElementById('statusFilter').value}`);
+            renderReferrals(data.results);
+        } catch (error) { showAlert('Failed to load referrals', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function renderReferrals(referrals) {
+        const tbody = document.getElementById('referralsTableBody');
+        if (referrals.length === 0) { tbody.innerHTML = '<tr><td colspan="8">No referrals found</td></tr>'; return; }
+        
+        tbody.innerHTML = referrals.map(ref => `
+            <tr>
+                <td>${ref.referral_number}</td>
+                <td>${ref.patient_name}</td>
+                <td>${ref.receiving_facility}</td>
+                <td>${ref.reason_for_referral?.substring(0, 50)}</td>
+                <td><span class="badge badge-${ref.priority === 'emergency' ? 'danger' : 'warning'}">${ref.priority_display}</span></td>
+                <td><span class="badge badge-${ref.status === 'pending' ? 'warning' : (ref.status === 'completed' ? 'success' : 'info')}">${ref.status_display}</span></td>
+                <td>${formatDate(ref.created_at)}</td>
+                <td><button class="btn btn-sm btn-info" onclick="viewReferral(${ref.id})">View</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    function viewReferral(id) { window.location.href = `/referrals/detail/${id}/`; }
+    
+    loadStats();
+    loadReferrals();
+</script>
+{% endblock %}

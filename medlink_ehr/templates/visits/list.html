@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Visits - MedLink EHR{% endblock %}
+
+{% block page_title %}Visit Management{% endblock %}
+
+{% block content %}
+<style>
+    .filter-bar {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+    .status-registered { background: #e2e8f0; color: #4a5568; }
+    .status-check_in { background: #bee3f8; color: #2c5282; }
+    .status-triage { background: #feebc8; color: #744210; }
+    .status-waiting { background: #fed7d7; color: #742a2a; }
+    .status-consultation { background: #c6f6d5; color: #22543d; }
+    .status-completed { background: #c6d9f0; color: #2c5282; }
+</style>
+
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="window.location.href='/visits/check_in/'">
+        <i class="fas fa-check-circle"></i> Check In Patient
+    </button>
+    <button class="btn btn-success" onclick="window.location.href='/visits/create/'">
+        <i class="fas fa-plus"></i> New Visit
+    </button>
+    <button class="btn btn-info" onclick="window.location.href='/visits/queue/'">
+        <i class="fas fa-clock"></i> View Queue
+    </button>
+</div>
+
+<div class="filter-bar">
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+        <div class="filter-group">
+            <label>Search:</label>
+            <input type="text" id="searchInput" placeholder="Visit #, Patient..." style="width: 200px;">
+        </div>
+        <div class="filter-group">
+            <label>Status:</label>
+            <select id="statusFilter">
+                <option value="">All</option>
+                <option value="registered">Registered</option>
+                <option value="check_in">Checked In</option>
+                <option value="triage">In Triage</option>
+                <option value="waiting">Waiting</option>
+                <option value="consultation">Consultation</option>
+                <option value="completed">Completed</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Priority:</label>
+            <select id="priorityFilter">
+                <option value="">All</option>
+                <option value="routine">Routine</option>
+                <option value="urgent">Urgent</option>
+                <option value="emergency">Emergency</option>
+                <option value="critical">Critical</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Date:</label>
+            <input type="date" id="dateFilter">
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="loadVisits()">Apply</button>
+        <button class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Visit Records</div>
+        <div>Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> visits</div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Visit #</th>
+                    <th>Patient</th>
+                    <th>Phone</th>
+                    <th>Type</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Wait Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="visitsTableBody">
+                <tr><td colspan="10" style="text-align: center;">Loading visits...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;"></div>
+</div>
+
+<!-- Quick View Modal -->
+<div id="quickViewModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Visit Details</h3>
+            <span onclick="closeModal('quickViewModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body" id="quickViewContent"></div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('quickViewModal')">Close</button>
+            <button class="btn btn-primary" id="viewFullBtn">View Full Details</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadVisits();
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadVisits();
+        });
+    });
+
+    async function loadVisits() {
+        showLoading();
+        
+        const params = new URLSearchParams({
+            page: currentPage,
+            search: document.getElementById('searchInput').value,
+            status: document.getElementById('statusFilter').value,
+            priority: document.getElementById('priorityFilter').value,
+            date: document.getElementById('dateFilter').value
+        });
+        
+        try {
+            const data = await apiCall(`/visits/visits/?${params}`);
+            totalPages = Math.ceil(data.count / 20);
+            document.getElementById('totalCount').textContent = data.count;
+            document.getElementById('showingCount').textContent = data.results.length;
+            
+            renderVisitsTable(data.results);
+            renderPagination();
+        } catch (error) {
+            showAlert('Failed to load visits', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function renderVisitsTable(visits) {
+        const tbody = document.getElementById('visitsTableBody');
+        
+        if (visits.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No visits found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = visits.map(visit => `
+            <tr>
+                <td><strong>${visit.visit_number}</strong></td>
+                <td onclick="window.location.href='/patients/detail/${visit.patient}/'">
+                    <a href="#">${visit.patient_name}</a>
+                </td>
+                <td>${visit.patient_phone || '-'}</td>
+                <td>${visit.visit_type}</td>
+                <td><span class="badge badge-${visit.priority === 'critical' ? 'danger' : (visit.priority === 'emergency' ? 'warning' : 'info')}">${visit.priority}</span></td>
+                <td><span class="status-badge status-${visit.status}">${visit.status}</span></td>
+                <td>${visit.primary_doctor_name || '-'}</td>
+                <td>${formatDate(visit.registration_time)}</td>
+                <td>${visit.waiting_time || 0} min</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="quickView(${visit.id})">View</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.location.href='/visits/detail/${visit.id}/'">Details</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        
+        if (currentPage > 1) {
+            html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Previous</button>`;
+        }
+        
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        
+        if (currentPage < totalPages) {
+            html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadVisits();
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('priorityFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        currentPage = 1;
+        loadVisits();
+    }
+
+    async function quickView(visitId) {
+        showLoading();
+        try {
+            const visit = await apiCall(`/visits/visits/${visitId}/`);
+            const content = document.getElementById('quickViewContent');
+            content.innerHTML = `
+                <div class="detail-row"><strong>Visit Number:</strong> ${visit.visit_number}</div>
+                <div class="detail-row"><strong>Patient:</strong> ${visit.patient_details?.first_name} ${visit.patient_details?.last_name}</div>
+                <div class="detail-row"><strong>Chief Complaint:</strong> ${visit.chief_complaint || '-'}</div>
+                <div class="detail-row"><strong>Diagnosis:</strong> ${visit.final_diagnosis || 'Pending'}</div>
+                <div class="detail-row"><strong>Status:</strong> ${visit.status}</div>
+                <div class="detail-row"><strong>Doctor:</strong> ${visit.primary_doctor_name || 'Not assigned'}</div>
+                <div class="detail-row"><strong>Registered:</strong> ${formatDate(visit.registration_time)}</div>
+                ${visit.consultation_start ? `<div class="detail-row"><strong>Consultation Started:</strong> ${formatDate(visit.consultation_start)}</div>` : ''}
+                ${visit.completion_time ? `<div class="detail-row"><strong>Completed:</strong> ${formatDate(visit.completion_time)}</div>` : ''}
+            `;
+            document.getElementById('viewFullBtn').onclick = () => {
+                window.location.href = `/visits/detail/${visitId}/`;
+            };
+            document.getElementById('quickViewModal').style.display = 'flex';
+        } catch (error) {
+            showAlert('Failed to load visit details', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+</script>
+{% endblock %}

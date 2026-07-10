@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Generate Report - MedLink EHR{% endblock %}
+
+{% block page_title %}Generate Custom Report{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form id="reportForm">
+        <div class="form-group"><label class="form-label">Report Type</label><select id="reportType" class="form-control"><option value="clinical">Clinical Report</option><option value="financial">Financial Report</option><option value="operational">Operational Report</option><option value="public_health">Public Health Report</option></select></div>
+        <div class="form-row"><div class="form-group"><label class="form-label">Start Date</label><input type="date" id="startDate" class="form-control" required></div><div class="form-group"><label class="form-label">End Date</label><input type="date" id="endDate" class="form-control" required></div></div>
+        <div class="form-group"><label class="form-label">Output Format</label><select id="format" class="form-control"><option value="pdf">PDF</option><option value="excel">Excel</option><option value="csv">CSV</option></select></div>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('reportForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading();
+        try {
+            const response = await apiCall('/reports/templates/generate/', 'POST', {
+                report_type: document.getElementById('reportType').value,
+                parameters: { start_date: document.getElementById('startDate').value, end_date: document.getElementById('endDate').value },
+                format: document.getElementById('format').value
+            });
+            showAlert('Report generation started. Check back later.', 'success');
+            setTimeout(() => window.location.href = '/reports/', 2000);
+        } catch (error) { showAlert('Failed to generate report', 'danger'); }
+        finally { hideLoading(); }
+    });
+</script>
+{% endblock %}

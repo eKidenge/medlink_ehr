@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Referral - MedLink EHR{% endblock %}
+
+{% block page_title %}Create Patient Referral{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title">Referral Form</div></div>
+    <form id="referralForm">
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Patient *</label><select id="patientId" class="form-control" required></select></div>
+            <div class="form-group"><label class="form-label">Visit (Optional)</label><select id="visitId" class="form-control"></select></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Referral Type</label><select id="referralType" class="form-control"><option value="external">External Facility</option><option value="specialist">Specialist Consultation</option><option value="emergency">Emergency Transfer</option></select></div>
+            <div class="form-group"><label class="form-label">Priority</label><select id="priority" class="form-control"><option value="routine">Routine</option><option value="urgent">Urgent</option><option value="emergency">Emergency</option></select></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Receiving Facility *</label><input id="receivingFacility" class="form-control" required></div>
+            <div class="form-group"><label class="form-label">Receiving Department</label><input id="receivingDepartment" class="form-control"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Receiving Doctor</label><input id="receivingDoctor" class="form-control"></div>
+            <div class="form-group"><label class="form-label">Contact Number</label><input id="receivingContact" class="form-control"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Reason for Referral *</label><textarea id="reasonForReferral" class="form-control" rows="3" required></textarea></div>
+        <div class="form-group"><label class="form-label">Clinical Summary *</label><textarea id="clinicalSummary" class="form-control" rows="4" required></textarea></div>
+        <div class="form-group"><label class="form-label">Provisional Diagnosis</label><textarea id="provisionalDiagnosis" class="form-control" rows="2"></textarea></div>
+        <div class="form-group"><label class="form-label">Investigations Done</label><textarea id="investigationsDone" class="form-control" rows="2"></textarea></div>
+        <div class="form-group"><label class="form-label">Treatment Given</label><textarea id="treatmentGiven" class="form-control" rows="2"></textarea></div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;"><button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button><button type="submit" class="btn btn-primary">Submit Referral</button></div>
+    </form>
+</div>
+
+<script>
+    async function loadPatients() {
+        const patients = await apiCall('/patients/patients/?limit=100');
+        const select = document.getElementById('patientId');
+        patients.results.forEach(p => select.innerHTML += `<option value="${p.id}">${p.patient_number} - ${p.first_name} ${p.last_name}</option>`);
+    }
+    
+    document.getElementById('patientId').addEventListener('change', async (e) => {
+        const visits = await apiCall(`/visits/visits/?patient=${e.target.value}&limit=10`);
+        const select = document.getElementById('visitId');
+        select.innerHTML = '<option value="">Select visit</option>';
+        visits.results.forEach(v => select.innerHTML += `<option value="${v.id}">${v.visit_number} - ${formatDate(v.registration_time)}</option>`);
+    });
+    
+    document.getElementById('referralForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = {
+            patient: document.getElementById('patientId').value,
+            visit: document.getElementById('visitId').value || null,
+            referral_type: document.getElementById('referralType').value,
+            priority: document.getElementById('priority').value,
+            receiving_facility: document.getElementById('receivingFacility').value,
+            receiving_department: document.getElementById('receivingDepartment').value,
+            receiving_doctor: document.getElementById('receivingDoctor').value,
+            receiving_contact: document.getElementById('receivingContact').value,
+            reason_for_referral: document.getElementById('reasonForReferral').value,
+            clinical_summary: document.getElementById('clinicalSummary').value,
+            provisional_diagnosis: document.getElementById('provisionalDiagnosis').value,
+            investigations_done: document.getElementById('investigationsDone').value,
+            treatment_given: document.getElementById('treatmentGiven').value
+        };
+        showLoading();
+        try {
+            const response = await apiCall('/referrals/referrals/', 'POST', data);
+            showAlert('Referral created', 'success');
+            setTimeout(() => window.location.href = `/referrals/detail/${response.id}/`, 1500);
+        } catch (error) { showAlert('Failed to create referral', 'danger'); }
+        finally { hideLoading(); }
+    });
+    
+    loadPatients();
+</script>
+{% endblock %}

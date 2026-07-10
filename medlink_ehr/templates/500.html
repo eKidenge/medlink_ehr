@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Server Error - MedLink EHR{% endblock %}
+
+{% block page_title %}500 - Server Error{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 60px; max-width: 600px; margin: 0 auto;">
+    <i class="fas fa-exclamation-triangle fa-4x" style="color: #f56565; margin-bottom: 20px;"></i>
+    <h2>Internal Server Error</h2>
+    <p style="color: #718096;">Something went wrong on our end. Please try again later.</p>
+    <p>If the problem persists, contact system administrator.</p>
+    <div style="margin-top: 30px;">
+        <button class="btn btn-primary" onclick="window.location.reload()">Try Again</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard/'">Go to Dashboard</button>
+    </div>
+</div>
+{% endblock %}

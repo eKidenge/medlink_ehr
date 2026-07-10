@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab Request Details - MedLink EHR{% endblock %}
+
+{% block page_title %}Laboratory Request Details{% endblock %}
+
+{% block content %}
+<div id="labDetailContent"></div>
+
+<script>
+    const requestId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadRequest() {
+        showLoading();
+        try {
+            const request = await apiCall(`/laboratory/requests/${requestId}/`);
+            document.getElementById('labDetailContent').innerHTML = `
+                <div class="profile-header"><h2>${request.test_details?.name}</h2><p>Request #${request.request_number} - ${request.patient_details?.first_name} ${request.patient_details?.last_name}</p></div>
+                <div class="info-grid"><div class="card"><div class="card-header">Request Info</div><div class="detail-row"><strong>Status:</strong> ${request.status_display}</div><div class="detail-row"><strong>Priority:</strong> ${request.priority_display}</div><div class="detail-row"><strong>Requested:</strong> ${formatDate(request.created_at)}</div><div class="detail-row"><strong>Doctor:</strong> ${request.requesting_doctor_name}</div></div>
+                <div class="card"><div class="card-header">Specimen</div><div class="detail-row"><strong>Type:</strong> ${request.test_details?.specimen_type}</div><div class="detail-row"><strong>Collected:</strong> ${request.specimen_collected_at ? formatDate(request.specimen_collected_at) : 'Not collected'}</div><div class="detail-row"><strong>Collected By:</strong> ${request.specimen_collected_by_name || '-'}</div></div>
+                <div class="card"><div class="card-header">Results</div><div class="detail-row"><strong>Value:</strong> ${request.result_value || 'Pending'}</div><div class="detail-row"><strong>Interpretation:</strong> ${request.interpretation || '-'}</div><div class="detail-row"><strong>Verified:</strong> ${request.verified_at ? formatDate(request.verified_at) : 'Pending'}</div></div></div>
+                <div class="card"><div class="card-header">Clinical Notes</div><div>${request.clinical_notes || '-'}</div><div class="card-header mt-3">Diagnosis</div><div>${request.diagnosis || '-'}</div></div>
+            `;
+        } catch (error) { showAlert('Failed to load request', 'danger'); }
+        finally { hideLoading(); }
+    }
+    loadRequest();
+</script>
+{% endblock %}

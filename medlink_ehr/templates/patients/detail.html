@@ -1,0 +1,801 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Details - MedLink EHR{% endblock %}
+
+{% block page_title %}Patient Details{% endblock %}
+
+{% block content %}
+<style>
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+    }
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    .info-tab {
+        padding: 12px 20px;
+        background: #f7fafc;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .info-tab.active {
+        background: #667eea;
+        color: white;
+    }
+    .info-panel {
+        display: none;
+        padding: 20px;
+    }
+    .info-panel.active {
+        display: block;
+    }
+    .detail-row {
+        display: flex;
+        padding: 10px 0;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .detail-label {
+        width: 200px;
+        font-weight: 600;
+        color: #4a5568;
+    }
+    .detail-value {
+        flex: 1;
+        color: #2d3748;
+    }
+    .allergy-item {
+        background: #fed7d7;
+        color: #742a2a;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 5px;
+        display: inline-block;
+    }
+    .chronic-item {
+        background: #feebc8;
+        color: #744210;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin: 5px;
+        display: inline-block;
+    }
+</style>
+
+<div id="patientContent">
+    <div style="text-align: center; padding: 50px;">Loading patient data...</div>
+</div>
+
+<script>
+    const patientId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadPatientData() {
+        showLoading();
+        
+        try {
+            const patient = await apiCall(`/patients/patients/${patientId}/`);
+            const summary = await apiCall(`/patients/patients/${patientId}/summary/`);
+            
+            renderPatientProfile(patient, summary);
+        } catch (error) {
+            console.error('Failed to load patient:', error);
+            document.getElementById('patientContent').innerHTML = `
+                <div class="alert alert-danger">Failed to load patient data. Error: ${error.message}</div>
+            `;
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderPatientProfile(patient, summary) {
+        const container = document.getElementById('patientContent');
+        
+        container.innerHTML = `
+            <div class="profile-header">
+                <div style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle fa-4x"></i>
+                    </div>
+                    <div>
+                        <h1>${patient.first_name} ${patient.middle_name || ''} ${patient.last_name}</h1>
+                        <p><i class="fas fa-id-card"></i> Patient #: ${patient.patient_number} | MRN: ${patient.mrn_number}</p>
+                        <p><i class="fas fa-calendar-alt"></i> Age: ${patient.age} years | ${patient.gender === 'M' ? 'Male' : 'Female'}</p>
+                        <p><i class="fas fa-phone"></i> ${patient.phone_primary} ${patient.email ? `| ${patient.email}` : ''}</p>
+                        ${patient.qr_code ? `<p><i class="fas fa-qrcode"></i> <a href="${patient.qr_code}" target="_blank" style="color: white;">View QR Code</a></p>` : ''}
+                    </div>
+                    <div style="margin-left: auto;">
+                        <button class="btn btn-warning" onclick="window.location.href='/patients/edit/${patient.id}/'">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="btn btn-success" onclick="window.location.href='/visits/create/?patient=${patient.id}'">
+                            <i class="fas fa-plus"></i> New Visit
+                        </button>
+                        <button class="btn btn-primary" onclick="window.location.href='/admissions/create/?patient=${patient.id}'">
+                            <i class="fas fa-hospital-user"></i> Admit
+                        </button>
+                        <button class="btn btn-info" onclick="window.location.href='/referrals/create/?patient=${patient.id}'">
+                            <i class="fas fa-share-alt"></i> Refer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div style="display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap;">
+                <button class="info-tab active" onclick="showTab('personal')">Personal Info</button>
+                <button class="info-tab" onclick="showTab('medical')">Medical History</button>
+                <button class="info-tab" onclick="showTab('visits')">Visits (${summary.visit_count})</button>
+                <button class="info-tab" onclick="showTab('admissions')">Admissions (${summary.admission_count})</button>
+                <button class="info-tab" onclick="showTab('laboratory')">Lab Results</button>
+                <button class="info-tab" onclick="showTab('prescriptions')">Prescriptions</button>
+                <button class="info-tab" onclick="showTab('referrals')">Referrals</button>
+            </div>
+            
+            <!-- Personal Info Panel -->
+            <div id="panel-personal" class="info-panel active">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Personal Information</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Full Name</div>
+                        <div class="detail-value">${patient.first_name} ${patient.middle_name || ''} ${patient.last_name}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Date of Birth</div>
+                        <div class="detail-value">${patient.date_of_birth} (Age: ${patient.age})</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Gender</div>
+                        <div class="detail-value">${patient.gender === 'M' ? 'Male' : 'Female'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Marital Status</div>
+                        <div class="detail-value">${patient.marital_status || 'Not specified'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Blood Type</div>
+                        <div class="detail-value">${patient.blood_type || 'Unknown'}</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Contact Information</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Primary Phone</div>
+                        <div class="detail-value">${patient.phone_primary}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Secondary Phone</div>
+                        <div class="detail-value">${patient.phone_secondary || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${patient.email || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">${patient.county || ''} ${patient.sub_county || ''} ${patient.physical_address || ''}</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Identification & Insurance</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">National ID</div>
+                        <div class="detail-value">${patient.identification_number || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">NHIF Number</div>
+                        <div class="detail-value">${patient.nhif_number || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Insurance Provider</div>
+                        <div class="detail-value">${patient.insurance_provider || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Insurance Number</div>
+                        <div class="detail-value">${patient.insurance_number || 'N/A'}</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Emergency Contact</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">${patient.emergency_contact_name || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Relationship</div>
+                        <div class="detail-value">${patient.emergency_contact_relationship || 'N/A'}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">${patient.emergency_contact_phone || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Medical History Panel -->
+            <div id="panel-medical" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Allergies</div>
+                        <button class="btn btn-sm btn-primary" onclick="showAddAllergyModal()">Add Allergy</button>
+                    </div>
+                    <div id="allergiesList">
+                        ${renderAllergies(patient.allergies)}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Chronic Diseases</div>
+                        <button class="btn btn-sm btn-primary" onclick="showAddChronicModal()">Add Chronic Disease</button>
+                    </div>
+                    <div id="chronicList">
+                        ${renderChronicDiseases(patient.chronic_diseases)}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Past Medical History</div>
+                        <button class="btn btn-sm btn-primary" onclick="showAddMedicalHistoryModal()">Add History</button>
+                    </div>
+                    <div id="medicalHistoryList">
+                        ${renderMedicalHistory(patient.medical_history)}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Surgical History</div>
+                        <button class="btn btn-sm btn-primary" onclick="showAddSurgeryModal()">Add Surgery</button>
+                    </div>
+                    <div id="surgeryList">
+                        ${renderSurgeries(patient.surgeries)}
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Vaccinations</div>
+                        <button class="btn btn-sm btn-primary" onclick="showAddVaccinationModal()">Add Vaccination</button>
+                    </div>
+                    <div id="vaccinationList">
+                        ${renderVaccinations(patient.vaccinations)}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visits Panel -->
+            <div id="panel-visits" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Visit History</div>
+                        <button class="btn btn-sm btn-primary" onclick="window.location.href='/visits/create/?patient=${patient.id}'">
+                            <i class="fas fa-plus"></i> New Visit
+                        </button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Visit #</th>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Doctor</th>
+                                    <th>Diagnosis</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitsTableBody">
+                                <tr><td colspan="7">Loading visits...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admissions Panel -->
+            <div id="panel-admissions" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Admission History</div>
+                        <button class="btn btn-sm btn-primary" onclick="window.location.href='/admissions/create/?patient=${patient.id}'">
+                            <i class="fas fa-plus"></i> New Admission
+                        </button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Admission #</th>
+                                    <th>Date</th>
+                                    <th>Ward</th>
+                                    <th>Bed</th>
+                                    <th>Diagnosis</th>
+                                    <th>Status</th>
+                                    <th>Discharge Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admissionsTableBody">
+                                <tr><td colspan="7">Loading admissions...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Laboratory Panel -->
+            <div id="panel-laboratory" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Laboratory Results</div>
+                    </div>
+                    <div id="labResultsContainer">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Prescriptions Panel -->
+            <div id="panel-prescriptions" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Prescriptions</div>
+                    </div>
+                    <div id="prescriptionsContainer">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Referrals Panel -->
+            <div id="panel-referrals" class="info-panel">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Referrals</div>
+                    </div>
+                    <div id="referralsContainer">
+                        Loading...
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Load dynamic data for tabs
+        await loadVisits(patient.id);
+        await loadAdmissions(patient.id);
+        await loadLabResults(patient.id);
+        await loadPrescriptions(patient.id);
+        await loadReferrals(patient.id);
+    }
+    
+    function renderAllergies(allergies) {
+        if (!allergies || allergies.length === 0) {
+            return '<p style="color: #718096;">No allergies recorded</p>';
+        }
+        return allergies.map(a => `
+            <div class="allergy-item">
+                <strong>${a.allergen}</strong> - ${a.severity}
+                <small>(${a.reaction})</small>
+                <button class="btn btn-sm btn-danger" onclick="deleteAllergy(${a.id})" style="margin-left: 8px;">×</button>
+            </div>
+        `).join('');
+    }
+    
+    function renderChronicDiseases(diseases) {
+        if (!diseases || diseases.length === 0) {
+            return '<p style="color: #718096;">No chronic diseases recorded</p>';
+        }
+        return diseases.map(d => `
+            <div class="chronic-item">
+                <strong>${d.disease_name}</strong> - ${d.status}
+                <small>(Diagnosed: ${d.diagnosed_date})</small>
+                <button class="btn btn-sm btn-danger" onclick="deleteChronic(${d.id})" style="margin-left: 8px;">×</button>
+            </div>
+        `).join('');
+    }
+    
+    function renderMedicalHistory(history) {
+        if (!history || history.length === 0) {
+            return '<p style="color: #718096;">No medical history recorded</p>';
+        }
+        return `<table class="data-table">
+            <thead><tr><th>Condition</th><th>Diagnosed Date</th><th>Resolved Date</th><th>Notes</th><th></th></tr></thead>
+            <tbody>
+                ${history.map(h => `
+                    <tr>
+                        <td>${h.condition}</td>
+                        <td>${h.diagnosed_date || '-'}</td>
+                        <td>${h.resolved_date || '-'}</td>
+                        <td>${h.notes || '-'}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteMedicalHistory(${h.id})">×</button></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>`;
+    }
+    
+    function renderSurgeries(surgeries) {
+        if (!surgeries || surgeries.length === 0) {
+            return '<p style="color: #718096;">No surgical history recorded</p>';
+        }
+        return `<table class="data-table">
+            <thead><tr><th>Procedure</th><th>Date</th><th>Hospital</th><th>Surgeon</th><th></th></tr></thead>
+            <tbody>
+                ${surgeries.map(s => `
+                    <tr>
+                        <td>${s.procedure_name}</td>
+                        <td>${s.surgery_date}</td>
+                        <td>${s.hospital || '-'}</td>
+                        <td>${s.surgeon || '-'}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteSurgery(${s.id})">×</button></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>`;
+    }
+    
+    function renderVaccinations(vaccinations) {
+        if (!vaccinations || vaccinations.length === 0) {
+            return '<p style="color: #718096;">No vaccinations recorded</p>';
+        }
+        return `<table class="data-table">
+            <thead><tr><th>Vaccine</th><th>Dose</th><th>Date</th><th>Next Due</th><th>Administered By</th><th></th></tr></thead>
+            <tbody>
+                ${vaccinations.map(v => `
+                    <tr>
+                        <td>${v.vaccine_name}</td>
+                        <td>${v.dose_number}</td>
+                        <td>${v.date_administered}</td>
+                        <td>${v.next_due_date || '-'}</td>
+                        <td>${v.administered_by_name || '-'}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteVaccination(${v.id})">×</button></td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>`;
+    }
+    
+    async function loadVisits(patientId) {
+        try {
+            const visits = await apiCall(`/visits/visits/?patient=${patientId}`);
+            const tbody = document.getElementById('visitsTableBody');
+            
+            if (visits.results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No visits recorded</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = visits.results.map(visit => `
+                <tr>
+                    <td>${visit.visit_number}</td>
+                    <td>${formatDate(visit.registration_time)}</td>
+                    <td>${visit.visit_type}</td>
+                    <td>${visit.primary_doctor_name || '-'}</td>
+                    <td>${visit.final_diagnosis ? visit.final_diagnosis.substring(0, 50) : '-'}</td>
+                    <td><span class="badge badge-${getStatusBadge(visit.status)}">${visit.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="window.location.href='/visits/detail/${visit.id}/'">View</button>
+                    </td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Failed to load visits:', error);
+            document.getElementById('visitsTableBody').innerHTML = '<tr><td colspan="7">Failed to load visits</td></tr>';
+        }
+    }
+    
+    async function loadAdmissions(patientId) {
+        try {
+            const admissions = await apiCall(`/admissions/admissions/?patient=${patientId}`);
+            const tbody = document.getElementById('admissionsTableBody');
+            
+            if (admissions.results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No admissions recorded</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = admissions.results.map(adm => `
+                <tr>
+                    <td>${adm.admission_number}</td>
+                    <td>${formatDate(adm.admission_date)}</td>
+                    <td>${adm.ward_name || '-'}</td>
+                    <td>${adm.bed_number || '-'}</td>
+                    <td>${adm.primary_diagnosis.substring(0, 50)}</td>
+                    <td><span class="badge badge-${getStatusBadge(adm.status)}">${adm.status_display}</span></td>
+                    <td>${adm.discharge_date ? formatDate(adm.discharge_date) : '-'}</td>
+                </tr>
+            `).join('');
+        } catch (error) {
+            console.error('Failed to load admissions:', error);
+        }
+    }
+    
+    async function loadLabResults(patientId) {
+        try {
+            const labs = await apiCall(`/laboratory/requests/?patient=${patientId}`);
+            const container = document.getElementById('labResultsContainer');
+            
+            if (labs.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No laboratory results found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Request #</th>
+                            <th>Test</th>
+                            <th>Requested</th>
+                            <th>Result</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${labs.results.map(lab => `
+                            <tr>
+                                <td>${lab.request_number}</td>
+                                <td>${lab.test_name}</td>
+                                <td>${formatDate(lab.created_at)}</td>
+                                <td>${lab.result_value ? (lab.is_abnormal ? `<span style="color: red;">⚠ ${lab.result_value}</span>` : lab.result_value) : '-'}</td>
+                                <td><span class="badge badge-${getStatusBadge(lab.status)}">${lab.status_display}</span></td>
+                                <td><button class="btn btn-sm btn-info" onclick="viewLabResult(${lab.id})">View</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load lab results:', error);
+        }
+    }
+    
+    async function loadPrescriptions(patientId) {
+        try {
+            const prescriptions = await apiCall(`/pharmacy/prescriptions/?patient=${patientId}`);
+            const container = document.getElementById('prescriptionsContainer');
+            
+            if (prescriptions.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No prescriptions found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Prescription #</th>
+                            <th>Medication</th>
+                            <th>Dosage</th>
+                            <th>Quantity</th>
+                            <th>Prescribed</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${prescriptions.results.map(rx => `
+                            <tr>
+                                <td>${rx.prescription_number}</td>
+                                <td>${rx.medication_name}</td>
+                                <td>${rx.dosage}</td>
+                                <td>${rx.dispensed_quantity}/${rx.quantity}</td>
+                                <td>${formatDate(rx.prescribed_at)}</td>
+                                <td><span class="badge badge-${getStatusBadge(rx.status)}">${rx.status_display}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load prescriptions:', error);
+        }
+    }
+    
+    async function loadReferrals(patientId) {
+        try {
+            const referrals = await apiCall(`/referrals/referrals/?patient=${patientId}`);
+            const container = document.getElementById('referralsContainer');
+            
+            if (referrals.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No referrals found</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Referral #</th>
+                            <th>To Facility</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${referrals.results.map(ref => `
+                            <tr>
+                                <td>${ref.referral_number}</td>
+                                <td>${ref.receiving_facility}</td>
+                                <td>${ref.reason_for_referral.substring(0, 50)}</td>
+                                <td><span class="badge badge-${getStatusBadge(ref.status)}">${ref.status_display}</span></td>
+                                <td>${formatDate(ref.created_at)}</td>
+                                <td><button class="btn btn-sm btn-primary" onclick="window.location.href='/referrals/detail/${ref.id}/'">View</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load referrals:', error);
+        }
+    }
+    
+    function showTab(tabName) {
+        // Hide all panels
+        document.querySelectorAll('.info-panel').forEach(panel => {
+            panel.classList.remove('active');
+        });
+        // Show selected panel
+        document.getElementById(`panel-${tabName}`).classList.add('active');
+        
+        // Update tab styles
+        document.querySelectorAll('.info-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+    }
+    
+    function viewLabResult(id) {
+        window.location.href = `/laboratory/detail/${id}/`;
+    }
+    
+    // Modal functions for adding medical data
+    function showAddAllergyModal() {
+        const allergen = prompt('Enter allergen name:');
+        if (!allergen) return;
+        const severity = prompt('Severity (mild/moderate/severe/life_threatening):', 'moderate');
+        if (!severity) return;
+        const reaction = prompt('Reaction type:');
+        
+        apiCall(`/patients/patients/${patientId}/add_allergy/`, 'POST', {
+            allergen: allergen,
+            severity: severity,
+            reaction: reaction
+        }).then(() => {
+            showAlert('Allergy added successfully', 'success');
+            location.reload();
+        }).catch(err => showAlert('Failed to add allergy', 'danger'));
+    }
+    
+    function showAddChronicModal() {
+        const disease = prompt('Enter disease name:');
+        if (!disease) return;
+        const diagnosedDate = prompt('Diagnosed date (YYYY-MM-DD):');
+        if (!diagnosedDate) return;
+        
+        apiCall(`/patients/patients/${patientId}/add_chronic_disease/`, 'POST', {
+            disease_name: disease,
+            diagnosed_date: diagnosedDate,
+            status: 'active'
+        }).then(() => {
+            showAlert('Chronic disease added successfully', 'success');
+            location.reload();
+        }).catch(err => showAlert('Failed to add chronic disease', 'danger'));
+    }
+    
+    function showAddMedicalHistoryModal() {
+        const condition = prompt('Enter medical condition:');
+        if (!condition) return;
+        const diagnosedDate = prompt('Diagnosed date (YYYY-MM-DD):');
+        
+        apiCall(`/patients/patients/${patientId}/add_medical_history/`, 'POST', {
+            condition: condition,
+            diagnosed_date: diagnosedDate || null
+        }).then(() => {
+            showAlert('Medical history added successfully', 'success');
+            location.reload();
+        }).catch(err => showAlert('Failed to add medical history', 'danger'));
+    }
+    
+    function showAddSurgeryModal() {
+        const procedure = prompt('Enter procedure name:');
+        if (!procedure) return;
+        const surgeryDate = prompt('Surgery date (YYYY-MM-DD):');
+        if (!surgeryDate) return;
+        
+        apiCall(`/patients/patients/${patientId}/add_surgery/`, 'POST', {
+            procedure_name: procedure,
+            surgery_date: surgeryDate
+        }).then(() => {
+            showAlert('Surgery added successfully', 'success');
+            location.reload();
+        }).catch(err => showAlert('Failed to add surgery', 'danger'));
+    }
+    
+    function showAddVaccinationModal() {
+        const vaccine = prompt('Enter vaccine name:');
+        if (!vaccine) return;
+        const date = prompt('Date administered (YYYY-MM-DD):');
+        if (!date) return;
+        const dose = prompt('Dose number:', '1');
+        
+        apiCall(`/patients/patients/${patientId}/add_vaccination/`, 'POST', {
+            vaccine_name: vaccine,
+            date_administered: date,
+            dose_number: parseInt(dose)
+        }).then(() => {
+            showAlert('Vaccination added successfully', 'success');
+            location.reload();
+        }).catch(err => showAlert('Failed to add vaccination', 'danger'));
+    }
+    
+    function deleteAllergy(id) {
+        if (confirm('Delete this allergy?')) {
+            apiCall(`/patients/allergies/${id}/`, 'DELETE')
+                .then(() => location.reload())
+                .catch(err => showAlert('Failed to delete', 'danger'));
+        }
+    }
+    
+    function deleteChronic(id) {
+        if (confirm('Delete this chronic disease?')) {
+            apiCall(`/patients/chronic_diseases/${id}/`, 'DELETE')
+                .then(() => location.reload())
+                .catch(err => showAlert('Failed to delete', 'danger'));
+        }
+    }
+    
+    function deleteMedicalHistory(id) {
+        if (confirm('Delete this medical history record?')) {
+            apiCall(`/patients/medical_history/${id}/`, 'DELETE')
+                .then(() => location.reload())
+                .catch(err => showAlert('Failed to delete', 'danger'));
+        }
+    }
+    
+    function deleteSurgery(id) {
+        if (confirm('Delete this surgery record?')) {
+            apiCall(`/patients/surgeries/${id}/`, 'DELETE')
+                .then(() => location.reload())
+                .catch(err => showAlert('Failed to delete', 'danger'));
+        }
+    }
+    
+    function deleteVaccination(id) {
+        if (confirm('Delete this vaccination record?')) {
+            apiCall(`/patients/vaccinations/${id}/`, 'DELETE')
+                .then(() => location.reload())
+                .catch(err => showAlert('Failed to delete', 'danger'));
+        }
+    }
+    
+    loadPatientData();
+</script>
+{% endblock %}

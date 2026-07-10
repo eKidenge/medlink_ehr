@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - MedLink EHR{% endblock %}
+
+{% block page_title %}System Users{% endblock %}
+
+{% block content %}
+<div class="quick-actions"><button class="btn btn-primary" onclick="showAddUserModal()"><i class="fas fa-plus"></i> Add User</button></div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Users</div>
+        <div><input type="text" id="searchInput" placeholder="Search..." class="form-control" style="width: 200px;"><button class="btn btn-primary" onclick="loadUsers()">Search</button></div>
+    </div>
+    <div style="overflow-x: auto;"><table class="data-table"><thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Department</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead><tbody id="usersTableBody"></tbody></table></div>
+</div>
+
+<!-- Add User Modal -->
+<div id="addUserModal" class="modal"><div class="modal-content"><div class="modal-header"><h3>Add User</h3><span onclick="closeModal('addUserModal')">&times;</span></div>
+<div class="modal-body"><form id="userForm"><div class="form-row"><div class="form-group"><label>Username</label><input id="username" class="form-control" required></div><div class="form-group"><label>Email</label><input id="email" type="email" class="form-control" required></div></div>
+<div class="form-row"><div class="form-group"><label>First Name</label><input id="firstName" class="form-control"></div><div class="form-group"><label>Last Name</label><input id="lastName" class="form-control"></div></div>
+<div class="form-row"><div class="form-group"><label>Phone</label><input id="phoneNumber" class="form-control"></div><div class="form-group"><label>Role</label><select id="role" class="form-control"><option value="doctor">Doctor</option><option value="nurse">Nurse</option><option value="lab">Lab Technician</option><option value="pharmacy">Pharmacist</option><option value="records">Records Officer</option><option value="admin">Administrator</option></select></div></div>
+<div class="form-row"><div class="form-group"><label>Department</label><select id="department" class="form-control"></select></div></div>
+<div class="form-row"><div class="form-group"><label>Password</label><input type="password" id="password" class="form-control" required></div><div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" class="form-control" required></div></div></form></div>
+<div class="modal-footer"><button class="btn btn-secondary" onclick="closeModal('addUserModal')">Cancel</button><button class="btn btn-primary" onclick="createUser()">Create User</button></div></div></div>
+
+<script>
+    async function loadDepartments() {
+        const depts = await apiCall('/accounts/departments/');
+        const select = document.getElementById('department');
+        depts.results.forEach(d => select.innerHTML += `<option value="${d.id}">${d.name}</option>`);
+    }
+    
+    async function loadUsers() {
+        showLoading();
+        try {
+            const data = await apiCall(`/accounts/users/?search=${document.getElementById('searchInput').value}`);
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = data.results.map(user => `<tr><td>${user.username}</td><td>${user.first_name} ${user.last_name}</td><td>${user.role_display}</td><td>${user.department_name || '-'}</td><td>${user.email}</td><td>${user.phone_number}</td><td>${user.is_active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-danger">Inactive</span>'}</td>
+            <td><button class="btn btn-sm btn-warning" onclick="toggleUserStatus(${user.id}, ${!user.is_active})">${user.is_active ? 'Deactivate' : 'Activate'}</button>
+            <button class="btn btn-sm btn-danger" onclick="resetUserPassword(${user.id})">Reset Password</button></td></tr>`).join('');
+        } catch (error) { showAlert('Failed to load users', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function showAddUserModal() { document.getElementById('addUserModal').style.display = 'flex'; }
+    
+    async function createUser() {
+        const password = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        if (password !== confirm) { showAlert('Passwords do not match', 'warning'); return; }
+        const data = { username: document.getElementById('username').value, email: document.getElementById('email').value, first_name: document.getElementById('firstName').value, last_name: document.getElementById('lastName').value, phone_number: document.getElementById('phoneNumber').value, role: document.getElementById('role').value, department: document.getElementById('department').value, password: password };
+        showLoading();
+        try { await apiCall('/accounts/users/', 'POST', data); showAlert('User created', 'success'); closeModal('addUserModal'); loadUsers(); }
+        catch (error) { showAlert('Failed to create user', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    async function toggleUserStatus(id, activate) { showLoading(); try { await apiCall(`/accounts/users/${id}/toggle_active/`, 'POST'); showAlert(`User ${activate ? 'activated' : 'deactivated'}`, 'success'); loadUsers(); } catch (error) { showAlert('Failed to update status', 'danger'); } finally { hideLoading(); } }
+    
+    async function resetUserPassword(id) { const newPass = prompt('Enter new password:'); if (!newPass) return; showLoading(); try { await apiCall(`/accounts/users/${id}/reset_password/`, 'POST', { new_password: newPass }); showAlert('Password reset', 'success'); } catch (error) { showAlert('Failed to reset password', 'danger'); } finally { hideLoading(); } }
+    
+    loadDepartments();
+    loadUsers();
+</script>
+{% endblock %}

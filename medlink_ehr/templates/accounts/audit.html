@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit Logs - MedLink EHR{% endblock %}
+
+{% block page_title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Audit Trail</div>
+        <div>
+            <input type="date" id="dateFrom" class="form-control" style="width: 150px; display: inline-block;">
+            <input type="date" id="dateTo" class="form-control" style="width: 150px; display: inline-block;">
+            <select id="actionFilter" class="form-control" style="width: 150px;">
+                <option value="">All Actions</option>
+                <option value="create">Create</option>
+                <option value="update">Update</option>
+                <option value="delete">Delete</option>
+                <option value="login">Login</option>
+                <option value="export">Export</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadAuditLogs()">Filter</button>
+            <button class="btn btn-success" onclick="exportAuditLogs()">Export</button>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead><tr><th>Timestamp</th><th>User</th><th>Action</th><th>Model</th><th>Object</th><th>IP Address</th><th>Changes</th></tr></thead>
+            <tbody id="auditTableBody"></tbody>
+        </table>
+    </div>
+    <div id="pagination" style="margin-top: 20px;"></div>
+</div>
+
+<script>
+    let currentPage = 1, totalPages = 1;
+    
+    async function loadAuditLogs() {
+        showLoading();
+        const params = new URLSearchParams({ page: currentPage, action: document.getElementById('actionFilter').value, start_date: document.getElementById('dateFrom').value, end_date: document.getElementById('dateTo').value });
+        try {
+            const data = await apiCall(`/accounts/audit-logs/?${params}`);
+            totalPages = Math.ceil(data.count / 20);
+            renderAuditTable(data.results);
+            renderPagination();
+        } catch (error) { showAlert('Failed to load audit logs', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function renderAuditTable(logs) {
+        const tbody = document.getElementById('auditTableBody');
+        if (logs.length === 0) { tbody.innerHTML = '<tr><td colspan="7">No audit records found</td></tr>'; return; }
+        tbody.innerHTML = logs.map(log => `<tr><td>${formatDate(log.timestamp)}</td><td>${log.username || 'System'}</td><td><span class="badge badge-info">${log.action}</span></td><td>${log.model_name}</td><td>${log.object_repr?.substring(0, 50)}</td><td>${log.ip_address}</td><td><small>${JSON.stringify(log.changes).substring(0, 100)}</small></td></tr>`).join('');
+    }
+    
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        if (currentPage > 1) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Prev</button>`;
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        if (currentPage < totalPages) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        container.innerHTML = html;
+    }
+    
+    function goToPage(page) { currentPage = page; loadAuditLogs(); }
+    function exportAuditLogs() { window.location.href = `/api/accounts/audit-logs/export/?${new URLSearchParams({ action: document.getElementById('actionFilter').value, start_date: document.getElementById('dateFrom').value, end_date: document.getElementById('dateTo').value })}`; }
+    
+    loadAuditLogs();
+</script>
+{% endblock %}

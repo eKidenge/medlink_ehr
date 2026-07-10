@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Clinical Rounds - MedLink EHR{% endblock %}
+
+{% block page_title %}Daily Clinical Rounds{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><div class="card-title">Today's Rounds</div><div><input type="date" id="roundDate" class="form-control" style="width: auto;"><button class="btn btn-primary" onclick="loadRounds()">View</button></div></div>
+    <div id="roundsContainer"></div>
+</div>
+
+<script>
+    document.getElementById('roundDate').valueAsDate = new Date();
+    
+    async function loadRounds() {
+        showLoading();
+        try {
+            const rounds = await apiCall(`/admissions/rounds/?date=${document.getElementById('roundDate').value}`);
+            const container = document.getElementById('roundsContainer');
+            if (rounds.length === 0) { container.innerHTML = '<div class="alert alert-info">No rounds recorded for this date</div>'; return; }
+            container.innerHTML = rounds.map(round => `<div class="card" style="margin-bottom: 15px;"><div class="card-header"><strong>${round.patient_name}</strong> - Ward ${round.ward_name} (Bed ${round.bed_number})<small>Dr. ${round.doctor_name}</small></div><div class="card-body"><div><strong>S:</strong> ${round.subjective}</div><div><strong>O:</strong> ${round.objective}</div><div><strong>A:</strong> ${round.assessment}</div><div><strong>P:</strong> ${round.plan}</div></div></div>`).join('');
+        } catch (error) { showAlert('Failed to load rounds', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    loadRounds();
+</script>
+{% endblock %}

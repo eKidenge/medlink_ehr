@@ -1,0 +1,262 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Reception Dashboard - HMS{% endblock %}
+
+{% block page_title %}Reception Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+{{ block.super }}
+<a href="/patients/register/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-user-plus w-5"></i>
+    <span class="ml-3">Register Patient</span>
+</a>
+<a href="/appointments/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-calendar-alt w-5"></i>
+    <span class="ml-3">Appointments</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .quick-register {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+    .quick-register:hover {
+        transform: translateY(-3px);
+    }
+    .patient-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 15px;
+        align-items: center;
+        padding: 12px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .walkin-form {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        display: none;
+    }
+    .walkin-form.active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card" onclick="window.location.href='/visits/today/'">
+        <div class="stat-icon" style="background: #e0e7ff;">
+            <i class="fas fa-calendar-day" style="color: #667eea;"></i>
+        </div>
+        <div>
+            <h3 id="todayVisits">--</h3>
+            <p>Today's Visits</p>
+        </div>
+    </div>
+    <div class="stat-card" onclick="window.location.href='/visits/waiting/'">
+        <div class="stat-icon" style="background: #fed7d7;">
+            <i class="fas fa-clock" style="color: #f56565;"></i>
+        </div>
+        <div>
+            <h3 id="waitingPatients">--</h3>
+            <p>Waiting Patients</p>
+        </div>
+    </div>
+    <div class="stat-card" onclick="window.location.href='/patients/new-today/'">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-user-plus" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="newPatients">--</h3>
+            <p>New Today</p>
+        </div>
+    </div>
+    <div class="stat-card" onclick="window.location.href='/appointments/today/'">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-calendar-check" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="appointmentsToday">--</h3>
+            <p>Appointments</p>
+        </div>
+    </div>
+</div>
+
+<div class="quick-register" onclick="toggleWalkinForm()">
+    <i class="fas fa-user-plus fa-2x"></i>
+    <h3 style="margin-top: 10px;">Quick Walk-in Registration</h3>
+    <p style="font-size: 0.9rem; opacity: 0.9;">Register a new patient and create visit in seconds</p>
+</div>
+
+<div id="walkinForm" class="walkin-form">
+    <h3><i class="fas fa-edit"></i> New Walk-in Patient</h3>
+    <form id="walkinRegistrationForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>First Name *</label>
+                <input type="text" id="firstName" required class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Last Name *</label>
+                <input type="text" id="lastName" required class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="phone" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" id="dob" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Gender</label>
+                <select id="gender" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <option value="">Select</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="O">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select id="department" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <option value="general">General OPD</option>
+                    <option value="pediatric">Pediatric</option>
+                    <option value="orthopedic">Orthopedic</option>
+                    <option value="eye">Eye Clinic</option>
+                    <option value="dental">Dental</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Reason for Visit</label>
+            <textarea id="reason" rows="2" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Register & Create Visit</button>
+            <button type="button" class="btn" onclick="toggleWalkinForm()" style="background: #718096; color: white;">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<!-- Recent Registrations -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-history"></i> Recent Patient Registrations</h3>
+    </div>
+    <div id="recentPatients">
+        <div class="loading-placeholder">Loading recent patients...</div>
+    </div>
+</div>
+
+<script>
+function toggleWalkinForm() {
+    const form = document.getElementById('walkinForm');
+    form.classList.toggle('active');
+}
+
+async function loadReceptionStats() {
+    try {
+        const stats = await apiCall('/dashboard/stats/');
+        document.getElementById('todayVisits').textContent = stats.visits?.today || '0';
+        document.getElementById('waitingPatients').textContent = stats.visits?.waiting || '0';
+        document.getElementById('newPatients').textContent = stats.patients?.today || '0';
+        document.getElementById('appointmentsToday').textContent = stats.visits?.appointments || '0';
+    } catch(e) { console.error(e); }
+}
+
+async function loadRecentPatients() {
+    try {
+        const response = await apiCall('/patients/recent/');
+        const container = document.getElementById('recentPatients');
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No recent registrations</div>';
+            return;
+        }
+        
+        container.innerHTML = response.map(patient => `
+            <div class="patient-row" onclick="window.location.href='/patients/${patient.id}/'">
+                <div style="background: #667eea; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <strong>${escapeHtml(patient.full_name)}</strong>
+                    <div style="font-size: 0.75rem; color: #718096;">
+                        <i class="fas fa-phone"></i> ${patient.phone || 'No phone'} | 
+                        <i class="fas fa-calendar"></i> ${new Date(patient.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+                <div>
+                    <span class="badge badge-success">New</span>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch(e) { console.error(e); }
+}
+
+// Handle walk-in registration
+document.getElementById('walkinRegistrationForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const patientData = {
+        first_name: document.getElementById('firstName').value,
+        last_name: document.getElementById('lastName').value,
+        phone: document.getElementById('phone').value,
+        date_of_birth: document.getElementById('dob').value,
+        gender: document.getElementById('gender').value
+    };
+    
+    try {
+        // Create patient
+        const patient = await apiCall('/patients/', 'POST', patientData);
+        
+        if (patient) {
+            // Create visit
+            const visitData = {
+                patient: patient.id,
+                department: document.getElementById('department').value,
+                reason: document.getElementById('reason').value,
+                visit_type: 'walkin',
+                registration_time: new Date().toISOString()
+            };
+            
+            const visit = await apiCall('/visits/', 'POST', visitData);
+            
+            if (visit) {
+                showAlert('Patient registered and visit created successfully!', 'success');
+                toggleWalkinForm();
+                document.getElementById('walkinRegistrationForm').reset();
+                loadReceptionStats();
+                loadRecentPatients();
+            }
+        }
+    } catch(e) {
+        showAlert('Error registering patient', 'danger');
+        console.error(e);
+    }
+});
+
+loadReceptionStats();
+loadRecentPatients();
+
+// Auto-refresh every 15 seconds
+setInterval(() => {
+    loadReceptionStats();
+    loadRecentPatients();
+}, 15000);
+</script>
+{% endblock %}

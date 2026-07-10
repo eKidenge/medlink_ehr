@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}Admissions - MedLink EHR{% endblock %}
+
+{% block page_title %}Admissions Management{% endblock %}
+
+{% block content %}
+<style>
+    .status-admitted { background: #4299e1; color: white; }
+    .status-critical { background: #f56565; color: white; }
+    .status-stable { background: #48bb78; color: white; }
+    .status-discharged { background: #a0aec0; color: white; }
+    .bed-status { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+    .bed-available { background: #48bb78; }
+    .bed-occupied { background: #f56565; }
+    .bed-maintenance { background: #ecc94b; }
+</style>
+
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="window.location.href='/admissions/create/'">
+        <i class="fas fa-plus"></i> New Admission
+    </button>
+    <button class="btn btn-info" onclick="window.location.href='/admissions/wards/'">
+        <i class="fas fa-building"></i> Ward Management
+    </button>
+    <button class="btn btn-success" onclick="window.location.href='/admissions/beds/'">
+        <i class="fas fa-bed"></i> Bed Management
+    </button>
+</div>
+
+<div class="stats-grid" id="admissionStats">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #4299e1;"><i class="fas fa-procedures"></i></div>
+        <div class="stat-info">
+            <h3 id="currentAdmissions">0</h3>
+            <p>Current Admissions</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #48bb78;"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h3 id="todayDischarges">0</h3>
+            <p>Discharged Today</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #f56565;"><i class="fas fa-bed"></i></div>
+        <div class="stat-info">
+            <h3 id="availableBeds">0</h3>
+            <p>Available Beds</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #ecc94b;"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-info">
+            <h3 id="occupancyRate">0</h3>
+            <p>Occupancy Rate</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Active Admissions</div>
+        <div>
+            <select id="wardFilter" class="form-control" style="width: 200px; display: inline-block; margin-right: 10px;">
+                <option value="">All Wards</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadAdmissions()">Filter</button>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Admission #</th>
+                    <th>Patient</th>
+                    <th>Ward</th>
+                    <th>Bed</th>
+                    <th>Admission Date</th>
+                    <th>Diagnosis</th>
+                    <th>Status</th>
+                    <th>LOS (Days)</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="admissionsTableBody">
+                <tr><td colspan="9" style="text-align: center;">Loading admissions...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Discharge Modal -->
+<div id="dischargeModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Discharge Patient</h3>
+            <span onclick="closeModal('dischargeModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Discharging: <strong id="dischargePatientName"></strong></p>
+            <div class="form-group">
+                <label class="form-label">Discharge Status</label>
+                <select id="dischargeStatus" class="form-control">
+                    <option value="home">Discharged Home</option>
+                    <option value="transfer">Transferred to Another Facility</option>
+                    <option value="ama">Discharged Against Medical Advice</option>
+                    <option value="deceased">Deceased</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Discharge Summary</label>
+                <textarea id="dischargeSummary" class="form-control" rows="5" placeholder="Enter discharge summary, follow-up instructions, medications..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('dischargeModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="confirmDischarge()">Confirm Discharge</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedAdmissionId = null;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAdmissionStats();
+        loadAdmissions();
+        loadWards();
+    });
+    
+    async function loadAdmissionStats() {
+        try {
+            const census = await apiCall('/admissions/census/');
+            document.getElementById('currentAdmissions').textContent = census.today.current_patients;
+            document.getElementById('todayDischarges').textContent = census.today.discharges;
+            document.getElementById('availableBeds').textContent = census.summary.available_beds;
+            document.getElementById('occupancyRate').textContent = census.summary.occupancy_rate + '%';
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        }
+    }
+    
+    async function loadWards() {
+        try {
+            const wards = await apiCall('/admissions/wards/');
+            const select = document.getElementById('wardFilter');
+            wards.results.forEach(ward => {
+                select.innerHTML += `<option value="${ward.id}">${ward.name}</option>`;
+            });
+        } catch (error) {
+            console.error('Failed to load wards:', error);
+        }
+    }
+    
+    async function loadAdmissions() {
+        showLoading();
+        
+        const wardId = document.getElementById('wardFilter').value;
+        const params = new URLSearchParams({ current: true });
+        if (wardId) params.append('ward', wardId);
+        
+        try {
+            const admissions = await apiCall(`/admissions/admissions/?${params}`);
+            renderAdmissionsTable(admissions.results);
+        } catch (error) {
+            showAlert('Failed to load admissions', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderAdmissionsTable(admissions) {
+        const tbody = document.getElementById('admissionsTableBody');
+        
+        if (admissions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align: center;">No active admissions</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = admissions.map(adm => `
+            <tr>
+                <td>${adm.admission_number}</td>
+                <td onclick="window.location.href='/patients/detail/${adm.patient}/'">${adm.patient_name}</td>
+                <td>${adm.ward_name || '-'}</td>
+                <td>${adm.bed_number || '-'}</td>
+                <td>${formatDate(adm.admission_date)}</td>
+                <td>${adm.primary_diagnosis?.substring(0, 50) || '-'}</td>
+                <td><span class="badge status-${adm.status}">${adm.status_display}</span></td>
+                <td>${adm.length_of_stay || 0}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="viewAdmission(${adm.id})">View</button>
+                    <button class="btn btn-sm btn-success" onclick="showDischargeModal(${adm.id}, '${adm.patient_name}')">Discharge</button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function viewAdmission(id) {
+        window.location.href = `/admissions/detail/${id}/`;
+    }
+    
+    function showDischargeModal(admissionId, patientName) {
+        selectedAdmissionId = admissionId;
+        document.getElementById('dischargePatientName').textContent = patientName;
+        document.getElementById('dischargeModal').style.display = 'flex';
+    }
+    
+    async function confirmDischarge() {
+        const status = document.getElementById('dischargeStatus').value;
+        const summary = document.getElementById('dischargeSummary').value;
+        
+        if (!summary) {
+            showAlert('Please enter discharge summary', 'warning');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            await apiCall(`/admissions/admissions/${selectedAdmissionId}/discharge/`, 'POST', {
+                discharge_status: status,
+                discharge_summary: summary
+            });
+            
+            showAlert('Patient discharged successfully', 'success');
+            closeModal('dischargeModal');
+            loadAdmissions();
+            loadAdmissionStats();
+        } catch (error) {
+            showAlert('Failed to discharge patient', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+</script>
+{% endblock %}

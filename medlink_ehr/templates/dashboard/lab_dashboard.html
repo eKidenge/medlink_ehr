@@ -1,0 +1,259 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Lab Dashboard - HMS{% endblock %}
+
+{% block page_title %}Laboratory Dashboard{% endblock %}
+
+{% block sidebar_nav %}
+{{ block.super }}
+<a href="/laboratory/requests/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-flask w-5"></i>
+    <span class="ml-3">All Requests</span>
+</a>
+<a href="/laboratory/results/" class="flex items-center px-6 py-3 hover:bg-blue-700 transition-colors">
+    <i class="fas fa-file-alt w-5"></i>
+    <span class="ml-3">My Results</span>
+</a>
+{% endblock %}
+
+{% block content %}
+<style>
+    .lab-request-card {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 12px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+    .lab-request-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .test-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-pending { background: #feebc8; color: #744210; }
+    .status-processing { background: #bee3f8; color: #2c5282; }
+    .status-completed { background: #c6f6d5; color: #22543d; }
+    .result-form {
+        background: #f7fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 10px;
+    }
+    .test-item {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 10px 0;
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-hourglass-half" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="pendingCount">--</h3>
+            <p>Pending Tests</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #bee3f8;">
+            <i class="fas fa-microscope" style="color: #4299e1;"></i>
+        </div>
+        <div>
+            <h3 id="processingCount">--</h3>
+            <p>In Progress</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-check-circle" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="completedToday">--</h3>
+            <p>Completed Today</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #fed7d7;">
+            <i class="fas fa-chart-line" style="color: #f56565;"></i>
+        </div>
+        <div>
+            <h3 id="avgTurnaround">--</h3>
+            <p>Avg Turnaround (hrs)</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <!-- Pending Lab Requests -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-list"></i> Pending Lab Requests</h3>
+            <button class="btn btn-sm" onclick="loadPendingRequests()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="pendingRequests" style="max-height: 500px; overflow-y: auto;">
+            <div class="loading-placeholder">Loading requests...</div>
+        </div>
+    </div>
+    
+    <!-- Selected Test Results Form -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-edit"></i> Enter Results</h3>
+        </div>
+        <div id="resultForm">
+            <div class="loading-placeholder">Select a test to enter results</div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedRequestId = null;
+
+async function loadPendingRequests() {
+    try {
+        const response = await apiCall('/dashboard/pending_lab_results/');
+        const container = document.getElementById('pendingRequests');
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No pending lab requests</div>';
+            document.getElementById('pendingCount').textContent = '0';
+            return;
+        }
+        
+        const pending = response.filter(r => r.status === 'pending');
+        const processing = response.filter(r => r.status === 'processing');
+        
+        document.getElementById('pendingCount').textContent = pending.length;
+        document.getElementById('processingCount').textContent = processing.length;
+        document.getElementById('completedToday').textContent = response.filter(r => r.status === 'completed').length;
+        
+        container.innerHTML = response.map(req => `
+            <div class="lab-request-card" onclick="selectRequest(${req.id})" style="cursor: pointer;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <strong>${escapeHtml(req.patient_name)}</strong>
+                        <div style="font-size: 0.8rem; color: #718096; margin-top: 4px;">
+                            <i class="fas fa-stethoscope"></i> Requested by: Dr. ${escapeHtml(req.requesting_doctor_name || 'N/A')}
+                        </div>
+                        <div style="font-size: 0.75rem; margin-top: 4px;">
+                            ${req.tests ? req.tests.map(t => `<span class="vital-sign">${t}</span>`).join('') : '<span class="vital-sign">Lab Test</span>'}
+                        </div>
+                    </div>
+                    <span class="test-status status-${req.status}">${req.status || 'Pending'}</span>
+                </div>
+                <div style="font-size: 0.7rem; color: #a0aec0; margin-top: 8px;">
+                    <i class="fas fa-clock"></i> Requested: ${new Date(req.created_at).toLocaleString()}
+                </div>
+            </div>
+        `).join('');
+        
+        if (response.length > 0 && !selectedRequestId) {
+            selectRequest(response[0].id);
+        }
+        
+    } catch(e) { console.error(e); }
+}
+
+async function selectRequest(requestId) {
+    selectedRequestId = requestId;
+    
+    try {
+        const response = await apiCall(`/laboratory/requests/${requestId}/`);
+        const formContainer = document.getElementById('resultForm');
+        
+        if (!response) return;
+        
+        formContainer.innerHTML = `
+            <div class="result-form">
+                <h4 style="margin-bottom: 15px;">Patient: ${escapeHtml(response.patient_name)}</h4>
+                <div id="testResults">
+                    ${response.tests ? response.tests.map((test, idx) => `
+                        <div class="test-item">
+                            <label><strong>${escapeHtml(test)}</strong></label>
+                            <textarea id="result_${idx}" class="form-control" rows="2" 
+                                placeholder="Enter test results for ${escapeHtml(test)}..." 
+                                style="width: 100%; margin-top: 5px; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+                        </div>
+                    `).join('') : '<div>No tests specified</div>'}
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Technician Notes</label>
+                    <textarea id="technicianNotes" rows="3" class="form-control" 
+                        placeholder="Add any observations or notes..." style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="submitResults()">
+                        <i class="fas fa-save"></i> Submit Results
+                    </button>
+                    <button class="btn" style="background: #ed8936; color: white;" onclick="markInProgress()">
+                        <i class="fas fa-play"></i> Mark In Progress
+                    </button>
+                </div>
+            </div>
+        `;
+        
+    } catch(e) { console.error(e); }
+}
+
+async function submitResults() {
+    if (!selectedRequestId) {
+        showAlert('No request selected', 'warning');
+        return;
+    }
+    
+    const results = [];
+    const testDivs = document.querySelectorAll('#testResults .test-item');
+    testDivs.forEach((div, idx) => {
+        const testName = div.querySelector('label').textContent;
+        const result = document.getElementById(`result_${idx}`).value;
+        results.push({ test: testName, result: result });
+    });
+    
+    const data = {
+        status: 'completed',
+        results: results,
+        technician_notes: document.getElementById('technicianNotes').value,
+        completed_at: new Date().toISOString()
+    };
+    
+    try {
+        const response = await apiCall(`/laboratory/requests/${selectedRequestId}/submit_results/`, 'POST', data);
+        if (response) {
+            showAlert('Results submitted successfully', 'success');
+            loadPendingRequests();
+            document.getElementById('resultForm').innerHTML = '<div class="loading-placeholder">Results submitted! Select another test.</div>';
+            selectedRequestId = null;
+        }
+    } catch(e) {
+        showAlert('Error submitting results', 'danger');
+        console.error(e);
+    }
+}
+
+async function markInProgress() {
+    if (!selectedRequestId) return;
+    
+    try {
+        await apiCall(`/laboratory/requests/${selectedRequestId}/start_processing/`, 'POST');
+        showAlert('Test marked as in progress', 'success');
+        loadPendingRequests();
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+loadPendingRequests();
+
+// Auto-refresh every 20 seconds
+setInterval(() => {
+    loadPendingRequests();
+}, 20000);
+</script>
+{% endblock %}

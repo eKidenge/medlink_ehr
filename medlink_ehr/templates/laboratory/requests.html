@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}Lab Requests - MedLink EHR{% endblock %}
+
+{% block page_title %}Laboratory Management{% endblock %}
+
+{% block content %}
+<style>
+    .status-pending { background: #ecc94b; color: #744210; }
+    .status-collected { background: #4299e1; color: white; }
+    .status-processing { background: #9f7aea; color: white; }
+    .status-completed { background: #48bb78; color: white; }
+    .status-rejected { background: #f56565; color: white; }
+    .abnormal-result { color: #f56565; font-weight: bold; }
+</style>
+
+<div class="stats-grid" id="labStats">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #ecc94b;"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h3 id="pendingCount">0</h3>
+            <p>Pending</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #4299e1;"><i class="fas fa-vial"></i></div>
+        <div class="stat-info">
+            <h3 id="collectedCount">0</h3>
+            <p>Collected</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #9f7aea;"><i class="fas fa-microscope"></i></div>
+        <div class="stat-info">
+            <h3 id="processingCount">0</h3>
+            <p>Processing</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #48bb78;"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h3 id="completedToday">0</h3>
+            <p>Completed Today</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Laboratory Requests</div>
+        <button class="btn btn-primary" onclick="window.location.href='/laboratory/create/'">
+            <i class="fas fa-plus"></i> New Request
+        </button>
+    </div>
+    
+    <div class="filter-bar" style="padding: 15px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by # or patient..." style="width: 250px;">
+            <select id="statusFilter" class="form-control" style="width: 150px;">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="collected">Collected</option>
+                <option value="processing">Processing</option>
+                <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+            </select>
+            <select id="priorityFilter" class="form-control" style="width: 150px;">
+                <option value="">All Priority</option>
+                <option value="stat">STAT</option>
+                <option value="urgent">Urgent</option>
+                <option value="routine">Routine</option>
+            </select>
+            <button class="btn btn-primary" onclick="loadRequests()">Filter</button>
+        </div>
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Request #</th>
+                    <th>Patient</th>
+                    <th>Test</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Requested</th>
+                    <th>Result</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="requestsTableBody">
+                <tr><td colspan="8" style="text-align: center;">Loading requests...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;"></div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadStats();
+        loadRequests();
+    });
+    
+    async function loadStats() {
+        try {
+            const stats = await apiCall('/laboratory/requests/dashboard/');
+            document.getElementById('pendingCount').textContent = stats.pending_tests;
+            document.getElementById('collectedCount').textContent = stats.collected_tests;
+            document.getElementById('processingCount').textContent = stats.processing_tests;
+            document.getElementById('completedToday').textContent = stats.completed_today;
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        }
+    }
+    
+    async function loadRequests() {
+        showLoading();
+        
+        const params = new URLSearchParams({
+            page: currentPage,
+            search: document.getElementById('searchInput').value,
+            status: document.getElementById('statusFilter').value,
+            priority: document.getElementById('priorityFilter').value
+        });
+        
+        try {
+            const data = await apiCall(`/laboratory/requests/?${params}`);
+            totalPages = Math.ceil(data.count / 20);
+            renderRequestsTable(data.results);
+            renderPagination();
+        } catch (error) {
+            showAlert('Failed to load requests', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderRequestsTable(requests) {
+        const tbody = document.getElementById('requestsTableBody');
+        
+        if (requests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center;">No requests found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = requests.map(req => `
+            <tr>
+                <td><strong>${req.request_number}</strong></td>
+                <td onclick="window.location.href='/patients/detail/${req.patient}/'">${req.patient_name}</td>
+                <td>${req.test_name}</td>
+                <td><span class="badge ${req.priority === 'stat' ? 'badge-danger' : (req.priority === 'urgent' ? 'badge-warning' : 'badge-info')}">${req.priority_display}</span></td>
+                <td><span class="badge status-${req.status}">${req.status_display}</span></td>
+                <td>${formatDate(req.created_at)}</td>
+                <td>${req.result_value ? (req.is_abnormal ? `<span class="abnormal-result">⚠ ${req.result_value}</span>` : req.result_value) : '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-info" onclick="viewRequest(${req.id})">View</button>
+                    ${req.status === 'pending' ? `<button class="btn btn-sm btn-primary" onclick="collectSpecimen(${req.id})">Collect</button>` : ''}
+                    ${req.status === 'collected' ? `<button class="btn btn-sm btn-warning" onclick="startProcessing(${req.id})">Process</button>` : ''}
+                    ${req.status === 'processing' ? `<button class="btn btn-sm btn-success" onclick="enterResult(${req.id})">Enter Result</button>` : ''}
+                 </td>
+             </tr>
+        `).join('');
+    }
+    
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        
+        if (currentPage > 1) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Previous</button>`;
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        if (currentPage < totalPages) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        
+        container.innerHTML = html;
+    }
+    
+    function goToPage(page) {
+        currentPage = page;
+        loadRequests();
+    }
+    
+    function viewRequest(id) {
+        window.location.href = `/laboratory/detail/${id}/`;
+    }
+    
+    async function collectSpecimen(id) {
+        showLoading();
+        try {
+            await apiCall(`/laboratory/requests/${id}/collect_specimen/`, 'POST');
+            showAlert('Specimen collected', 'success');
+            loadRequests();
+            loadStats();
+        } catch (error) {
+            showAlert('Failed to collect specimen', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function startProcessing(id) {
+        showLoading();
+        try {
+            await apiCall(`/laboratory/requests/${id}/start_processing/`, 'POST');
+            showAlert('Processing started', 'success');
+            loadRequests();
+            loadStats();
+        } catch (error) {
+            showAlert('Failed to start processing', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function enterResult(id) {
+        window.location.href = `/laboratory/results/${id}/`;
+    }
+</script>
+{% endblock %}

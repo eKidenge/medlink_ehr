@@ -1,0 +1,53 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Manager Dashboard - HMS{% endblock %}
+
+{% block page_title %}Management Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e0e7ff;">
+            <i class="fas fa-chart-line" style="color: #667eea;"></i>
+        </div>
+        <div>
+            <h3 id="revenue">--</h3>
+            <p>Revenue (Month)</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-users" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="activePatients">--</h3>
+            <p>Active Patients</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-user-md" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="staffCount">--</h3>
+            <p>Staff Members</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadManagerData() {
+        try {
+            const stats = await apiCall('/stats/');
+            if (stats) {
+                document.getElementById('revenue').textContent = 'KES ' + (stats.revenue?.this_month?.toLocaleString() || '0');
+                document.getElementById('activePatients').textContent = stats.patients?.total?.toLocaleString() || '0';
+                document.getElementById('staffCount').textContent = '45';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    loadManagerData();
+    setInterval(loadManagerData, 60000);
+</script>
+{% endblock %}

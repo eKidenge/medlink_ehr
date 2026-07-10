@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+
+{% block title %}Patients - MedLink EHR{% endblock %}
+
+{% block page_title %}Patient Management{% endblock %}
+
+{% block content %}
+<style>
+    .filter-section {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .filter-group {
+        display: inline-block;
+        margin-right: 15px;
+        margin-bottom: 10px;
+    }
+    .filter-group label {
+        font-size: 0.85rem;
+        margin-right: 8px;
+    }
+    .filter-group select, .filter-group input {
+        padding: 6px 10px;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+    }
+    .quick-actions {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .patient-row {
+        cursor: pointer;
+    }
+    .qr-badge {
+        background: #667eea;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+    }
+</style>
+
+<!-- Quick Actions -->
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="showCreateModal()">
+        <i class="fas fa-plus"></i> New Patient
+    </button>
+    <button class="btn btn-success" onclick="showMergeModal()">
+        <i class="fas fa-code-branch"></i> Merge Patients
+    </button>
+    <button class="btn btn-warning" onclick="exportPatients()">
+        <i class="fas fa-download"></i> Export
+    </button>
+    <button class="btn btn-info" onclick="generateBulkQR()">
+        <i class="fas fa-qrcode"></i> Generate QR Codes
+    </button>
+</div>
+
+<!-- Search and Filter -->
+<div class="filter-section">
+    <div class="filter-group">
+        <label>Search:</label>
+        <input type="text" id="searchInput" placeholder="Name, ID, Phone..." style="width: 250px;">
+    </div>
+    <div class="filter-group">
+        <label>Gender:</label>
+        <select id="genderFilter">
+            <option value="">All</option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>County:</label>
+        <select id="countyFilter">
+            <option value="">All</option>
+            <option value="Nairobi">Nairobi</option>
+            <option value="Mombasa">Mombasa</option>
+            <option value="Kisumu">Kisumu</option>
+            <option value="Nakuru">Nakuru</option>
+            <option value="Kiambu">Kiambu</option>
+        </select>
+    </div>
+    <div class="filter-group">
+        <label>Date From:</label>
+        <input type="date" id="dateFrom">
+    </div>
+    <div class="filter-group">
+        <label>Date To:</label>
+        <input type="date" id="dateTo">
+    </div>
+    <button class="btn btn-sm btn-primary" onclick="loadPatients()">Apply Filters</button>
+    <button class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
+</div>
+
+<!-- Patients Table -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Patient Records</div>
+        <div>
+            Showing <span id="showingCount">0</span> of <span id="totalCount">0</span> patients
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table" id="patientsTable">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>Patient Number</th>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Gender</th>
+                    <th>Age</th>
+                    <th>County</th>
+                    <th>Created</th>
+                    <th>QR</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="patientsTableBody">
+                <tr><td colspan="10" style="text-align: center;">Loading patients...</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="pagination" id="pagination" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+    </div>
+</div>
+
+<!-- Create Patient Modal -->
+<div id="createModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Register New Patient</h3>
+            <span onclick="closeModal('createModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="createPatientForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" name="first_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" name="last_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Gender *</label>
+                        <select name="gender" class="form-control" required>
+                            <option value="">Select</option>
+                            <option value="M">Male</option>
+                            <option value="F">Female</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number *</label>
+                        <input type="tel" name="phone_primary" class="form-control" placeholder="0712345678" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">National ID</label>
+                        <input type="text" name="identification_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">NHIF Number</label>
+                        <input type="text" name="nhif_number" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">County</label>
+                        <input type="text" name="county" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Emergency Contact</label>
+                        <input type="text" name="emergency_contact_name" class="form-control" placeholder="Name">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Emergency Phone</label>
+                        <input type="tel" name="emergency_contact_phone" class="form-control">
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('createModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="createPatient()">Register Patient</button>
+        </div>
+    </div>
+</div>
+
+<!-- Merge Patient Modal -->
+<div id="mergeModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Merge Patients</h3>
+            <span onclick="closeModal('mergeModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Source Patient</label>
+                <select id="sourcePatient" class="form-control">
+                    <option value="">Select patient</option>
+                </select>
+                <small>This patient will be merged INTO the target</small>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Target Patient</label>
+                <select id="targetPatient" class="form-control">
+                    <option value="">Select patient</option>
+                </select>
+                <small>This patient will receive all records</small>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('mergeModal')">Cancel</button>
+            <button class="btn btn-warning" onclick="mergePatients()">Merge Patients</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    let selectedPatients = [];
+
+    // Load patients on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPatients();
+        
+        document.getElementById('selectAll').addEventListener('change', (e) => {
+            const checkboxes = document.querySelectorAll('.patient-checkbox');
+            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            updateSelectedPatients();
+        });
+        
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadPatients();
+        });
+    });
+
+    async function loadPatients() {
+        showLoading();
+        
+        const params = new URLSearchParams({
+            page: currentPage,
+            search: document.getElementById('searchInput').value,
+            gender: document.getElementById('genderFilter').value,
+            county: document.getElementById('countyFilter').value,
+            date_from: document.getElementById('dateFrom').value,
+            date_to: document.getElementById('dateTo').value
+        });
+        
+        try {
+            const response = await fetch(`/api/patients/patients/?${params}`);
+            const data = await response.json();
+            
+            totalPages = Math.ceil(data.count / 20);
+            document.getElementById('totalCount').textContent = data.count;
+            document.getElementById('showingCount').textContent = data.results.length;
+            
+            renderPatientsTable(data.results);
+            renderPagination();
+            
+        } catch (error) {
+            console.error('Failed to load patients:', error);
+            showAlert('Failed to load patients', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function renderPatientsTable(patients) {
+        const tbody = document.getElementById('patientsTableBody');
+        
+        if (patients.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align: center;">No patients found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = patients.map(patient => `
+            <tr class="patient-row" onclick="viewPatient(${patient.id})">
+                <td onclick="event.stopPropagation()">
+                    <input type="checkbox" class="patient-checkbox" value="${patient.id}" onchange="updateSelectedPatients()">
+                </td>
+                <td>${patient.patient_number || patient.id}</td>
+                <td><strong>${patient.first_name} ${patient.last_name}</strong></td>
+                <td>${patient.phone_primary || '-'}</td>
+                <td>${patient.gender || '-'}</td>
+                <td>${patient.age || '-'}</td>
+                <td>${patient.county || '-'}</td>
+                <td>${formatDate(patient.created_at)}</td>
+                <td onclick="event.stopPropagation()">
+                    ${patient.qr_code ? '<span class="qr-badge"><i class="fas fa-qrcode"></i> QR</span>' : '-'}
+                </td>
+                <td onclick="event.stopPropagation()">
+                    <button class="btn btn-sm btn-primary" onclick="editPatient(${patient.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deletePatient(${patient.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        
+        if (currentPage > 1) {
+            html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Previous</button>`;
+        }
+        
+        for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+            const active = i === currentPage ? 'btn-primary' : '';
+            html += `<button class="btn btn-sm ${active}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        
+        if (currentPage < totalPages) {
+            html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        }
+        
+        container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        loadPatients();
+    }
+
+    function resetFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('genderFilter').value = '';
+        document.getElementById('countyFilter').value = '';
+        document.getElementById('dateFrom').value = '';
+        document.getElementById('dateTo').value = '';
+        currentPage = 1;
+        loadPatients();
+    }
+
+    function updateSelectedPatients() {
+        selectedPatients = Array.from(document.querySelectorAll('.patient-checkbox:checked')).map(cb => cb.value);
+    }
+
+    function showCreateModal() {
+        document.getElementById('createModal').style.display = 'flex';
+    }
+
+    async function createPatient() {
+        const form = document.getElementById('createPatientForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        showLoading();
+        
+        try {
+            const response = await fetch('/api/patients/patients/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (response.ok) {
+                showAlert('Patient registered successfully', 'success');
+                closeModal('createModal');
+                form.reset();
+                loadPatients();
+            } else {
+                const error = await response.json();
+                showAlert(error.message || 'Failed to register patient', 'danger');
+            }
+        } catch (error) {
+            showAlert('Network error', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function viewPatient(id) {
+        window.location.href = `/patients/detail/${id}/`;
+    }
+
+    function editPatient(id) {
+        window.location.href = `/patients/edit/${id}/`;
+    }
+
+    async function deletePatient(id) {
+        if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const response = await fetch(`/api/patients/patients/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            });
+            
+            if (response.ok) {
+                showAlert('Patient deleted successfully', 'success');
+                loadPatients();
+            } else {
+                showAlert('Failed to delete patient', 'danger');
+            }
+        } catch (error) {
+            showAlert('Network error', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function showMergeModal() {
+        loadPatientsForMerge();
+        document.getElementById('mergeModal').style.display = 'flex';
+    }
+
+    async function loadPatientsForMerge() {
+        try {
+            const response = await fetch('/api/patients/patients/?limit=100');
+            const data = await response.json();
+            
+            const options = data.results.map(p => 
+                `<option value="${p.id}">${p.patient_number} - ${p.first_name} ${p.last_name}</option>`
+            ).join('');
+            
+            document.getElementById('sourcePatient').innerHTML = '<option value="">Select patient</option>' + options;
+            document.getElementById('targetPatient').innerHTML = '<option value="">Select patient</option>' + options;
+        } catch (error) {
+            console.error('Failed to load patients for merge:', error);
+        }
+    }
+
+    async function mergePatients() {
+        const sourceId = document.getElementById('sourcePatient').value;
+        const targetId = document.getElementById('targetPatient').value;
+        
+        if (!sourceId || !targetId) {
+            showAlert('Please select both source and target patients', 'warning');
+            return;
+        }
+        
+        if (sourceId === targetId) {
+            showAlert('Source and target cannot be the same', 'warning');
+            return;
+        }
+        
+        if (!confirm('This will merge all records from source into target. Continue?')) {
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            const response = await fetch('/api/patients/patients/merge/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    source_patient_id: sourceId,
+                    target_patient_id: targetId
+                })
+            });
+            
+            if (response.ok) {
+                showAlert('Patients merged successfully', 'success');
+                closeModal('mergeModal');
+                loadPatients();
+            } else {
+                const error = await response.json();
+                showAlert(error.message || 'Failed to merge patients', 'danger');
+            }
+        } catch (error) {
+            showAlert('Network error', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function exportPatients() {
+        showLoading();
+        
+        try {
+            const params = new URLSearchParams({
+                search: document.getElementById('searchInput').value,
+                gender: document.getElementById('genderFilter').value,
+                county: document.getElementById('countyFilter').value
+            });
+            
+            window.location.href = `/api/patients/patients/export_excel/?${params}`;
+            showAlert('Export started', 'success');
+        } catch (error) {
+            showAlert('Failed to export', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    async function generateBulkQR() {
+        const selected = selectedPatients;
+        if (selected.length === 0) {
+            showAlert('Please select at least one patient', 'warning');
+            return;
+        }
+        
+        showLoading();
+        
+        try {
+            for (const id of selected) {
+                await fetch(`/api/patients/patients/${id}/generate_qr/`, {
+                    method: 'GET',
+                    headers: { 'X-CSRFToken': csrfToken }
+                });
+            }
+            
+            showAlert(`QR codes generated for ${selected.length} patients`, 'success');
+            loadPatients();
+        } catch (error) {
+            showAlert('Failed to generate QR codes', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+</script>
+{% endblock %}

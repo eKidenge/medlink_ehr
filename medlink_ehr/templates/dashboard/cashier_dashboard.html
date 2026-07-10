@@ -1,0 +1,274 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Cashier Dashboard - HMS{% endblock %}
+
+{% block page_title %}Cashier Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .revenue-card {
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+    }
+    .payment-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 4px solid #48bb78;
+    }
+    .payment-method {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 600;
+    }
+    .method-cash { background: #c6f6d5; color: #22543d; }
+    .method-mpesa { background: #bee3f8; color: #2c5282; }
+    .method-card { background: #fed7d7; color: #742a2a; }
+    .payment-form {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="revenue-card">
+        <i class="fas fa-chart-line fa-2x"></i>
+        <h3 id="todayRevenue" style="font-size: 2rem; margin: 10px 0;">--</h3>
+        <p>Today's Revenue (KES)</p>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-users" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="totalPatients">--</h3>
+            <p>Total Patients</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #bee3f8;">
+            <i class="fas fa-receipt" style="color: #4299e1;"></i>
+        </div>
+        <div>
+            <h3 id="pendingPayments">--</h3>
+            <p>Pending Payments</p>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+    <!-- Recent Transactions -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-history"></i> Recent Transactions</h3>
+            <button class="btn btn-sm" onclick="loadTransactions()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="transactionsList" style="max-height: 500px; overflow-y: auto;">
+            <div class="loading-placeholder">Loading transactions...</div>
+        </div>
+    </div>
+    
+    <!-- Payment Summary -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-chart-pie"></i> Payment Methods</h3>
+        </div>
+        <canvas id="paymentChart" height="200"></canvas>
+        <div id="paymentSummary" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<!-- Process Payment -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-credit-card"></i> Process Payment</h3>
+    </div>
+    <div class="payment-form">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Patient Name / ID</label>
+                <input type="text" id="patientSearch" placeholder="Search patient..." class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div id="patientSuggestions" style="position: absolute; background: white; border: 1px solid #e2e8f0; border-radius: 8px; max-height: 200px; overflow-y: auto; display: none;"></div>
+            </div>
+            <div class="form-group">
+                <label>Visit / Invoice #</label>
+                <input type="text" id="invoiceNo" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Amount (KES)</label>
+                <input type="number" id="amount" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            </div>
+            <div class="form-group">
+                <label>Payment Method</label>
+                <select id="paymentMethod" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    <option value="cash">Cash</option>
+                    <option value="mpesa">M-PESA</option>
+                    <option value="card">Card</option>
+                    <option value="insurance">Insurance</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group" id="mpesaField" style="display: none;">
+            <label>M-PESA Transaction Code</label>
+            <input type="text" id="mpesaCode" class="form-control" placeholder="Enter M-PESA code" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        </div>
+        <button class="btn btn-primary" onclick="processPayment()" style="margin-top: 20px; width: 100%;">
+            <i class="fas fa-check-circle"></i> Process Payment
+        </button>
+    </div>
+</div>
+
+<script>
+let paymentChart = null;
+
+async function loadCashierStats() {
+    try {
+        const stats = await apiCall('/dashboard/stats/');
+        document.getElementById('todayRevenue').textContent = (stats.revenue?.today || 0).toLocaleString();
+        document.getElementById('totalPatients').textContent = stats.patients?.total?.toLocaleString() || '0';
+        document.getElementById('pendingPayments').textContent = stats.pharmacy?.pending_prescriptions || '0';
+    } catch(e) { console.error(e); }
+}
+
+async function loadTransactions() {
+    try {
+        const response = await apiCall('/payments/recent/');
+        const container = document.getElementById('transactionsList');
+        
+        if (!response || response.length === 0) {
+            container.innerHTML = '<div class="loading-placeholder">No recent transactions</div>';
+            return;
+        }
+        
+        container.innerHTML = response.map(payment => `
+            <div class="payment-item">
+                <div>
+                    <strong>${escapeHtml(payment.patient_name)}</strong>
+                    <div style="font-size: 0.75rem; color: #718096;">
+                        ${payment.invoice_no} | ${new Date(payment.created_at).toLocaleString()}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div><strong>KES ${payment.amount.toLocaleString()}</strong></div>
+                    <span class="payment-method method-${payment.method}">${payment.method.toUpperCase()}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        // Update payment summary
+        const summary = {};
+        response.forEach(p => { summary[p.method] = (summary[p.method] || 0) + p.amount; });
+        
+        const summaryHtml = Object.entries(summary).map(([method, amount]) => `
+            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                <span>${method.toUpperCase()}</span>
+                <strong>KES ${amount.toLocaleString()}</strong>
+            </div>
+        `).join('');
+        document.getElementById('paymentSummary').innerHTML = summaryHtml;
+        
+        // Update chart
+        if (paymentChart) paymentChart.destroy();
+        const ctx = document.getElementById('paymentChart').getContext('2d');
+        paymentChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(summary),
+                datasets: [{
+                    data: Object.values(summary),
+                    backgroundColor: ['#48bb78', '#4299e1', '#ed8936', '#9f7aea']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom' } } }
+        });
+        
+    } catch(e) { console.error(e); }
+}
+
+// Toggle M-PESA field
+document.getElementById('paymentMethod')?.addEventListener('change', (e) => {
+    const mpesaField = document.getElementById('mpesaField');
+    mpesaField.style.display = e.target.value === 'mpesa' ? 'block' : 'none';
+});
+
+async function processPayment() {
+    const paymentData = {
+        patient: document.getElementById('patientSearch').value,
+        invoice_no: document.getElementById('invoiceNo').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        method: document.getElementById('paymentMethod').value,
+        mpesa_code: document.getElementById('mpesaCode').value
+    };
+    
+    if (!paymentData.amount || paymentData.amount <= 0) {
+        showAlert('Please enter a valid amount', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await apiCall('/payments/process/', 'POST', paymentData);
+        if (response) {
+            showAlert('Payment processed successfully!', 'success');
+            // Print receipt
+            printReceipt(response);
+            // Reset form
+            document.getElementById('patientSearch').value = '';
+            document.getElementById('invoiceNo').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('mpesaCode').value = '';
+            // Refresh data
+            loadCashierStats();
+            loadTransactions();
+        }
+    } catch(e) {
+        showAlert('Error processing payment', 'danger');
+        console.error(e);
+    }
+}
+
+function printReceipt(payment) {
+    const receiptWindow = window.open('', '_blank', 'width=400,height=600');
+    receiptWindow.document.write(`
+        <html>
+        <head><title>Payment Receipt</title></head>
+        <body style="font-family: monospace; padding: 20px;">
+            <h2 style="text-align: center;">HOSPITAL RECEIPT</h2>
+            <hr>
+            <p><strong>Receipt No:</strong> ${payment.receipt_no}</p>
+            <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+            <p><strong>Patient:</strong> ${payment.patient_name}</p>
+            <p><strong>Invoice:</strong> ${payment.invoice_no}</p>
+            <hr>
+            <p><strong>Amount:</strong> KES ${payment.amount.toLocaleString()}</p>
+            <p><strong>Method:</strong> ${payment.method.toUpperCase()}</p>
+            ${payment.mpesa_code ? `<p><strong>M-PESA Code:</strong> ${payment.mpesa_code}</p>` : ''}
+            <hr>
+            <p style="text-align: center;">Thank you for your payment!</p>
+        </body>
+        </html>
+    `);
+    receiptWindow.document.close();
+    receiptWindow.print();
+}
+
+loadCashierStats();
+loadTransactions();
+
+// Refresh every 30 seconds
+setInterval(() => {
+    loadCashierStats();
+    loadTransactions();
+}, 30000);
+</script>
+{% endblock %}

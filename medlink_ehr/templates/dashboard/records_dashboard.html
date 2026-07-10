@@ -1,0 +1,62 @@
+{% extends 'dashboard/base_dashboard.html' %}
+
+{% block title %}Records Dashboard - HMS{% endblock %}
+
+{% block page_title %}Medical Records Dashboard{% endblock %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #e0e7ff;">
+            <i class="fas fa-file-medical" style="color: #667eea;"></i>
+        </div>
+        <div>
+            <h3 id="totalRecords">--</h3>
+            <p>Total Records</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #c6f6d5;">
+            <i class="fas fa-upload" style="color: #48bb78;"></i>
+        </div>
+        <div>
+            <h3 id="recordsToday">--</h3>
+            <p>Records Today</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: #feebc8;">
+            <i class="fas fa-database" style="color: #ed8936;"></i>
+        </div>
+        <div>
+            <h3 id="storageUsed">--</h3>
+            <p>Storage Used</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Recent Records</h3>
+    </div>
+    <div id="recentRecords">
+        <div class="loading-placeholder">Loading records...</div>
+    </div>
+</div>
+
+<script>
+    async function loadRecordsData() {
+        try {
+            const stats = await apiCall('/stats/');
+            if (stats) {
+                document.getElementById('totalRecords').textContent = stats.patients?.total?.toLocaleString() || '0';
+                document.getElementById('recordsToday').textContent = stats.patients?.today || '0';
+                document.getElementById('storageUsed').textContent = '2.4 GB';
+            }
+        } catch(e) { console.error(e); }
+    }
+    
+    loadRecordsData();
+    setInterval(loadRecordsData, 60000);
+</script>
+{% endblock %}

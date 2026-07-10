@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Bad Request - MedLink EHR{% endblock %}
+
+{% block page_title %}400 - Bad Request{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 60px; max-width: 600px; margin: 0 auto;">
+    <i class="fas fa-exclamation-triangle fa-4x" style="color: #ecc94b; margin-bottom: 20px;"></i>
+    <h2>Bad Request</h2>
+    <p style="color: #718096;">The request could not be understood by the server due to malformed syntax.</p>
+    <p>Please check your input and try again.</p>
+    {% if exception %}
+        <p style="color: #a0aec0; font-size: 0.85rem; margin-top: 20px;">Error: {{ exception }}</p>
+    {% endif %}
+    <div style="margin-top: 30px;">
+        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard/'">Go to Dashboard</button>
+    </div>
+</div>
+{% endblock %}

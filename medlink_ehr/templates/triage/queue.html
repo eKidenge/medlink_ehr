@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Triage Queue - MedLink EHR{% endblock %}
+
+{% block page_title %}Triage Queue Management{% endblock %}
+
+{% block content %}
+<style>
+    .queue-board {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    .queue-section {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .queue-header {
+        background: #667eea;
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+    }
+    .queue-item {
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .queue-number {
+        font-size: 24px;
+        font-weight: bold;
+        width: 50px;
+        height: 50px;
+        background: #f7fafc;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .call-btn {
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    .called {
+        background: #feebc8;
+    }
+    .display-board {
+        background: #1a1c23;
+        color: white;
+        padding: 40px;
+        text-align: center;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .current-number {
+        font-size: 72px;
+        font-weight: bold;
+        margin: 20px 0;
+    }
+</style>
+
+<div class="display-board" id="displayBoard">
+    <h2>Now Serving</h2>
+    <div class="current-number" id="currentNumber">---</div>
+    <div id="currentPatient"></div>
+</div>
+
+<div class="queue-board">
+    <div class="queue-section">
+        <div class="queue-header">Waiting Queue</div>
+        <div id="waitingQueue"></div>
+    </div>
+    <div class="queue-section">
+        <div class="queue-header">In Progress</div>
+        <div id="inProgressQueue"></div>
+    </div>
+</div>
+
+<script>
+    let refreshInterval;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQueue();
+        refreshInterval = setInterval(loadQueue, 10000);
+        
+        // Audio for calling patients
+        const audio = new Audio('/static/ding.mp3');
+    });
+    
+    async function loadQueue() {
+        try {
+            const waiting = await apiCall('/triage/queue/?status=waiting');
+            const inProgress = await apiCall('/triage/queue/?status=in_progress');
+            
+            renderWaitingQueue(waiting);
+            renderInProgressQueue(inProgress);
+        } catch (error) {
+            console.error('Failed to load queue:', error);
+        }
+    }
+    
+    function renderWaitingQueue(queue) {
+        const container = document.getElementById('waitingQueue');
+        
+        if (queue.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center;">Queue is empty</div>';
+            return;
+        }
+        
+        container.innerHTML = queue.map((item, idx) => `
+            <div class="queue-item" data-id="${item.id}">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div class="queue-number">${idx + 1}</div>
+                    <div>
+                        <div><strong>${item.patient_name}</strong></div>
+                        <div style="font-size: 0.85rem;">Priority: ${item.priority} | Waiting: ${item.waiting_minutes} min</div>
+                    </div>
+                </div>
+                <button class="call-btn" onclick="callPatient(${item.id}, '${item.patient_name}')">
+                    <i class="fas fa-bell"></i> Call
+                </button>
+            </div>
+        `).join('');
+    }
+    
+    function renderInProgressQueue(queue) {
+        const container = document.getElementById('inProgressQueue');
+        
+        if (queue.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center;">No active triage sessions</div>';
+            return;
+        }
+        
+        container.innerHTML = queue.map(item => `
+            <div class="queue-item">
+                <div>
+                    <div><strong>${item.patient_name}</strong></div>
+                    <div style="font-size: 0.85rem;">Started: ${formatDate(item.started_at)}</div>
+                </div>
+                <button class="btn btn-sm btn-success" onclick="completeTriage(${item.id})">Complete</button>
+            </div>
+        `).join('');
+    }
+    
+    async function callPatient(queueId, patientName) {
+        try {
+            await apiCall(`/triage/queue/${queueId}/call_patient/`, 'POST');
+            document.getElementById('currentNumber').textContent = queueId;
+            document.getElementById('currentPatient').textContent = patientName;
+            showAlert(`Calling ${patientName} to triage room`, 'success');
+            loadQueue();
+        } catch (error) {
+            showAlert('Failed to call patient', 'danger');
+        }
+    }
+    
+    async function completeTriage(queueId) {
+        try {
+            await apiCall(`/triage/queue/${queueId}/complete_queue/`, 'POST');
+            showAlert('Triage completed', 'success');
+            loadQueue();
+        } catch (error) {
+            showAlert('Failed to complete triage', 'danger');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Queue Management - MedLink EHR{% endblock %}
+
+{% block page_title %}Queue Management{% endblock %}
+
+{% block content %}
+<style>
+    .queue-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .queue-column {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .queue-header {
+        background: #667eea;
+        color: white;
+        padding: 15px;
+        font-weight: bold;
+    }
+    .queue-item {
+        padding: 15px;
+        border-bottom: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+    .queue-item:hover {
+        background: #f7fafc;
+    }
+    .queue-position {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background: #e2e8f0;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 30px;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+    .priority-critical { border-left: 4px solid #f56565; }
+    .priority-emergency { border-left: 4px solid #ed8936; }
+    .priority-urgent { border-left: 4px solid #ecc94b; }
+    .priority-routine { border-left: 4px solid #48bb78; }
+</style>
+
+<div class="queue-container" id="queueContainer">
+    <div class="queue-column">
+        <div class="queue-header">Registration Queue</div>
+        <div id="registrationQueue">Loading...</div>
+    </div>
+    <div class="queue-column">
+        <div class="queue-header">Triage Queue</div>
+        <div id="triageQueue">Loading...</div>
+    </div>
+    <div class="queue-column">
+        <div class="queue-header">Consultation Queue</div>
+        <div id="consultationQueue">Loading...</div>
+    </div>
+</div>
+
+<script>
+    let refreshInterval;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQueues();
+        refreshInterval = setInterval(loadQueues, 30000);
+    });
+    
+    async function loadQueues() {
+        try {
+            const departments = ['outpatient', 'emergency'];
+            const queues = {};
+            
+            for (const dept of departments) {
+                const data = await apiCall(`/visits/visits/queue/?department=${dept}`);
+                queues[dept] = data;
+            }
+            
+            renderQueues(queues);
+        } catch (error) {
+            console.error('Failed to load queues:', error);
+        }
+    }
+    
+    function renderQueues(queues) {
+        // Registration Queue (patients waiting to be checked in)
+        const registrationQueue = document.getElementById('registrationQueue');
+        registrationQueue.innerHTML = renderQueueItems([
+            { priority: 'emergency', position: 1, patient: 'John Doe', waiting: 5 },
+            { priority: 'routine', position: 2, patient: 'Jane Smith', waiting: 10 }
+        ]);
+        
+        // Triage Queue
+        const triageQueue = document.getElementById('triageQueue');
+        triageQueue.innerHTML = renderQueueItems([
+            { priority: 'urgent', position: 1, patient: 'Alice Brown', waiting: 15 }
+        ]);
+        
+        // Consultation Queue
+        const consultationQueue = document.getElementById('consultationQueue');
+        consultationQueue.innerHTML = renderQueueItems(queues.outpatient?.queue || []);
+    }
+    
+    function renderQueueItems(items) {
+        if (!items || items.length === 0) {
+            return '<div style="padding: 20px; text-align: center; color: #718096;">Queue is empty</div>';
+        }
+        
+        return items.map(item => `
+            <div class="queue-item priority-${item.priority}" onclick="viewPatient('${item.visit_number}')">
+                <div style="display: flex; align-items: center;">
+                    <span class="queue-position">${item.position}</span>
+                    <div style="flex: 1;">
+                        <div><strong>${item.patient_name}</strong></div>
+                        <div style="font-size: 0.85rem; color: #718096;">Waiting: ${item.waiting_time || 0} min</div>
+                    </div>
+                    <span class="badge badge-${item.priority === 'critical' ? 'danger' : (item.priority === 'emergency' ? 'warning' : 'info')}">
+                        ${item.priority}
+                    </span>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function viewPatient(visitNumber) {
+        window.location.href = `/visits/detail/${visitNumber}/`;
+    }
+</script>
+{% endblock %}

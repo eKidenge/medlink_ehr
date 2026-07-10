@@ -1,0 +1,410 @@
+{% extends 'base.html' %}
+
+{% block title %}Visit Details - MedLink EHR{% endblock %}
+
+{% block page_title %}Visit Details{% endblock %}
+
+{% block content %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e2e8f0;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+        padding-left: 20px;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #667eea;
+        border: 2px solid white;
+    }
+    .timeline-item.completed::before {
+        background: #48bb78;
+    }
+    .clinical-note {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 3px solid #667eea;
+    }
+</style>
+
+<div id="visitContent">
+    <div style="text-align: center; padding: 50px;">Loading visit details...</div>
+</div>
+
+<!-- Add Clinical Note Modal -->
+<div id="addNoteModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3>Add Clinical Note</h3>
+            <span onclick="closeModal('addNoteModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="clinicalNoteForm">
+                <div class="form-group">
+                    <label class="form-label">Note Type</label>
+                    <select name="note_type" class="form-control" required>
+                        <option value="progress">Progress Note</option>
+                        <option value="doctor">Doctor's Note</option>
+                        <option value="nurse">Nurse's Note</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Subjective (Patient's complaints)</label>
+                    <textarea name="subjective" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Objective (Physical findings)</label>
+                    <textarea name="objective" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Assessment (Diagnosis)</label>
+                    <textarea name="assessment" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Plan (Treatment plan)</label>
+                    <textarea name="plan" class="form-control" rows="3" required></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addNoteModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="submitClinicalNote()">Save Note</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const visitId = window.location.pathname.split('/').filter(p => p)[2];
+    let visitData = null;
+    
+    async function loadVisit() {
+        showLoading();
+        
+        try {
+            const visit = await apiCall(`/visits/visits/${visitId}/`);
+            visitData = visit;
+            renderVisit(visit);
+        } catch (error) {
+            showAlert('Failed to load visit details', 'danger');
+            document.getElementById('visitContent').innerHTML = '<div class="alert alert-danger">Failed to load visit details</div>';
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderVisit(visit) {
+        const container = document.getElementById('visitContent');
+        
+        container.innerHTML = `
+            <!-- Header -->
+            <div class="profile-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                    <div>
+                        <h1>Visit #${visit.visit_number}</h1>
+                        <p>Patient: <a href="/patients/detail/${visit.patient}" style="color: white;">${visit.patient_details?.first_name} ${visit.patient_details?.last_name}</a></p>
+                        <p>Status: <span class="badge" style="background: white; color: #667eea;">${visit.status}</span></p>
+                    </div>
+                    <div>
+                        ${visit.status === 'triage' ? `<button class="btn btn-warning" onclick="startConsultation()">Start Consultation</button>` : ''}
+                        ${visit.status === 'consultation' ? `<button class="btn btn-success" onclick="endConsultation()">End Consultation</button>` : ''}
+                        <button class="btn btn-info" onclick="showAddNoteModal()"><i class="fas fa-plus"></i> Add Note</button>
+                        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Two Column Layout -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Left Column -->
+                <div>
+                    <!-- Vitals -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Vital Signs</div>
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='/triage/assessment/${visit.id}/'">Update</button>
+                        </div>
+                        <div id="vitalsContent">
+                            ${visit.vitals ? `
+                                <div class="detail-row"><strong>Temperature:</strong> ${visit.vitals.temperature}°C</div>
+                                <div class="detail-row"><strong>Heart Rate:</strong> ${visit.vitals.pulse_rate} bpm</div>
+                                <div class="detail-row"><strong>Blood Pressure:</strong> ${visit.vitals.systolic_bp}/${visit.vitals.diastolic_bp} mmHg</div>
+                                <div class="detail-row"><strong>Respiratory Rate:</strong> ${visit.vitals.respiratory_rate} /min</div>
+                                <div class="detail-row"><strong>Oxygen Saturation:</strong> ${visit.vitals.oxygen_saturation}%</div>
+                                <div class="detail-row"><strong>Pain Score:</strong> ${visit.vitals.pain_score || '-'}/10</div>
+                            ` : '<p style="color: #718096;">No vitals recorded yet</p>'}
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Visit Timeline</div>
+                        </div>
+                        <div class="timeline" id="timelineContent"></div>
+                    </div>
+                    
+                    <!-- Prescriptions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Prescriptions</div>
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='/pharmacy/create/?visit=${visit.id}'">Add Prescription</button>
+                        </div>
+                        <div id="prescriptionsContent">Loading...</div>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div>
+                    <!-- Clinical Notes -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Clinical Notes</div>
+                        </div>
+                        <div id="clinicalNotesContent">Loading...</div>
+                    </div>
+                    
+                    <!-- Lab Requests -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Laboratory Requests</div>
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='/laboratory/create/?visit=${visit.id}'">Request Lab</button>
+                        </div>
+                        <div id="labContent">Loading...</div>
+                    </div>
+                    
+                    <!-- Referrals -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Referrals</div>
+                            <button class="btn btn-sm btn-primary" onclick="window.location.href='/referrals/create/?visit=${visit.id}'">Create Referral</button>
+                        </div>
+                        <div id="referralsContent">Loading...</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Load all async data
+        renderTimeline(visit);
+        loadClinicalNotes();
+        loadPrescriptions();
+        loadLabRequests();
+        loadReferrals();
+    }
+    
+    function renderTimeline(visit) {
+        const timeline = document.getElementById('timelineContent');
+        const items = [];
+        
+        items.push({ event: 'Registration', time: visit.registration_time, completed: true });
+        if (visit.check_in_time) items.push({ event: 'Check-in', time: visit.check_in_time, completed: true });
+        if (visit.triage_time) items.push({ event: 'Triage', time: visit.triage_time, completed: true });
+        if (visit.consultation_start) items.push({ event: 'Consultation Started', time: visit.consultation_start, completed: true });
+        if (visit.consultation_end) items.push({ event: 'Consultation Ended', time: visit.consultation_end, completed: true });
+        if (visit.completion_time) items.push({ event: 'Visit Completed', time: visit.completion_time, completed: true });
+        
+        timeline.innerHTML = items.map(item => `
+            <div class="timeline-item ${item.completed ? 'completed' : ''}">
+                <div><strong>${item.event}</strong></div>
+                <div style="font-size: 0.85rem; color: #718096;">${formatDate(item.time)}</div>
+            </div>
+        `).join('');
+    }
+    
+    async function loadClinicalNotes() {
+        try {
+            const notes = await apiCall(`/visits/visits/${visitId}/clinical_notes/`);
+            const container = document.getElementById('clinicalNotesContent');
+            
+            if (notes.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No clinical notes yet</p>';
+                return;
+            }
+            
+            container.innerHTML = notes.map(note => `
+                <div class="clinical-note">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <strong>${note.note_type} by ${note.author_name}</strong>
+                        <small>${formatDate(note.created_at)}</small>
+                    </div>
+                    <div><strong>S:</strong> ${note.subjective.substring(0, 100)}...</div>
+                    <div><strong>O:</strong> ${note.objective.substring(0, 100)}...</div>
+                    <div><strong>A:</strong> ${note.assessment.substring(0, 100)}...</div>
+                    <div><strong>P:</strong> ${note.plan.substring(0, 100)}...</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Failed to load clinical notes:', error);
+        }
+    }
+    
+    async function loadPrescriptions() {
+        try {
+            const prescriptions = await apiCall(`/pharmacy/prescriptions/?visit=${visitId}`);
+            const container = document.getElementById('prescriptionsContent');
+            
+            if (prescriptions.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No prescriptions yet</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead><tr><th>Medication</th><th>Dosage</th><th>Quantity</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${prescriptions.results.map(rx => `
+                            <tr>
+                                <td>${rx.medication_name}</td>
+                                <td>${rx.dosage}</td>
+                                <td>${rx.dispensed_quantity}/${rx.quantity}</td>
+                                <td><span class="badge badge-${getStatusBadge(rx.status)}">${rx.status_display}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load prescriptions:', error);
+        }
+    }
+    
+    async function loadLabRequests() {
+        try {
+            const labs = await apiCall(`/laboratory/requests/?visit=${visitId}`);
+            const container = document.getElementById('labContent');
+            
+            if (labs.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No lab requests yet</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead><tr><th>Test</th><th>Requested</th><th>Result</th><th>Status</th></tr></thead>
+                    <tbody>
+                        ${labs.results.map(lab => `
+                            <tr>
+                                <td>${lab.test_name}</td>
+                                <td>${formatDate(lab.created_at)}</td>
+                                <td>${lab.result_value ? (lab.is_abnormal ? `<span style="color: red;">⚠ ${lab.result_value}</span>` : lab.result_value) : '-'}</td>
+                                <td><span class="badge badge-${getStatusBadge(lab.status)}">${lab.status_display}</span></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load lab requests:', error);
+        }
+    }
+    
+    async function loadReferrals() {
+        try {
+            const referrals = await apiCall(`/referrals/referrals/?visit=${visitId}`);
+            const container = document.getElementById('referralsContent');
+            
+            if (referrals.results.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No referrals yet</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead><tr><th>To Facility</th><th>Reason</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                        ${referrals.results.map(ref => `
+                            <tr>
+                                <td>${ref.receiving_facility}</td>
+                                <td>${ref.reason_for_referral.substring(0, 50)}</td>
+                                <td><span class="badge badge-${getStatusBadge(ref.status)}">${ref.status_display}</span></td>
+                                <td>${formatDate(ref.created_at)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            console.error('Failed to load referrals:', error);
+        }
+    }
+    
+    async function startConsultation() {
+        showLoading();
+        try {
+            await apiCall(`/visits/visits/${visitId}/start_consultation/`, 'POST');
+            showAlert('Consultation started', 'success');
+            loadVisit();
+        } catch (error) {
+            showAlert('Failed to start consultation', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function endConsultation() {
+        const finalDiagnosis = prompt('Enter final diagnosis:');
+        if (!finalDiagnosis) return;
+        
+        const treatmentPlan = prompt('Enter treatment plan:');
+        
+        showLoading();
+        try {
+            await apiCall(`/visits/visits/${visitId}/end_consultation/`, 'POST', {
+                final_diagnosis: finalDiagnosis,
+                treatment_plan: treatmentPlan || ''
+            });
+            showAlert('Consultation ended', 'success');
+            loadVisit();
+        } catch (error) {
+            showAlert('Failed to end consultation', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function showAddNoteModal() {
+        document.getElementById('addNoteModal').style.display = 'flex';
+    }
+    
+    async function submitClinicalNote() {
+        const form = document.getElementById('clinicalNoteForm');
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+        
+        showLoading();
+        try {
+            await apiCall(`/visits/visits/${visitId}/add_clinical_note/`, 'POST', data);
+            showAlert('Clinical note added', 'success');
+            closeModal('addNoteModal');
+            form.reset();
+            loadClinicalNotes();
+        } catch (error) {
+            showAlert('Failed to add note', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    loadVisit();
+</script>
+{% endblock %}

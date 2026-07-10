@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Referral - MedLink EHR{% endblock %}
+
+{% block page_title %}Referral Verification{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header"><div class="card-title">Secure Referral Access</div></div>
+    <div class="card-body">
+        <div id="verificationContent">
+            <div class="form-group"><label class="form-label">Enter Referral Token</label><input type="text" id="tokenInput" class="form-control" placeholder="Paste QR code token here..."></div>
+            <button class="btn btn-primary" onclick="verifyReferral()">Verify Access</button>
+        </div>
+        <div id="referralData" style="display: none;"></div>
+    </div>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) { document.getElementById('tokenInput').value = token; verifyReferral(); }
+    
+    async function verifyReferral() {
+        const token = document.getElementById('tokenInput').value;
+        if (!token) { showAlert('Enter token', 'warning'); return; }
+        
+        showLoading();
+        try {
+            const referral = await apiCall(`/referrals/referrals/verify/?token=${token}`);
+            document.getElementById('verificationContent').style.display = 'none';
+            document.getElementById('referralData').style.display = 'block';
+            document.getElementById('referralData').innerHTML = `
+                <div class="alert alert-success"><i class="fas fa-check-circle"></i> Verified - This referral is valid</div>
+                <div class="detail-row"><strong>Referral Number:</strong> ${referral.referral_number}</div>
+                <div class="detail-row"><strong>Patient:</strong> ${referral.patient_details?.first_name} ${referral.patient_details?.last_name}</div>
+                <div class="detail-row"><strong>Date of Birth:</strong> ${referral.patient_details?.date_of_birth}</div>
+                <div class="detail-row"><strong>Referring Facility:</strong> ${referral.referring_facility}</div>
+                <div class="detail-row"><strong>Referring Doctor:</strong> ${referral.referring_doctor_name}</div>
+                <div class="detail-row"><strong>Receiving Facility:</strong> ${referral.receiving_facility}</div>
+                <div class="detail-row"><strong>Reason:</strong> ${referral.reason_for_referral}</div>
+                <div class="detail-row"><strong>Clinical Summary:</strong> ${referral.clinical_summary}</div>
+                <div class="detail-row"><strong>Diagnosis:</strong> ${referral.provisional_diagnosis}</div>
+                <div class="detail-row"><strong>Created:</strong> ${formatDate(referral.created_at)}</div>
+                <div class="detail-row"><strong>Expires:</strong> ${formatDate(referral.token_expiry)}</div>
+                <button class="btn btn-success" onclick="window.print()">Print Referral</button>
+            `;
+        } catch (error) { showAlert('Invalid or expired token', 'danger'); }
+        finally { hideLoading(); }
+    }
+</script>
+{% endblock %}

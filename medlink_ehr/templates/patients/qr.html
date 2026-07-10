@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient QR Code - MedLink EHR{% endblock %}
+
+{% block page_title %}Patient QR Code{% endblock %}
+
+{% block content %}
+<style>
+    .qr-container {
+        text-align: center;
+        padding: 30px;
+    }
+    .qr-card {
+        max-width: 400px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    }
+    .qr-image {
+        width: 250px;
+        height: 250px;
+        margin: 20px auto;
+        border: 3px solid #667eea;
+        border-radius: 16px;
+        padding: 10px;
+    }
+    .qr-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .patient-info {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e2e8f0;
+    }
+    .print-btn {
+        margin-top: 20px;
+    }
+    @media print {
+        .sidebar, .top-bar, .print-btn, .btn {
+            display: none !important;
+        }
+        .main-content {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .qr-card {
+            box-shadow: none;
+        }
+    }
+</style>
+
+<div id="qrContent">
+    <div style="text-align: center; padding: 50px;">Loading QR code...</div>
+</div>
+
+<script>
+    const patientId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadQRCode() {
+        showLoading();
+        
+        try {
+            const patient = await apiCall(`/patients/patients/${patientId}/`);
+            
+            // Generate QR if not exists
+            if (!patient.qr_code) {
+                await apiCall(`/patients/patients/${patientId}/generate_qr/`, 'GET');
+                // Reload patient data
+                const updatedPatient = await apiCall(`/patients/patients/${patientId}/`);
+                renderQR(updatedPatient);
+            } else {
+                renderQR(patient);
+            }
+        } catch (error) {
+            showAlert('Failed to load QR code', 'danger');
+            document.getElementById('qrContent').innerHTML = '<div class="alert alert-danger">Failed to load QR code</div>';
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderQR(patient) {
+        const container = document.getElementById('qrContent');
+        
+        container.innerHTML = `
+            <div class="qr-container">
+                <div class="qr-card">
+                    <h2>MedLink EHR</h2>
+                    <p>Patient Identification Card</p>
+                    
+                    <div class="qr-image">
+                        ${patient.qr_code ? `<img src="${patient.qr_code}" alt="QR Code">` : '<p>No QR code available</p>'}
+                    </div>
+                    
+                    <div class="patient-info">
+                        <h3>${patient.first_name} ${patient.last_name}</h3>
+                        <p><strong>Patient Number:</strong> ${patient.patient_number}</p>
+                        <p><strong>MRN:</strong> ${patient.mrn_number}</p>
+                        <p><strong>Date of Birth:</strong> ${patient.date_of_birth} (Age: ${patient.age})</p>
+                        <p><strong>Phone:</strong> ${patient.phone_primary}</p>
+                        <p><strong>Blood Type:</strong> ${patient.blood_type || 'Unknown'}</p>
+                        <p><strong>Allergies:</strong> ${patient.allergies?.length || 0} recorded</p>
+                    </div>
+                    
+                    <div class="print-btn">
+                        <button class="btn btn-primary" onclick="window.print()">
+                            <i class="fas fa-print"></i> Print Card
+                        </button>
+                        <button class="btn btn-success" onclick="downloadQR()">
+                            <i class="fas fa-download"></i> Download QR
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function downloadQR() {
+        const img = document.querySelector('.qr-image img');
+        if (img) {
+            const link = document.createElement('a');
+            link.download = `patient_${patientId}_qr.png`;
+            link.href = img.src;
+            link.click();
+        }
+    }
+    
+    loadQRCode();
+</script>
+{% endblock %}

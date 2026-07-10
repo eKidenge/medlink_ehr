@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Bed Management - MedLink EHR{% endblock %}
+
+{% block page_title %}Bed Management{% endblock %}
+
+{% block content %}
+<style>
+    .bed-map {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    .bed-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .bed-card.available { border-color: #48bb78; background: #f0fff4; }
+    .bed-card.occupied { border-color: #f56565; background: #fff5f5; }
+    .bed-card.maintenance { border-color: #ecc94b; background: #fffff0; }
+    .bed-card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .bed-number { font-size: 24px; font-weight: bold; }
+</style>
+
+<div class="quick-actions">
+    <button class="btn btn-primary" onclick="showAddBedModal()">
+        <i class="fas fa-plus"></i> Add Bed
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Bed Inventory</div>
+        <select id="wardSelect" class="form-control" style="width: 250px;">
+            <option value="">All Wards</option>
+        </select>
+    </div>
+    <div id="bedMap" class="bed-map"></div>
+</div>
+
+<!-- Add Bed Modal -->
+<div id="addBedModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>Add New Bed</h3>
+            <span onclick="closeModal('addBedModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Ward</label>
+                <select id="bedWard" class="form-control"></select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bed Number</label>
+                <input type="text" id="bedNumber" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bed Type</label>
+                <select id="bedType" class="form-control">
+                    <option value="standard">Standard</option>
+                    <option value="icu">ICU Bed</option>
+                    <option value="pediatric">Pediatric Bed</option>
+                    <option value="maternity">Maternity Bed</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addBedModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="createBed()">Create Bed</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function loadWards() {
+        const wards = await apiCall('/admissions/wards/');
+        const select = document.getElementById('wardSelect');
+        const bedWard = document.getElementById('bedWard');
+        wards.results.forEach(ward => {
+            select.innerHTML += `<option value="${ward.id}">${ward.name}</option>`;
+            bedWard.innerHTML += `<option value="${ward.id}">${ward.name}</option>`;
+        });
+    }
+    
+    document.getElementById('wardSelect').addEventListener('change', () => loadBeds());
+    
+    async function loadBeds() {
+        const wardId = document.getElementById('wardSelect').value;
+        const params = wardId ? `?ward=${wardId}` : '';
+        const beds = await apiCall(`/admissions/beds/${params}`);
+        renderBeds(beds.results);
+    }
+    
+    function renderBeds(beds) {
+        const container = document.getElementById('bedMap');
+        
+        if (beds.length === 0) {
+            container.innerHTML = '<div class="alert alert-info">No beds configured in this ward</div>';
+            return;
+        }
+        
+        container.innerHTML = beds.map(bed => `
+            <div class="bed-card ${bed.is_occupied ? 'occupied' : (bed.is_available ? 'available' : 'maintenance')}" onclick="viewBed(${bed.id})">
+                <div class="bed-number">${bed.bed_number}</div>
+                <div>${bed.bed_type}</div>
+                <div style="font-size: 0.75rem; margin-top: 5px;">
+                    ${bed.is_occupied ? `Occupied by ${bed.current_patient_name || 'Patient'}` : (bed.is_available ? 'Available' : 'Maintenance')}
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function viewBed(bedId) {
+        window.location.href = `/admissions/beds/${bedId}/edit/`;
+    }
+    
+    function showAddBedModal() {
+        document.getElementById('addBedModal').style.display = 'flex';
+    }
+    
+    async function createBed() {
+        const data = {
+            ward: document.getElementById('bedWard').value,
+            bed_number: document.getElementById('bedNumber').value,
+            bed_type: document.getElementById('bedType').value
+        };
+        
+        if (!data.ward || !data.bed_number) {
+            showAlert('Please fill required fields', 'warning');
+            return;
+        }
+        
+        showLoading();
+        try {
+            await apiCall('/admissions/beds/', 'POST', data);
+            showAlert('Bed created', 'success');
+            closeModal('addBedModal');
+            loadBeds();
+        } catch (error) {
+            showAlert('Failed to create bed', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    loadWards();
+    loadBeds();
+</script>
+{% endblock %}

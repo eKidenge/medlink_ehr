@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewer Dashboard - MedLink EHR</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-semibold text-gray-800">MedLink EHR</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600">{{ user.get_full_name|default:user.username }}</span>
+                    <a href="/logout/" class="text-sm text-red-600 hover:text-red-800">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-6">
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-eye text-blue-600 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+                    <p class="text-gray-600">You have view-only access to the system</p>
+                    <p class="text-sm text-gray-500 mt-1">Role: {{ user.role|title }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Total Patients</h3>
+                    <i class="fas fa-users text-blue-500 text-2xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ total_patients|default:"0" }}</p>
+                <p class="text-sm text-gray-500 mt-2">Registered in system</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Today's Visits</h3>
+                    <i class="fas fa-calendar-day text-green-500 text-2xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ today_visits|default:"0" }}</p>
+                <p class="text-sm text-gray-500 mt-2">Visits today</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700">System Status</h3>
+                    <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">Active</p>
+                <p class="text-sm text-gray-500 mt-2">System operational</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-700">Your Access</h3>
+                    <i class="fas fa-lock text-yellow-500 text-2xl"></i>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">View Only</p>
+                <p class="text-sm text-gray-500 mt-2">Read-only permissions</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-chart-line text-blue-500 mr-2"></i> System Overview
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Total Patients</span>
+                        <span class="font-semibold text-gray-900">{{ total_patients|default:"0" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Today's Visits</span>
+                        <span class="font-semibold text-gray-900">{{ today_visits|default:"0" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Current Date</span>
+                        <span class="font-semibold text-gray-900">{{ today|date:"F j, Y" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Current Time</span>
+                        <span class="font-semibold text-gray-900">{{ current_time|time:"H:i:s" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-info-circle text-blue-500 mr-2"></i> Quick Information
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg">
+                        <i class="fas fa-shield-alt text-blue-600 mt-1"></i>
+                        <div>
+                            <p class="text-sm font-medium text-blue-800">Viewer Access Level</p>
+                            <p class="text-xs text-blue-600">You can view data but cannot make changes</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg">
+                        <i class="fas fa-headset text-green-600 mt-1"></i>
+                        <div>
+                            <p class="text-sm font-medium text-green-800">Need Assistance?</p>
+                            <p class="text-xs text-green-600">Contact your system administrator for help</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-3 p-3 bg-purple-50 rounded-lg">
+                        <i class="fas fa-chart-simple text-purple-600 mt-1"></i>
+                        <div>
+                            <p class="text-sm font-medium text-purple-800">Reports Available</p>
+                            <p class="text-xs text-purple-600">View-only access to all system reports</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <div class="flex items-start space-x-3">
+                <i class="fas fa-info-circle text-yellow-600 mt-1"></i>
+                <div>
+                    <p class="text-sm text-yellow-800">
+                        <strong>Viewer Access:</strong> You have read-only permissions. 
+                        To request additional access or report issues, please contact your system administrator.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

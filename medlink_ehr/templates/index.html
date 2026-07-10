@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MedLink EHR - Kenya's Leading Electronic Health Record System for modern healthcare facilities">
+    <meta name="keywords" content="EHR, Electronic Health Records, Healthcare System, Kenya, Medical Records, Hospital Management">
+    <meta name="author" content="MedLink EHR">
+    <title>MedLink EHR - Kenya's Leading Electronic Health Record System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInRight {
+            from {
+                opacity: 0;
+                transform: translateX(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Animation Classes */
+        .animate-fadeInUp {
+            animation: fadeInUp 0.8s ease forwards;
+        }
+        
+        .animate-fadeInLeft {
+            animation: fadeInLeft 0.8s ease forwards;
+        }
+        
+        .animate-fadeInRight {
+            animation: fadeInRight 0.8s ease forwards;
+        }
+        
+        .animate-fadeInDown {
+            animation: fadeInDown 0.8s ease forwards;
+        }
+        
+        .float-animation {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+        
+        /* Component Styles */
+        .stat-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .service-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+        }
+        
+        .service-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .service-card:hover .service-icon {
+            transform: scale(1.1);
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link:hover {
+            color: #667eea;
+        }
+        
+        .btn-primary {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .btn-outline {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-outline:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .counter {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+        
+        /* Testimonial Card */
+        .testimonial-card {
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Blog Card */
+        .blog-card {
+            transition: all 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .blog-image {
+            transition: all 0.5s ease;
+        }
+        
+        .blog-card:hover .blog-image {
+            transform: scale(1.05);
+        }
+        
+        /* Form Inputs */
+        .form-input {
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.15);
+        }
+        
+        /* Social Icons */
+        .social-icon {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .social-icon:hover {
+            transform: translateY(-3px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        /* Footer Links */
+        .footer-link {
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .footer-link:hover {
+            transform: translateX(5px);
+            color: white;
+        }
+        
+        /* Scroll to Top Button */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+        
+        .scroll-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .scroll-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: rotate 0.8s linear infinite;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .counter {
+                font-size: 1.8rem;
+            }
+            
+            .hero-gradient h2 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+    </style>
+</head>
+<body>
+    <!-- Scroll to Top Button -->
+    <div class="scroll-top" id="scrollTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Header / Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-shadow duration-300">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-3 group">
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
+                        <i class="fas fa-heartbeat text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">MedLink EHR</span>
+                        <span class="hidden md:inline-block text-xs text-gray-500 ml-2">Healthcare System</span>
+                    </div>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Home</a>
+                    <a href="#features" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Features</a>
+                    <a href="#services" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Services</a>
+                    <a href="#testimonials" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Testimonials</a>
+                    <a href="#about" class="nav-link text-gray-700 hover:text-blue-600 font-medium">About</a>
+                    <a href="#contact" class="nav-link text-gray-700 hover:text-blue-600 font-medium">Contact</a>
+                </div>
+                
+                <!-- Auth Buttons -->
+                <div class="hidden md:flex items-center space-x-4">
+                    <a href="/login/" class="px-5 py-2 text-blue-600 font-semibold hover:text-blue-700 transition hover:scale-105 inline-block">Sign In</a>
+                    <a href="/register/" class="btn-primary px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition">Get Started</a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-600 focus:outline-none hover:text-blue-600 transition p-2 rounded-lg">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden py-4 border-t border-gray-100">
+                <div class="flex flex-col space-y-2">
+                    <a href="#home" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">Home</a>
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">Features</a>
+                    <a href="#services" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">Services</a>
+                    <a href="#testimonials" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">Testimonials</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">About</a>
+                    <a href="#contact" class="text-gray-700 hover:text-blue-600 font-medium py-2 px-3 rounded-lg transition">Contact</a>
+                    <hr class="my-2 border-gray-100">
+                    <a href="/login/" class="text-blue-600 font-semibold py-2 px-3 rounded-lg transition">Sign In</a>
+                    <a href="/register/" class="btn-primary px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold text-center transition">Get Started</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <!-- Background Decorations -->
+            <div class="absolute top-20 left-10 w-64 h-64 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <div class="absolute bottom-20 right-10 w-64 h-64 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-100 rounded-full filter blur-3xl opacity-20"></div>
+            
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 lg:py-32 relative z-10">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <!-- Left Content -->
+                    <div class="animate-fadeInLeft">
+                        <div class="inline-flex items-center px-4 py-2 bg-blue-100 rounded-full mb-6">
+                            <span class="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                            <span class="text-blue-600 text-sm font-semibold">Kenya's Premier Healthcare System</span>
+                        </div>
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
+                            Modernizing Healthcare in 
+                            <span class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Kenya</span>
+                        </h1>
+                        <p class="text-lg md:text-xl text-gray-600 mb-8 leading-relaxed">
+                            MedLink EHR is a comprehensive electronic health record system designed specifically for Kenyan healthcare facilities. Streamline patient management, improve care coordination, and enhance clinical outcomes.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                            <a href="/register/" class="btn-primary px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-xl transition text-center">
+                                Start Free Trial <i class="fas fa-arrow-right ml-2"></i>
+                            </a>
+                            <a href="#features" class="btn-outline px-8 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:border-transparent transition text-center">
+                                Watch Demo <i class="fas fa-play ml-2"></i>
+                            </a>
+                        </div>
+                        
+                        <!-- Trust Badges -->
+                        <div class="flex flex-wrap items-center gap-6">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <span class="ml-2 text-gray-600 font-medium">4.9/5 from 500+ reviews</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-shield-alt text-green-500 mr-2"></i>
+                                <span class="text-gray-600">ISO 27001 Certified</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Image -->
+                    <div class="relative animate-fadeInRight">
+                        <div class="relative float-animation">
+                            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-1 shadow-2xl">
+                                <img src="/static/images/dashboard-preview.png" alt="MedLink EHR Dashboard" class="rounded-xl w-full" onerror="this.src='https://placehold.co/600x500/667eea/white?text=Dashboard+Preview'">
+                            </div>
+                            <!-- Floating Cards -->
+                            <div class="absolute -top-6 -right-6 bg-white rounded-xl shadow-lg p-3 animate-fadeInDown delay-200">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-check-circle text-green-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">50000+ Patients</p>
+                                        <p class="text-xs text-gray-500">Successfully treated</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-3 animate-fadeInUp delay-300">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-hospital-user text-blue-600"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-semibold">200+ Facilities</p>
+                                        <p class="text-xs text-gray-500">Across Kenya</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="bg-white py-12 border-b border-gray-100">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+                    <div class="text-center stat-card p-4 rounded-2xl">
+                        <div class="counter text-3xl md:text-4xl font-bold text-blue-600" data-target="50000">0</div>
+                        <p class="text-gray-600 mt-2 font-medium">Patients Served</p>
+                        <span class="text-green-500 text-sm">+45% this year</span>
+                    </div>
+                    <div class="text-center stat-card p-4 rounded-2xl">
+                        <div class="counter text-3xl md:text-4xl font-bold text-blue-600" data-target="200">0</div>
+                        <p class="text-gray-600 mt-2 font-medium">Healthcare Facilities</p>
+                        <span class="text-green-500 text-sm">+20 this month</span>
+                    </div>
+                    <div class="text-center stat-card p-4 rounded-2xl">
+                        <div class="counter text-3xl md:text-4xl font-bold text-blue-600" data-target="1200">0</div>
+                        <p class="text-gray-600 mt-2 font-medium">Healthcare Providers</p>
+                        <span class="text-green-500 text-sm">Active daily</span>
+                    </div>
+                    <div class="text-center stat-card p-4 rounded-2xl">
+                        <div class="counter text-3xl md:text-4xl font-bold text-blue-600" data-target="98">0</div>
+                        <p class="text-gray-600 mt-2 font-medium">Satisfaction Rate</p>
+                        <span class="text-green-500 text-sm">Positive feedback</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="py-20 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Why Choose Us</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">Comprehensive Healthcare Solutions</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Everything you need to manage your healthcare facility efficiently and effectively</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-user-md text-blue-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Patient Management</h3>
+                        <p class="text-gray-600 leading-relaxed">Complete patient records, medical history, appointments, and treatment plans all in one centralized platform.</p>
+                    </div>
+                    
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-microscope text-green-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Lab Integration</h3>
+                        <p class="text-gray-600 leading-relaxed">Seamless lab request management, digital results tracking, and automated reporting to physicians.</p>
+                    </div>
+                    
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-capsules text-purple-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Pharmacy Management</h3>
+                        <p class="text-gray-600 leading-relaxed">Inventory tracking, prescription management, automated stock alerts, and medication dispensing.</p>
+                    </div>
+                    
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-orange-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-chart-line text-orange-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Analytics & Reports</h3>
+                        <p class="text-gray-600 leading-relaxed">Real-time dashboards, key performance indicators, and comprehensive reports for data-driven decisions.</p>
+                    </div>
+                    
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-red-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-ambulance text-red-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Emergency Response</h3>
+                        <p class="text-gray-600 leading-relaxed">Quick triage system, admission management, and emergency care coordination for critical cases.</p>
+                    </div>
+                    
+                    <div class="service-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="service-icon w-16 h-16 bg-teal-100 rounded-xl flex items-center justify-center mb-5">
+                            <i class="fas fa-shield-alt text-teal-600 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Data Security</h3>
+                        <p class="text-gray-600 leading-relaxed">HIPAA-compliant, encrypted data storage with role-based access control and audit trails.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Our Services</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">What We Offer</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Comprehensive solutions tailored to meet the needs of modern healthcare facilities</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-8 text-center hover:shadow-xl transition cursor-pointer">
+                        <div class="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                            <i class="fas fa-cloud-upload-alt text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Cloud-Based EHR</h3>
+                        <p class="text-gray-600">Access patient records anytime, anywhere with secure cloud storage and real-time synchronization.</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-green-50 to-white rounded-2xl p-8 text-center hover:shadow-xl transition cursor-pointer">
+                        <div class="w-20 h-20 bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                            <i class="fas fa-mobile-alt text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">Mobile Access</h3>
+                        <p class="text-gray-600">Mobile-friendly interface allowing healthcare providers to access data from smartphones and tablets.</p>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-8 text-center hover:shadow-xl transition cursor-pointer">
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
+                            <i class="fas fa-headset text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">24/7 Support</h3>
+                        <p class="text-gray-600">Round-the-clock technical support and training for all your healthcare staff members.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section id="testimonials" class="py-20 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Testimonials</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">What Our Clients Say</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Trusted by healthcare professionals across Kenya</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="testimonial-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-6 leading-relaxed">"MedLink EHR has transformed our hospital operations. Patient management has never been easier. The support team is exceptional."</p>
+                        <div class="flex items-center">
+                            <img src="/static/images/testimonial-1.jpg" class="w-12 h-12 rounded-full object-cover mr-4" onerror="this.src='https://randomuser.me/api/portraits/women/1.jpg'">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Dr. Sarah Wanjiku</h4>
+                                <p class="text-sm text-gray-500">Medical Director, Nairobi Hospital</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-6 leading-relaxed">"The lab integration feature is brilliant. Results are delivered instantly to doctors, reducing wait times significantly."</p>
+                        <div class="flex items-center">
+                            <img src="/static/images/testimonial-2.jpg" class="w-12 h-12 rounded-full object-cover mr-4" onerror="this.src='https://randomuser.me/api/portraits/men/2.jpg'">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">James Otieno</h4>
+                                <p class="text-sm text-gray-500">Lab Manager, Kisumu General</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="testimonial-card bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition">
+                        <div class="flex items-center mb-4">
+                            <div class="text-yellow-400 flex">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-6 leading-relaxed">"The reporting features have helped us make better decisions. Highly recommended for any healthcare facility."</p>
+                        <div class="flex items-center">
+                            <img src="/static/images/testimonial-3.jpg" class="w-12 h-12 rounded-full object-cover mr-4" onerror="this.src='https://randomuser.me/api/portraits/women/3.jpg'">
+                            <div>
+                                <h4 class="font-semibold text-gray-800">Mary Muthoni</h4>
+                                <p class="text-sm text-gray-500">Hospital Administrator, Mombasa</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="animate-fadeInLeft">
+                        <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">About MedLink EHR</span>
+                        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-6">Transforming Healthcare Delivery in Kenya</h2>
+                        <p class="text-gray-600 mb-4 leading-relaxed">
+                            MedLink EHR was founded with a mission to digitize and modernize healthcare delivery across Kenya. 
+                            We understand the unique challenges faced by Kenyan healthcare facilities and have built a solution 
+                            that addresses them directly.
+                        </p>
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Our platform is used by over 200 healthcare facilities nationwide, serving more than 50,000 patients 
+                            annually. We're committed to improving patient outcomes, reducing wait times, and enhancing 
+                            operational efficiency through innovative technology.
+                        </p>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex -space-x-2">
+                                <img src="/static/images/team-1.jpg" class="w-10 h-10 rounded-full border-2 border-white object-cover" onerror="this.src='https://randomuser.me/api/portraits/women/1.jpg'">
+                                <img src="/static/images/team-2.jpg" class="w-10 h-10 rounded-full border-2 border-white object-cover" onerror="this.src='https://randomuser.me/api/portraits/men/2.jpg'">
+                                <img src="/static/images/team-3.jpg" class="w-10 h-10 rounded-full border-2 border-white object-cover" onerror="this.src='https://randomuser.me/api/portraits/women/3.jpg'">
+                                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">50+</div>
+                            </div>
+                            <span class="text-gray-600">Trusted by healthcare professionals</span>
+                        </div>
+                    </div>
+                    <div class="relative animate-fadeInRight">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-6 text-white hover:scale-105 transition cursor-pointer">
+                                <i class="fas fa-hospital-user text-3xl mb-3"></i>
+                                <div class="text-3xl font-bold">200+</div>
+                                <p class="text-sm opacity-90 mt-1">Facilities</p>
+                            </div>
+                            <div class="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl p-6 text-white hover:scale-105 transition cursor-pointer">
+                                <i class="fas fa-users text-3xl mb-3"></i>
+                                <div class="text-3xl font-bold">50K+</div>
+                                <p class="text-sm opacity-90 mt-1">Patients</p>
+                            </div>
+                            <div class="bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl p-6 text-white hover:scale-105 transition cursor-pointer">
+                                <i class="fas fa-user-md text-3xl mb-3"></i>
+                                <div class="text-3xl font-bold">1,200+</div>
+                                <p class="text-sm opacity-90 mt-1">Providers</p>
+                            </div>
+                            <div class="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-6 text-white hover:scale-105 transition cursor-pointer">
+                                <i class="fas fa-chart-line text-3xl mb-3"></i>
+                                <div class="text-3xl font-bold">98%</div>
+                                <p class="text-sm opacity-90 mt-1">Satisfaction</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Blog / News Section -->
+        <section class="py-20 bg-gray-50">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Latest News</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">Healthcare Insights</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Stay updated with the latest in healthcare technology</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="blog-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="overflow-hidden h-48">
+                            <img src="/static/images/blog-1.jpg" class="blog-image w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/667eea/white?text=Healthcare+News'">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                <span>March 15, 2026</span>
+                                <span class="mx-2">•</span>
+                                <i class="far fa-clock mr-2"></i>
+                                <span>5 min read</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Digital Transformation in Kenyan Healthcare</h3>
+                            <p class="text-gray-600">How technology is revolutionizing patient care across the country.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="blog-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="overflow-hidden h-48">
+                            <img src="/static/images/blog-2.jpg" class="blog-image w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/48bb78/white?text=Telemedicine'">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                <span>March 10, 2026</span>
+                                <span class="mx-2">•</span>
+                                <i class="far fa-clock mr-2"></i>
+                                <span>4 min read</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">The Future of Telemedicine</h3>
+                            <p class="text-gray-600">Exploring the growth and potential of remote healthcare services.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="blog-card bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition cursor-pointer">
+                        <div class="overflow-hidden h-48">
+                            <img src="/static/images/blog-3.jpg" class="blog-image w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/ed8936/white?text=Data+Security'">
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-gray-500 mb-3">
+                                <i class="far fa-calendar-alt mr-2"></i>
+                                <span>March 5, 2026</span>
+                                <span class="mx-2">•</span>
+                                <i class="far fa-clock mr-2"></i>
+                                <span>6 min read</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800 mb-2">Data Security in Healthcare</h3>
+                            <p class="text-gray-600">Best practices for protecting patient information in the digital age.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="hero-gradient py-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-white mb-4 animate-fadeInUp">Ready to Transform Your Healthcare Facility?</h2>
+                <p class="text-white text-lg mb-8 opacity-90 max-w-2xl mx-auto animate-fadeInUp delay-100">
+                    Join hundreds of healthcare facilities in Kenya that have already modernized their operations with MedLink EHR.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-200">
+                    <a href="/register/" class="btn-primary px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:shadow-xl transition hover:scale-105">
+                        Start Your Journey <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="#contact" class="btn-outline px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition hover:scale-105">
+                        Contact Sales <i class="fas fa-phone ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 bg-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <span class="text-blue-600 font-semibold text-sm uppercase tracking-wider">Get In Touch</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2 mb-4">Contact Us</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Have questions? We're here to help you get started</p>
+                </div>
+                
+                <div class="grid lg:grid-cols-2 gap-12">
+                    <!-- Contact Information -->
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-5 p-4 rounded-xl hover:bg-gray-50 transition cursor-pointer">
+                            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-map-marker-alt text-blue-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 text-lg mb-1">Visit Us</h4>
+                                <p class="text-gray-600">Westlands Business Park, 5th Floor<br>Nairobi, Kenya</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-5 p-4 rounded-xl hover:bg-gray-50 transition cursor-pointer">
+                            <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-phone text-green-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 text-lg mb-1">Call Us</h4>
+                                <p class="text-gray-600">+254 700 123 456<br>+254 722 123 456</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-5 p-4 rounded-xl hover:bg-gray-50 transition cursor-pointer">
+                            <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-envelope text-purple-600 text-2xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-800 text-lg mb-1">Email Us</h4>
+                                <p class="text-gray-600">info@medlink.co.ke<br>support@medlink.co.ke</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Form -->
+                    <div class="bg-gray-50 rounded-2xl p-8 shadow-sm hover:shadow-xl transition">
+                        <form id="contactForm">
+                            <div class="grid md:grid-cols-2 gap-5 mb-5">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Full Name *</label>
+                                    <input type="text" required class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                                    <input type="email" required class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                </div>
+                            </div>
+                            <div class="mb-5">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div class="mb-5">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Subject</label>
+                                <input type="text" class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Message *</label>
+                                <textarea rows="5" required class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-xl transition">
+                                Send Message <i class="fas fa-paper-plane ml-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
+                <!-- Company Info -->
+                <div>
+                    <a href="/" class="flex items-center space-x-3 mb-4 group">
+                        <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
+                            <i class="fas fa-heartbeat text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">MedLink EHR</span>
+                    </a>
+                    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+                        Revolutionizing healthcare delivery in Kenya through innovative electronic health record solutions.
+                    </p>
+                    <div class="flex space-x-3">
+                        <a href="#" class="social-icon w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="#" class="social-icon w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-twitter text-sm"></i>
+                        </a>
+                        <a href="#" class="social-icon w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-linkedin-in text-sm"></i>
+                        </a>
+                        <a href="#" class="social-icon w-9 h-9 bg-gray-800 rounded-full flex items-center justify-center hover:bg-blue-600 transition">
+                            <i class="fab fa-instagram text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="footer-link text-gray-400 hover:text-white transition">Home</a></li>
+                        <li><a href="#features" class="footer-link text-gray-400 hover:text-white transition">Features</a></li>
+                        <li><a href="#services" class="footer-link text-gray-400 hover:text-white transition">Services</a></li>
+                        <li><a href="#testimonials" class="footer-link text-gray-400 hover:text-white transition">Testimonials</a></li>
+                        <li><a href="#about" class="footer-link text-gray-400 hover:text-white transition">About Us</a></li>
+                        <li><a href="#contact" class="footer-link text-gray-400 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Resources -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">Help Center</a></li>
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">Documentation</a></li>
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">API Reference</a></li>
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">System Status</a></li>
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link text-gray-400 hover:text-white transition">Terms of Service</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Newsletter -->
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Stay Updated</h4>
+                    <p class="text-gray-400 text-sm mb-3">Subscribe to our newsletter for updates and news</p>
+                    <div class="flex mb-4">
+                        <input type="email" placeholder="Your email address" class="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-l-lg text-white focus:outline-none focus:border-blue-500">
+                        <button class="px-5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-r-lg hover:opacity-90 transition">
+                            Subscribe
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">We respect your privacy. Unsubscribe anytime.</p>
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="border-t border-gray-800 pt-8 text-center">
+                <p class="text-gray-400 text-sm">
+                    &copy; 2026 MedLink EHR. All rights reserved. | 
+                    <a href="#" class="hover:text-white transition">Privacy Policy</a> | 
+                    <a href="#" class="hover:text-white transition">Terms of Service</a> | 
+                    <a href="#" class="hover:text-white transition">Cookie Policy</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = mobileMenuBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-bars');
+                    icon.classList.toggle('fa-times');
+                }
+            });
+        }
+        
+        // Counter Animation
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200;
+        
+        const animateCounter = (counter) => {
+            const target = parseInt(counter.getAttribute('data-target'));
+            let current = 0;
+            const increment = target / speed;
+            
+            const updateCount = () => {
+                current += increment;
+                if (current < target) {
+                    counter.innerText = Math.ceil(current);
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCount();
+        };
+        
+        // Intersection Observer for counters
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: "0px"
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        counters.forEach(counter => {
+            observer.observe(counter);
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    // Close mobile menu if open
+                    if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = mobileMenuBtn?.querySelector('i');
+                        if (icon) {
+                            icon.classList.add('fa-bars');
+                            icon.classList.remove('fa-times');
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Contact Form Submit
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+            contactForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Thank you for your message! We will get back to you within 24 hours.');
+                contactForm.reset();
+            });
+        }
+        
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const scrollTop = document.getElementById('scrollTop');
+            
+            if (window.scrollY > 50) {
+                header.classList.add('shadow-lg');
+                if (scrollTop) scrollTop.classList.add('show');
+            } else {
+                header.classList.remove('shadow-lg');
+                if (scrollTop) scrollTop.classList.remove('show');
+            }
+        });
+        
+        // Scroll to Top functionality
+        const scrollTop = document.getElementById('scrollTop');
+        if (scrollTop) {
+            scrollTop.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        }
+    </script>
+</body>
+</html>

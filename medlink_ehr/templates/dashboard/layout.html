@@ -1,0 +1,421 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Layout - MedLink EHR{% endblock %}
+
+{% block page_title %}Customize Dashboard Layout{% endblock %}
+
+{% block content %}
+<style>
+    .layout-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 20px;
+        min-height: 600px;
+        background: #f7fafc;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    .widget {
+        background: white;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        cursor: move;
+        transition: all 0.3s ease;
+    }
+    .widget:hover {
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .widget-drag {
+        cursor: grab;
+    }
+    .widget-drag:active {
+        cursor: grabbing;
+    }
+    .col-1 { grid-column: span 1; }
+    .col-2 { grid-column: span 2; }
+    .col-3 { grid-column: span 3; }
+    .col-4 { grid-column: span 4; }
+    .col-5 { grid-column: span 5; }
+    .col-6 { grid-column: span 6; }
+    .col-7 { grid-column: span 7; }
+    .col-8 { grid-column: span 8; }
+    .col-9 { grid-column: span 9; }
+    .col-10 { grid-column: span 10; }
+    .col-11 { grid-column: span 11; }
+    .col-12 { grid-column: span 12; }
+    
+    .widget-library {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .library-item {
+        display: inline-block;
+        padding: 10px 15px;
+        margin: 5px;
+        background: #f7fafc;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .library-item:hover {
+        background: #667eea;
+        color: white;
+    }
+    .save-layout {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+</style>
+
+<div class="widget-library">
+    <h3>Available Widgets</h3>
+    <p>Drag or click to add widgets to your dashboard</p>
+    <div id="widgetLibrary">
+        <div class="library-item" data-widget="stats">📊 Statistics Widget</div>
+        <div class="library-item" data-widget="chart">📈 Chart Widget</div>
+        <div class="library-item" data-widget="appointments">📅 Appointments</div>
+        <div class="library-item" data-widget="alerts">⚠️ Alerts</div>
+        <div class="library-item" data-widget="tasks">✅ Tasks</div>
+        <div class="library-item" data-widget="activity">📋 Recent Activity</div>
+        <div class="library-item" data-widget="kpi">🎯 KPI Widget</div>
+        <div class="library-item" data-widget="calendar">📆 Calendar</div>
+    </div>
+</div>
+
+<div id="dashboardGrid" class="layout-grid"></div>
+
+<div class="save-layout">
+    <button class="btn btn-primary" onclick="saveLayout()">
+        <i class="fas fa-save"></i> Save Layout
+    </button>
+    <button class="btn btn-secondary" onclick="resetLayout()">
+        <i class="fas fa-undo"></i> Reset
+    </button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<script>
+    let sortable;
+    let currentLayout = [];
+    
+    // Available widgets with their default sizes
+    const widgetDefinitions = {
+        stats: { title: 'Statistics', size: 3, content: 'stats' },
+        chart: { title: 'Patient Trends', size: 6, content: 'chart' },
+        appointments: { title: 'Today\'s Appointments', size: 4, content: 'appointments' },
+        alerts: { title: 'Critical Alerts', size: 4, content: 'alerts' },
+        tasks: { title: 'Pending Tasks', size: 4, content: 'tasks' },
+        activity: { title: 'Recent Activity', size: 5, content: 'activity' },
+        kpi: { title: 'Key Performance Indicators', size: 4, content: 'kpi' },
+        calendar: { title: 'Calendar', size: 5, content: 'calendar' }
+    };
+    
+    async function loadLayout() {
+        showLoading();
+        try {
+            const dashboard = await apiCall('/dashboard/my_dashboard/');
+            currentLayout = dashboard.layout?.widgets || getDefaultLayout();
+            renderLayout();
+        } catch (error) {
+            console.error('Failed to load layout:', error);
+            currentLayout = getDefaultLayout();
+            renderLayout();
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function getDefaultLayout() {
+        return [
+            { id: 'stats', size: 3, position: 0 },
+            { id: 'kpi', size: 4, position: 1 },
+            { id: 'alerts', size: 5, position: 2 },
+            { id: 'chart', size: 6, position: 3 },
+            { id: 'tasks', size: 6, position: 4 },
+            { id: 'appointments', size: 4, position: 5 },
+            { id: 'activity', size: 8, position: 6 }
+        ];
+    }
+    
+    function renderLayout() {
+        const grid = document.getElementById('dashboardGrid');
+        grid.innerHTML = '';
+        
+        // Sort widgets by position
+        const sortedWidgets = [...currentLayout].sort((a, b) => a.position - b.position);
+        
+        sortedWidgets.forEach(widget => {
+            const def = widgetDefinitions[widget.id];
+            if (def) {
+                const widgetEl = document.createElement('div');
+                widgetEl.className = `widget col-${widget.size}`;
+                widgetEl.setAttribute('data-id', widget.id);
+                widgetEl.innerHTML = `
+                    <div class="widget-header">
+                        <div class="widget-drag">
+                            <i class="fas fa-grip-vertical"></i> ${def.title}
+                        </div>
+                        <div>
+                            <button class="btn btn-sm" onclick="resizeWidget('${widget.id}', -1)">-</button>
+                            <button class="btn btn-sm" onclick="resizeWidget('${widget.id}', 1)">+</button>
+                            <button class="btn btn-sm btn-danger" onclick="removeWidget('${widget.id}')">×</button>
+                        </div>
+                    </div>
+                    <div id="widget-${widget.id}">Loading...</div>
+                `;
+                grid.appendChild(widgetEl);
+                loadWidgetContent(widget.id);
+            }
+        });
+        
+        // Initialize drag and drop
+        if (sortable) sortable.destroy();
+        sortable = new Sortable(grid, {
+            handle: '.widget-drag',
+            onEnd: function() {
+                updatePositions();
+            }
+        });
+    }
+    
+    async function loadWidgetContent(widgetId) {
+        const container = document.getElementById(`widget-${widgetId}`);
+        if (!container) return;
+        
+        try {
+            switch(widgetId) {
+                case 'stats':
+                    const stats = await apiCall('/dashboard/stats/');
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div><strong>Patients:</strong> ${stats.patients.total.toLocaleString()}</div>
+                            <div><strong>Today's Visits:</strong> ${stats.visits.today}</div>
+                            <div><strong>Waiting:</strong> ${stats.visits.waiting}</div>
+                            <div><strong>Admissions:</strong> ${stats.admissions.current}</div>
+                            <div><strong>Lab Pending:</strong> ${stats.laboratory.pending}</div>
+                            <div><strong>Rx Pending:</strong> ${stats.pharmacy.pending_prescriptions}</div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'chart':
+                    container.innerHTML = `
+                        <canvas id="trendChart" height="200"></canvas>
+                    `;
+                    setTimeout(() => loadTrendChart(), 100);
+                    break;
+                    
+                case 'appointments':
+                    const appointments = await apiCall('/visits/visits/?today=true');
+                    container.innerHTML = `
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${appointments.results.slice(0, 5).map(apt => `
+                                <div style="padding: 8px; border-bottom: 1px solid #e2e8f0;">
+                                    ${apt.patient_name} - ${apt.visit_type} at ${formatDate(apt.registration_time)}
+                                </div>
+                            `).join('') || '<p>No appointments today</p>'}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'alerts':
+                    const alerts = await getAlerts();
+                    container.innerHTML = `
+                        <div>
+                            ${alerts.length === 0 ? '<p>No alerts</p>' : alerts.map(alert => `
+                                <div style="background: ${alert.type === 'danger' ? '#fed7d7' : '#feebc8'}; padding: 10px; margin-bottom: 10px; border-radius: 8px;">
+                                    <strong>${alert.title}</strong>
+                                    <div>${alert.message}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'tasks':
+                    const tasks = await getPendingTasks();
+                    container.innerHTML = `
+                        <div>
+                            ${tasks.map(task => `
+                                <div style="padding: 8px; border-bottom: 1px solid #e2e8f0; cursor: pointer;" onclick="window.location.href='${task.link}'">
+                                    <input type="checkbox" style="margin-right: 10px;">
+                                    ${task.label} <span class="badge badge-warning">${task.count}</span>
+                                </div>
+                            `).join('') || '<p>No pending tasks</p>'}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'activity':
+                    const activities = await apiCall('/dashboard/activity_feed/');
+                    container.innerHTML = `
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            ${activities.slice(0, 5).map(act => `
+                                <div style="padding: 8px; border-bottom: 1px solid #e2e8f0;">
+                                    <small>${act.time_ago}</small><br>
+                                    <strong>${act.user}</strong> ${act.action} ${act.model}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    break;
+                    
+                case 'kpi':
+                    const kpis = await apiCall('/dashboard/kpis/');
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div><small>Satisfaction</small><br><strong>${kpis.patient_satisfaction.value}%</strong></div>
+                            <div><small>Wait Time</small><br><strong>${kpis.average_wait_time.value} min</strong></div>
+                            <div><small>Occupancy</small><br><strong>${kpis.bed_occupancy_rate.value}%</strong></div>
+                            <div><small>Turnaround</small><br><strong>${kpis.lab_turnaround_time.value} hrs</strong></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'calendar':
+                    container.innerHTML = `
+                        <div id="miniCalendar"></div>
+                    `;
+                    setTimeout(() => renderMiniCalendar(), 100);
+                    break;
+            }
+        } catch (error) {
+            container.innerHTML = '<p style="color: red;">Failed to load widget</p>';
+        }
+    }
+    
+    async function loadTrendChart() {
+        const ctx = document.getElementById('trendChart')?.getContext('2d');
+        if (!ctx) return;
+        
+        // Get last 7 days data
+        const last7Days = [];
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            last7Days.push(d.toLocaleDateString('en-KE', { weekday: 'short' }));
+        }
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: last7Days,
+                datasets: [{
+                    label: 'Visits',
+                    data: [45, 52, 48, 61, 55, 67, 58],
+                    borderColor: '#667eea',
+                    tension: 0.4,
+                    fill: true,
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: true }
+        });
+    }
+    
+    function renderMiniCalendar() {
+        const container = document.getElementById('miniCalendar');
+        const today = new Date();
+        container.innerHTML = `
+            <div style="text-align: center;">
+                <strong>${today.toLocaleDateString('en-KE', { month: 'long', year: 'numeric' })}</strong>
+                <div style="margin-top: 10px;">${today.getDate()}</div>
+            </div>
+        `;
+    }
+    
+    async function getAlerts() {
+        const stats = await apiCall('/dashboard/stats/');
+        const alerts = [];
+        if (stats.pharmacy.low_stock > 0) alerts.push({ type: 'warning', title: 'Low Stock', message: `${stats.pharmacy.low_stock} medications low` });
+        if (stats.admissions.available_beds < 10) alerts.push({ type: 'danger', title: 'Bed Shortage', message: `Only ${stats.admissions.available_beds} beds available` });
+        if (stats.laboratory.pending > 20) alerts.push({ type: 'warning', title: 'Lab Backlog', message: `${stats.laboratory.pending} pending tests` });
+        return alerts;
+    }
+    
+    async function getPendingTasks() {
+        const stats = await apiCall('/dashboard/stats/');
+        const tasks = [];
+        if (stats.laboratory.pending > 0) tasks.push({ label: 'Pending Lab Tests', count: stats.laboratory.pending, link: '/laboratory/requests/?status=pending' });
+        if (stats.pharmacy.pending_prescriptions > 0) tasks.push({ label: 'Pending Prescriptions', count: stats.pharmacy.pending_prescriptions, link: '/pharmacy/prescriptions/?status=pending' });
+        if (stats.visits.waiting > 0) tasks.push({ label: 'Patients Waiting', count: stats.visits.waiting, link: '/triage/waiting/' });
+        return tasks;
+    }
+    
+    function resizeWidget(widgetId, delta) {
+        const widget = currentLayout.find(w => w.id === widgetId);
+        if (widget) {
+            widget.size = Math.min(12, Math.max(1, widget.size + delta));
+            renderLayout();
+        }
+    }
+    
+    function removeWidget(widgetId) {
+        currentLayout = currentLayout.filter(w => w.id !== widgetId);
+        renderLayout();
+    }
+    
+    function updatePositions() {
+        const grid = document.getElementById('dashboardGrid');
+        const widgets = grid.querySelectorAll('.widget');
+        widgets.forEach((widget, index) => {
+            const id = widget.getAttribute('data-id');
+            const layoutWidget = currentLayout.find(w => w.id === id);
+            if (layoutWidget) layoutWidget.position = index;
+        });
+    }
+    
+    function addWidget(widgetId) {
+        const def = widgetDefinitions[widgetId];
+        if (def) {
+            currentLayout.push({
+                id: widgetId,
+                size: def.size,
+                position: currentLayout.length
+            });
+            renderLayout();
+            showAlert(`${def.title} added to dashboard`, 'success');
+        }
+    }
+    
+    async function saveLayout() {
+        showLoading();
+        try {
+            await apiCall('/dashboard/update_layout/', 'POST', { layout: { widgets: currentLayout } });
+            showAlert('Layout saved successfully', 'success');
+        } catch (error) {
+            showAlert('Failed to save layout', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function resetLayout() {
+        if (confirm('Reset to default layout?')) {
+            currentLayout = getDefaultLayout();
+            renderLayout();
+            await saveLayout();
+        }
+    }
+    
+    // Add widget from library
+    document.querySelectorAll('.library-item').forEach(item => {
+        item.addEventListener('click', () => addWidget(item.dataset.widget));
+    });
+    
+    loadLayout();
+</script>
+{% endblock %}

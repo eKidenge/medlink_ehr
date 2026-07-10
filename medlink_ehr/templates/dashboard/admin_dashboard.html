@@ -1,0 +1,958 @@
+{% extends 'dashboard/index.html' %}
+
+{% block title %}Admin Dashboard - MedLink EHR{% endblock %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    /* ========================================
+       ADMIN DASHBOARD PROFESSIONAL STYLES
+       ======================================== */
+    
+    :root {
+        --admin-primary: #4f46e5;
+        --admin-primary-light: #818cf8;
+        --admin-primary-dark: #4338ca;
+        --admin-secondary: #7c3aed;
+        --admin-success: #10b981;
+        --admin-success-light: #34d399;
+        --admin-warning: #f59e0b;
+        --admin-warning-light: #fbbf24;
+        --admin-danger: #ef4444;
+        --admin-danger-light: #f87171;
+        --admin-gray-50: #f8fafc;
+        --admin-gray-100: #f1f5f9;
+        --admin-gray-200: #e2e8f0;
+        --admin-gray-300: #cbd5e1;
+        --admin-gray-400: #94a3b8;
+        --admin-gray-500: #64748b;
+        --admin-gray-600: #475569;
+        --admin-gray-700: #334155;
+        --admin-gray-800: #1e293b;
+        --admin-gray-900: #0f172a;
+        --admin-radius: 16px;
+        --admin-radius-sm: 10px;
+        --admin-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+        --admin-shadow: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
+        --admin-shadow-md: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.03);
+        --admin-shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.08), 0 10px 10px -5px rgba(0,0,0,0.02);
+        --admin-shadow-xl: 0 25px 50px -12px rgba(0,0,0,0.15);
+        --admin-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Admin Container */
+    .admin-container {
+        padding: 0 6px;
+    }
+
+    /* Admin Section */
+    .admin-section {
+        background: white;
+        border-radius: var(--admin-radius);
+        padding: 28px 32px;
+        margin-bottom: 28px;
+        box-shadow: var(--admin-shadow);
+        transition: var(--admin-transition);
+        border: 1px solid rgba(226, 232, 240, 0.5);
+        position: relative;
+    }
+
+    .admin-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 50%, var(--admin-primary-light) 100%);
+        background-size: 200% 100%;
+        opacity: 0;
+        transition: var(--admin-transition);
+        border-radius: var(--admin-radius) var(--admin-radius) 0 0;
+    }
+
+    .admin-section:hover {
+        box-shadow: var(--admin-shadow-lg);
+        border-color: rgba(79, 70, 229, 0.15);
+        transform: translateY(-3px);
+    }
+
+    .admin-section:hover::before {
+        opacity: 1;
+        animation: shimmer 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    /* Section Title */
+    .admin-section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--admin-gray-800);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--admin-gray-200);
+        position: relative;
+    }
+
+    .admin-section-title i {
+        color: white;
+        font-size: 1.1rem;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        border-radius: var(--admin-radius-sm);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .admin-section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        border-radius: 4px;
+    }
+
+    /* Admin Grid */
+    .admin-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    /* Admin Cards */
+    .admin-card {
+        background: var(--admin-gray-50);
+        border-radius: var(--admin-radius-sm);
+        padding: 24px 22px;
+        transition: var(--admin-transition);
+        cursor: pointer;
+        border: 1px solid var(--admin-gray-200);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.03) 0%, rgba(124, 58, 237, 0.03) 100%);
+        opacity: 0;
+        transition: var(--admin-transition);
+    }
+
+    .admin-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        transform: scaleX(0);
+        transition: var(--admin-transition);
+        transform-origin: left;
+    }
+
+    .admin-card:hover::before {
+        opacity: 1;
+    }
+
+    .admin-card:hover::after {
+        transform: scaleX(1);
+    }
+
+    .admin-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--admin-shadow-lg);
+        border-color: rgba(79, 70, 229, 0.15);
+        background: white;
+    }
+
+    .admin-card:active {
+        transform: translateY(-2px) scale(0.99);
+    }
+
+    /* Admin Card Icon */
+    .admin-card-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        transition: var(--admin-transition);
+        position: relative;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%);
+        border: 1px solid rgba(79, 70, 229, 0.05);
+    }
+
+    .admin-card:hover .admin-card-icon {
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        transform: scale(1.05) rotate(-3deg);
+        box-shadow: 0 8px 25px rgba(79, 70, 229, 0.25);
+        border-color: transparent;
+    }
+
+    .admin-card-icon i {
+        font-size: 26px;
+        color: var(--admin-primary);
+        transition: var(--admin-transition);
+    }
+
+    .admin-card:hover .admin-card-icon i {
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .admin-card-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--admin-gray-800);
+        margin-bottom: 6px;
+        transition: var(--admin-transition);
+    }
+
+    .admin-card:hover .admin-card-title {
+        color: var(--admin-primary);
+    }
+
+    .admin-card-desc {
+        font-size: 0.8rem;
+        color: var(--admin-gray-500);
+        line-height: 1.5;
+    }
+
+    /* Quick Stats */
+    .quick-stat {
+        text-align: center;
+        padding: 22px 16px;
+        background: var(--admin-gray-50);
+        border-radius: var(--admin-radius-sm);
+        transition: var(--admin-transition);
+        border: 1px solid var(--admin-gray-200);
+    }
+
+    .quick-stat:hover {
+        background: white;
+        border-color: rgba(79, 70, 229, 0.2);
+        transform: translateY(-4px);
+        box-shadow: var(--admin-shadow-md);
+    }
+
+    .quick-stat-number {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: var(--admin-transition);
+    }
+
+    .quick-stat:hover .quick-stat-number {
+        transform: scale(1.05);
+    }
+
+    .quick-stat-label {
+        color: var(--admin-gray-500);
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    .quick-stat-icon {
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+        color: var(--admin-gray-300);
+        transition: var(--admin-transition);
+    }
+
+    .quick-stat:hover .quick-stat-icon {
+        color: var(--admin-primary);
+    }
+
+    /* User List */
+    .user-list {
+        max-height: 380px;
+        overflow-y: auto;
+        padding-right: 4px;
+        margin-top: 4px;
+    }
+
+    .user-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .user-list::-webkit-scrollbar-track {
+        background: var(--admin-gray-100);
+        border-radius: 10px;
+    }
+
+    .user-list::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        border-radius: 10px;
+    }
+
+    /* User Item */
+    .user-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--admin-gray-200);
+        transition: var(--admin-transition);
+        cursor: pointer;
+        border-radius: var(--admin-radius-sm);
+        margin-bottom: 2px;
+    }
+
+    .user-item:hover {
+        background: var(--admin-gray-50);
+        transform: translateX(6px);
+        border-color: rgba(79, 70, 229, 0.1);
+    }
+
+    .user-item:last-child {
+        border-bottom: none;
+    }
+
+    .user-item .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .user-item .user-name {
+        font-weight: 600;
+        color: var(--admin-gray-800);
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .user-item .user-email {
+        font-size: 0.75rem;
+        color: var(--admin-gray-400);
+    }
+
+    .user-item .user-badges {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* User Role Badge */
+    .user-role {
+        font-size: 0.65rem;
+        padding: 4px 14px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, rgba(79, 70, 229, 0.08) 0%, rgba(124, 58, 237, 0.08) 100%);
+        color: var(--admin-primary);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        border: 1px solid rgba(79, 70, 229, 0.08);
+    }
+
+    /* Badge Styles */
+    .badge {
+        padding: 4px 14px;
+        border-radius: 20px;
+        font-size: 0.65rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid transparent;
+    }
+
+    .badge-success {
+        background: #d1fae5;
+        color: #065f46;
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-success .status-dot {
+        background: var(--admin-success);
+    }
+
+    .badge-danger {
+        background: #fee2e2;
+        color: #991b1b;
+        border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .badge-danger .status-dot {
+        background: var(--admin-danger);
+    }
+
+    /* Status Dot */
+    .status-dot {
+        display: inline-block;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .status-dot.active {
+        background: var(--admin-success);
+        box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+    }
+
+    .status-dot.inactive {
+        background: var(--admin-danger);
+        box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+    }
+
+    /* Loading Placeholder */
+    .loading-placeholder {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--admin-gray-400);
+        font-size: 0.9rem;
+    }
+
+    .loading-placeholder i {
+        display: block;
+        font-size: 2.8rem;
+        margin-bottom: 14px;
+        color: var(--admin-primary-light);
+    }
+
+    /* Refresh Button */
+    .btn-refresh {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        background: linear-gradient(135deg, var(--admin-primary) 0%, var(--admin-secondary) 100%);
+        color: white;
+        border: none;
+        border-radius: var(--admin-radius-sm);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--admin-transition);
+        box-shadow: 0 2px 10px rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-refresh:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 25px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-refresh:active {
+        transform: translateY(0) scale(0.97);
+    }
+
+    .btn-refresh i {
+        transition: var(--admin-transition);
+    }
+
+    .btn-refresh:hover i {
+        transform: rotate(180deg);
+    }
+
+    /* Animations */
+    .fade-in {
+        animation: fadeInUp 0.5s ease forwards;
+        opacity: 0;
+    }
+
+    .fade-in:nth-child(1) { animation-delay: 0.06s; }
+    .fade-in:nth-child(2) { animation-delay: 0.12s; }
+    .fade-in:nth-child(3) { animation-delay: 0.18s; }
+    .fade-in:nth-child(4) { animation-delay: 0.24s; }
+    .fade-in:nth-child(5) { animation-delay: 0.30s; }
+    .fade-in:nth-child(6) { animation-delay: 0.36s; }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+    }
+
+    .pulse-animation {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+        .admin-section {
+            padding: 24px 20px;
+        }
+
+        .admin-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-section {
+            padding: 20px 16px;
+            margin-bottom: 20px;
+        }
+
+        .admin-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .admin-card {
+            padding: 18px 16px;
+        }
+
+        .admin-card-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .admin-card-icon i {
+            font-size: 22px;
+        }
+
+        .quick-stat-number {
+            font-size: 1.6rem;
+        }
+
+        .user-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 12px 14px;
+        }
+
+        .user-item .user-badges {
+            width: 100%;
+            justify-content: flex-start;
+        }
+
+        .admin-section-title {
+            font-size: 1.05rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .admin-section {
+            padding: 16px 12px;
+        }
+
+        .admin-section-title {
+            font-size: 0.95rem;
+        }
+
+        .admin-card-title {
+            font-size: 0.9rem;
+        }
+
+        .quick-stat {
+            padding: 16px 12px;
+        }
+
+        .quick-stat-number {
+            font-size: 1.3rem;
+        }
+
+        .btn-refresh {
+            padding: 6px 14px;
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Dark Mode */
+    @media (prefers-color-scheme: dark) {
+        .admin-section {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-section-title {
+            color: #e2e8f0;
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .admin-card {
+            background: #0f172a;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-card:hover {
+            background: #1e293b;
+        }
+
+        .admin-card-title {
+            color: #e2e8f0;
+        }
+
+        .user-item {
+            border-bottom-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .user-item:hover {
+            background: #1e293b;
+        }
+
+        .user-item .user-name {
+            color: #e2e8f0;
+        }
+
+        .quick-stat {
+            background: #0f172a;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .quick-stat-label {
+            color: #94a3b8;
+        }
+
+        .badge-success {
+            background: #065f46;
+            color: #d1fae5;
+        }
+
+        .badge-danger {
+            background: #991b1b;
+            color: #fee2e2;
+        }
+
+        .user-role {
+            background: rgba(79, 70, 229, 0.15);
+            color: #818cf8;
+            border-color: rgba(79, 70, 229, 0.1);
+        }
+
+        .user-list::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+
+<!-- Admin Container -->
+<div class="admin-container">
+
+    <!-- Admin Quick Actions Section -->
+    <div class="admin-section">
+        <div class="admin-section-title">
+            <i class="fas fa-cog"></i>
+            Quick Actions
+        </div>
+        <div class="admin-grid">
+            <div class="admin-card fade-in" onclick="window.location.href='/accounts/users/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="admin-card-title">User Management</div>
+                <div class="admin-card-desc">Add, edit, or deactivate system users and manage roles</div>
+            </div>
+            <div class="admin-card fade-in" onclick="window.location.href='/accounts/departments/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="admin-card-title">Department Management</div>
+                <div class="admin-card-desc">Create, manage, and organize hospital departments</div>
+            </div>
+            <div class="admin-card fade-in" onclick="window.location.href='/audit-logs/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-history"></i>
+                </div>
+                <div class="admin-card-title">Audit Logs</div>
+                <div class="admin-card-desc">View all system activities, changes, and user actions</div>
+            </div>
+            <div class="admin-card fade-in" onclick="window.location.href='/reports/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="admin-card-title">System Reports</div>
+                <div class="admin-card-desc">Generate and download comprehensive system reports</div>
+            </div>
+            <div class="admin-card fade-in" onclick="window.location.href='/settings/backup/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="admin-card-title">Backup & Restore</div>
+                <div class="admin-card-desc">Perform database backup and restoration operations</div>
+            </div>
+            <div class="admin-card fade-in" onclick="window.location.href='/settings/system/'">
+                <div class="admin-card-icon">
+                    <i class="fas fa-server"></i>
+                </div>
+                <div class="admin-card-title">System Settings</div>
+                <div class="admin-card-desc">Configure system parameters and global settings</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Statistics Row -->
+    <div class="admin-section">
+        <div class="admin-section-title">
+            <i class="fas fa-chart-bar"></i>
+            System Statistics
+        </div>
+        <div class="admin-grid">
+            <div class="quick-stat">
+                <div class="quick-stat-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="quick-stat-number" id="totalUsers">--</div>
+                <div class="quick-stat-label">Total Users</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-icon">
+                    <span class="status-dot active" style="width:12px;height:12px;"></span>
+                </div>
+                <div class="quick-stat-number" id="activeUsers">--</div>
+                <div class="quick-stat-label">Active Users</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-icon">
+                    <span class="status-dot active" style="width:12px;height:12px;box-shadow:0 0 12px rgba(16,185,129,0.5);"></span>
+                </div>
+                <div class="quick-stat-number" id="onlineUsers">--</div>
+                <div class="quick-stat-label">Online Now</div>
+            </div>
+            <div class="quick-stat">
+                <div class="quick-stat-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="quick-stat-number" id="totalDepartments">--</div>
+                <div class="quick-stat-label">Departments</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Users Section -->
+    <div class="admin-section">
+        <div class="admin-section-title">
+            <i class="fas fa-user-clock"></i>
+            Recent Users
+            <button class="btn-refresh" onclick="loadRecentUsers()" style="margin-left: auto;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+        <div class="user-list" id="recentUsers">
+            <div class="loading-placeholder">
+                <i class="fas fa-spinner fa-spin"></i>
+                Loading users...
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Enhanced JavaScript -->
+<script>
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Format date for display
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-KE', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        } catch(e) {
+            return 'N/A';
+        }
+    }
+
+    // Admin-specific API calls
+    async function loadSystemStats() {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        
+        try {
+            const usersResponse = await fetch('/api/accounts/users/', {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            if (usersResponse.ok) {
+                const usersData = await usersResponse.json();
+                const users = usersData.results || usersData;
+                document.getElementById('totalUsers').textContent = users.length || '0';
+                document.getElementById('activeUsers').textContent = users.filter(u => u.is_active).length || '0';
+                document.getElementById('onlineUsers').textContent = users.filter(u => u.is_online).length || '0';
+                
+                animateNumber('totalUsers');
+                animateNumber('activeUsers');
+                animateNumber('onlineUsers');
+            }
+            
+            const deptResponse = await fetch('/api/accounts/departments/', {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            if (deptResponse.ok) {
+                const deptData = await deptResponse.json();
+                const departments = deptData.results || deptData;
+                document.getElementById('totalDepartments').textContent = departments.length || '0';
+                animateNumber('totalDepartments');
+            }
+        } catch(e) {
+            console.error('Failed to load system stats:', e);
+        }
+    }
+
+    // Animate number counting up
+    function animateNumber(elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const target = parseInt(element.textContent) || 0;
+        if (target === 0) return;
+        
+        let current = 0;
+        const increment = Math.ceil(target / 30);
+        const duration = 800;
+        const stepTime = duration / 30;
+        
+        const interval = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(interval);
+            }
+            element.textContent = current;
+        }, stepTime);
+    }
+
+    async function loadRecentUsers() {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+        
+        const container = document.getElementById('recentUsers');
+        container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
+        
+        try {
+            const response = await fetch('/api/accounts/users/?limit=10', {
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                const users = data.results || data;
+                
+                if (users.length === 0) {
+                    container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-inbox"></i> No users found</div>';
+                    return;
+                }
+                
+                container.innerHTML = users.map((user, index) => `
+                    <div class="user-item fade-in" style="animation-delay: ${index * 0.05}s;" 
+                         onclick="window.location.href='/accounts/users/${user.id}/'">
+                        <div class="user-info">
+                            <div class="user-name">
+                                ${escapeHtml(user.full_name || user.username)}
+                                ${user.is_online ? '<span class="status-dot active" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-left:6px;box-shadow:0 0 10px rgba(16,185,129,0.4);"></span>' : ''}
+                            </div>
+                            <div class="user-email">
+                                <i class="fas fa-envelope" style="font-size:0.6rem;margin-right:4px;color:var(--admin-gray-400);"></i>
+                                ${escapeHtml(user.email || 'No email')}
+                                <span style="margin:0 6px;color:var(--admin-gray-300);">|</span>
+                                <i class="fas fa-calendar" style="font-size:0.6rem;margin-right:4px;color:var(--admin-gray-400);"></i>
+                                Joined ${formatDate(user.date_joined)}
+                            </div>
+                        </div>
+                        <div class="user-badges">
+                            <span class="user-role">${escapeHtml(user.role_display || user.role)}</span>
+                            ${user.is_active ? 
+                                '<span class="badge badge-success"><span class="status-dot active"></span>Active</span>' : 
+                                '<span class="badge badge-danger"><span class="status-dot inactive"></span>Inactive</span>'
+                            }
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-exclamation-circle" style="color:var(--admin-danger);"></i> Failed to load users</div>';
+            }
+        } catch(e) {
+            console.error('Failed to load recent users:', e);
+            container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-exclamation-triangle" style="color:var(--admin-warning);"></i> Error loading users</div>';
+        }
+    }
+
+    // Initialize admin dashboard
+    function initAdminDashboard() {
+        loadSystemStats();
+        loadRecentUsers();
+        
+        if (window.adminRefreshInterval) {
+            clearInterval(window.adminRefreshInterval);
+        }
+        window.adminRefreshInterval = setInterval(() => {
+            if (localStorage.getItem('access_token')) {
+                loadSystemStats();
+                loadRecentUsers();
+            }
+        }, 60000);
+    }
+
+    // Hook into main dashboard load if available
+    if (typeof window.loadDashboardData === 'function') {
+        const originalLoadDashboardData = window.loadDashboardData;
+        window.loadDashboardData = async function() {
+            if (originalLoadDashboardData) await originalLoadDashboardData();
+            initAdminDashboard();
+        };
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                initAdminDashboard();
+            }
+        });
+    }
+
+    setTimeout(() => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            if (!document.getElementById('recentUsers').innerHTML.includes('Loading users')) {
+                loadSystemStats();
+                loadRecentUsers();
+            }
+        }
+    }, 1500);
+</script>
+{% endblock %}

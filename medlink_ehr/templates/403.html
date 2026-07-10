@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Permission Denied - MedLink EHR{% endblock %}
+
+{% block page_title %}403 - Permission Denied{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 60px; max-width: 600px; margin: 0 auto;">
+    <i class="fas fa-lock fa-4x" style="color: #f56565; margin-bottom: 20px;"></i>
+    <h2>Access Denied</h2>
+    <p style="color: #718096;">You do not have permission to access this page.</p>
+    <p>Please contact your system administrator if you believe this is an error.</p>
+    {% if exception %}
+        <p style="color: #a0aec0; font-size: 0.85rem; margin-top: 20px;">Error: {{ exception }}</p>
+    {% endif %}
+    <div style="margin-top: 30px;">
+        <button class="btn btn-primary" onclick="window.history.back()">Go Back</button>
+        <button class="btn btn-secondary" onclick="window.location.href='/dashboard/'">Go to Dashboard</button>
+    </div>
+</div>
+{% endblock %}

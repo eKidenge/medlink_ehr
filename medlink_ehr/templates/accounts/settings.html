@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}System Settings - MedLink EHR{% endblock %}
+
+{% block page_title %}System Configuration{% endblock %}
+
+{% block content %}
+<div class="card"><div class="card-header">General Settings</div><div class="form-group"><label class="form-label">System Name</label><input type="text" id="systemName" class="form-control"></div><div class="form-group"><label class="form-label">Contact Email</label><input type="email" id="contactEmail" class="form-control"></div><div class="form-group"><label class="form-label">Phone Number</label><input type="tel" id="contactPhone" class="form-control"></div><button class="btn btn-primary" onclick="saveSettings()">Save Settings</button></div>
+<div class="card"><div class="card-header">Backup & Maintenance</div><button class="btn btn-warning" onclick="backupDatabase()">Backup Database</button><button class="btn btn-danger" onclick="clearCache()">Clear Cache</button></div>
+
+<script>
+    async function loadSettings() {
+        try {
+            const settings = await apiCall('/accounts/settings/');
+            document.getElementById('systemName').value = settings.system_name || 'MedLink EHR';
+            document.getElementById('contactEmail').value = settings.contact_email || '';
+            document.getElementById('contactPhone').value = settings.contact_phone || '';
+        } catch (error) { console.error('Failed to load settings:', error); }
+    }
+    async function saveSettings() { showLoading(); try { await apiCall('/accounts/settings/', 'POST', { system_name: document.getElementById('systemName').value, contact_email: document.getElementById('contactEmail').value, contact_phone: document.getElementById('contactPhone').value }); showAlert('Settings saved', 'success'); } catch (error) { showAlert('Failed to save', 'danger'); } finally { hideLoading(); } }
+    async function backupDatabase() { showLoading(); try { await apiCall('/accounts/backup/', 'POST'); showAlert('Backup started', 'success'); } catch (error) { showAlert('Backup failed', 'danger'); } finally { hideLoading(); } }
+    async function clearCache() { showLoading(); try { await apiCall('/accounts/clear-cache/', 'POST'); showAlert('Cache cleared', 'success'); } catch (error) { showAlert('Failed to clear cache', 'danger'); } finally { hideLoading(); } }
+    loadSettings();
+</script>
+{% endblock %}

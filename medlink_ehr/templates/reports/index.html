@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - MedLink EHR{% endblock %}
+
+{% block page_title %}Reports Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .report-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .report-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .report-icon { font-size: 48px; margin-bottom: 15px; }
+</style>
+
+<div class="stats-grid">
+    <div class="report-card" onclick="generateReport('clinical')">
+        <div class="report-icon"><i class="fas fa-stethoscope"></i></div>
+        <h3>Clinical Report</h3>
+        <p>Visits, diagnoses, admissions</p>
+    </div>
+    <div class="report-card" onclick="generateReport('financial')">
+        <div class="report-icon"><i class="fas fa-chart-line"></i></div>
+        <h3>Financial Report</h3>
+        <p>Revenue, payments, insurance</p>
+    </div>
+    <div class="report-card" onclick="generateReport('operational')">
+        <div class="report-icon"><i class="fas fa-chart-bar"></i></div>
+        <h3>Operational Report</h3>
+        <p>Waiting times, queue metrics</p>
+    </div>
+    <div class="report-card" onclick="generateReport('public_health')">
+        <div class="report-icon"><i class="fas fa-globe-africa"></i></div>
+        <h3>Public Health Report</h3>
+        <p>Disease trends, demographics</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><div class="card-title">Recent Reports</div></div>
+    <div id="recentReports"></div>
+</div>
+
+<script>
+    async function loadRecentReports() {
+        try {
+            const jobs = await apiCall('/reports/jobs/?limit=10');
+            const container = document.getElementById('recentReports');
+            if (jobs.results.length === 0) { container.innerHTML = '<p>No reports generated yet</p>'; return; }
+            container.innerHTML = `<table class="data-table"><thead><tr><th>Report Name</th><th>Format</th><th>Status</th><th>Requested</th><th>Actions</th></tr></thead><tbody>
+                ${jobs.results.map(job => `<tr><td>${job.template_name}</td><td>${job.output_format}</td><td>${job.status}</td><td>${formatDate(job.created_at)}</td>
+                <td>${job.status === 'completed' && job.output_file ? `<button class="btn btn-sm btn-success" onclick="downloadReport(${job.id})">Download</button>` : '-'}</td></tr>`).join('')}
+            </tbody></table>`;
+        } catch (error) { console.error('Failed to load reports:', error); }
+    }
+    
+    function generateReport(type) {
+        const startDate = prompt('Start Date (YYYY-MM-DD):', new Date(Date.now() - 30*86400000).toISOString().split('T')[0]);
+        if (!startDate) return;
+        const endDate = prompt('End Date (YYYY-MM-DD):', new Date().toISOString().split('T')[0]);
+        if (!endDate) return;
+        const format = prompt('Format (pdf/excel/csv):', 'pdf');
+        
+        showLoading();
+        apiCall('/reports/templates/generate/', 'POST', { report_type: type, parameters: { start_date: startDate, end_date: endDate }, format: format })
+            .then(() => { showAlert('Report generation started', 'success'); loadRecentReports(); })
+            .catch(err => showAlert('Failed to generate report', 'danger'))
+            .finally(() => hideLoading());
+    }
+    
+    function downloadReport(jobId) { window.location.href = `/reports/jobs/${jobId}/download/`; }
+    
+    loadRecentReports();
+</script>
+{% endblock %}

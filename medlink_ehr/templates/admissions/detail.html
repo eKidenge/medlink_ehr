@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Admission Details - MedLink EHR{% endblock %}
+
+{% block page_title %}Admission Details{% endblock %}
+
+{% block content %}
+<style>
+    .admission-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    .round-entry {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 3px solid #667eea;
+    }
+</style>
+
+<div id="admissionContent">
+    <div style="text-align: center; padding: 50px;">Loading admission details...</div>
+</div>
+
+<!-- Add Round Modal -->
+<div id="roundModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Add Daily Round Note</h3>
+            <span onclick="closeModal('roundModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Subjective (Patient's complaints)</label>
+                <textarea id="roundSubjective" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Objective (Examination findings)</label>
+                <textarea id="roundObjective" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Assessment</label>
+                <textarea id="roundAssessment" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Plan</label>
+                <textarea id="roundPlan" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('roundModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveRound()">Save Round</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const admissionId = window.location.pathname.split('/').filter(p => p)[2];
+    
+    async function loadAdmission() {
+        showLoading();
+        try {
+            const admission = await apiCall(`/admissions/admissions/${admissionId}/`);
+            renderAdmission(admission);
+        } catch (error) {
+            showAlert('Failed to load admission', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function renderAdmission(admission) {
+        const container = document.getElementById('admissionContent');
+        
+        container.innerHTML = `
+            <div class="admission-header">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <h2>Admission #${admission.admission_number}</h2>
+                        <p>Patient: <a href="/patients/detail/${admission.patient}" style="color: white;">${admission.patient_details?.first_name} ${admission.patient_details?.last_name}</a></p>
+                        <p>Status: <span class="badge" style="background: white; color: #667eea;">${admission.status_display}</span></p>
+                    </div>
+                    <div>
+                        ${admission.status !== 'discharged' ? `
+                            <button class="btn btn-success" onclick="showDischargeModal()">
+                                <i class="fas fa-sign-out-alt"></i> Discharge
+                            </button>
+                        ` : ''}
+                        <button class="btn btn-primary" onclick="showRoundModal()">
+                            <i class="fas fa-notes-medical"></i> Add Round
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-grid">
+                <div class="card">
+                    <div class="card-header"><div class="card-title">Admission Information</div></div>
+                    <div class="detail-row"><strong>Admission Date:</strong> ${formatDate(admission.admission_date)}</div>
+                    <div class="detail-row"><strong>Admission Type:</strong> ${admission.admission_type_display}</div>
+                    <div class="detail-row"><strong>Ward:</strong> ${admission.ward_details?.name}</div>
+                    <div class="detail-row"><strong>Bed:</strong> ${admission.bed_details?.bed_number}</div>
+                    <div class="detail-row"><strong>Admitting Doctor:</strong> ${admission.admitting_doctor_name}</div>
+                    <div class="detail-row"><strong>Length of Stay:</strong> ${admission.length_of_stay_days} days</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-title">Diagnosis</div></div>
+                    <div class="detail-row"><strong>Primary:</strong> ${admission.primary_diagnosis}</div>
+                    <div class="detail-row"><strong>Secondary:</strong> ${admission.secondary_diagnosis || '-'}</div>
+                    <div class="detail-row"><strong>Admitting Notes:</strong> ${admission.admitting_notes || '-'}</div>
+                    <div class="detail-row"><strong>Condition:</strong> ${admission.condition_on_admission || '-'}</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header"><div class="card-title">Financial</div></div>
+                    <div class="detail-row"><strong>Deposit:</strong> KES ${admission.deposit_amount?.toLocaleString() || 0}</div>
+                    <div class="detail-row"><strong>Total Charges:</strong> KES ${admission.total_charges?.toLocaleString() || 0}</div>
+                    <div class="detail-row"><strong>Balance:</strong> KES ${((admission.total_charges || 0) - (admission.deposit_amount || 0)).toLocaleString()}</div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Daily Rounds</div>
+                </div>
+                <div id="roundsList"></div>
+            </div>
+        `;
+        
+        loadRounds();
+    }
+    
+    async function loadRounds() {
+        try {
+            const rounds = await apiCall(`/admissions/rounds/?admission=${admissionId}`);
+            const container = document.getElementById('roundsList');
+            
+            if (rounds.length === 0) {
+                container.innerHTML = '<p style="color: #718096;">No rounds recorded yet</p>';
+                return;
+            }
+            
+            container.innerHTML = rounds.map(round => `
+                <div class="round-entry">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>Dr. ${round.doctor_name}</strong>
+                        <small>${formatDate(round.round_date)}</small>
+                    </div>
+                    <div><strong>S:</strong> ${round.subjective || '-'}</div>
+                    <div><strong>O:</strong> ${round.objective || '-'}</div>
+                    <div><strong>A:</strong> ${round.assessment || '-'}</div>
+                    <div><strong>P:</strong> ${round.plan || '-'}</div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Failed to load rounds:', error);
+        }
+    }
+    
+    function showRoundModal() {
+        document.getElementById('roundModal').style.display = 'flex';
+        document.getElementById('roundSubjective').value = '';
+        document.getElementById('roundObjective').value = '';
+        document.getElementById('roundAssessment').value = '';
+        document.getElementById('roundPlan').value = '';
+    }
+    
+    async function saveRound() {
+        const data = {
+            subjective: document.getElementById('roundSubjective').value,
+            objective: document.getElementById('roundObjective').value,
+            assessment: document.getElementById('roundAssessment').value,
+            plan: document.getElementById('roundPlan').value
+        };
+        
+        showLoading();
+        try {
+            await apiCall(`/admissions/admissions/${admissionId}/add_round/`, 'POST', data);
+            showAlert('Round note added', 'success');
+            closeModal('roundModal');
+            loadRounds();
+        } catch (error) {
+            showAlert('Failed to add round', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function showDischargeModal() {
+        const status = prompt('Discharge status (home/transfer/ama/deceased):', 'home');
+        if (!status) return;
+        const summary = prompt('Enter discharge summary:');
+        if (!summary) return;
+        
+        showLoading();
+        apiCall(`/admissions/admissions/${admissionId}/discharge/`, 'POST', {
+            discharge_status: status,
+            discharge_summary: summary
+        }).then(() => {
+            showAlert('Patient discharged', 'success');
+            loadAdmission();
+        }).catch(err => showAlert('Failed to discharge', 'danger'))
+        .finally(() => hideLoading());
+    }
+    
+    loadAdmission();
+</script>
+{% endblock %}

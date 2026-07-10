@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Check-in - MedLink EHR{% endblock %}
+
+{% block page_title %}Patient Check-in{% endblock %}
+
+{% block content %}
+<style>
+    .checkin-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .search-result {
+        cursor: pointer;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .search-result:hover {
+        background: #f7fafc;
+        border-color: #667eea;
+    }
+    .walkin-section {
+        margin-top: 30px;
+        text-align: center;
+    }
+</style>
+
+<div class="checkin-container">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title">Patient Check-in</div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Search Existing Patient</label>
+            <input type="text" id="patientSearch" class="form-control" placeholder="Search by name, phone number, or patient ID...">
+            <div id="searchResults" style="margin-top: 15px;"></div>
+        </div>
+        
+        <div class="walkin-section">
+            <p>or</p>
+            <button class="btn btn-success" onclick="window.location.href='/patients/create/'">
+                <i class="fas fa-user-plus"></i> Register New Patient
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let searchTimeout;
+    
+    document.getElementById('patientSearch').addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const query = e.target.value;
+        
+        if (query.length < 2) {
+            document.getElementById('searchResults').innerHTML = '';
+            return;
+        }
+        
+        searchTimeout = setTimeout(() => searchPatients(query), 300);
+    });
+    
+    async function searchPatients(query) {
+        showLoading();
+        
+        try {
+            const data = await apiCall(`/patients/patients/?search=${encodeURIComponent(query)}&limit=10`);
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (data.results.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #718096;">No patients found. Please register a new patient.</p>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = data.results.map(patient => `
+                <div class="search-result" onclick="checkInPatient(${patient.id}, '${patient.first_name} ${patient.last_name}')">
+                    <div><strong>${patient.first_name} ${patient.last_name}</strong></div>
+                    <div style="font-size: 0.85rem; color: #718096;">
+                        ${patient.patient_number} | ${patient.phone_primary || 'No phone'} | Age: ${patient.age}
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            showAlert('Failed to search patients', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    async function checkInPatient(patientId, patientName) {
+        showLoading();
+        
+        const chiefComplaint = prompt(`Enter chief complaint for ${patientName}:`);
+        if (chiefComplaint === null) {
+            hideLoading();
+            return;
+        }
+        
+        try {
+            const response = await apiCall('/visits/check_in/', 'POST', {
+                patient_id: patientId,
+                chief_complaint: chiefComplaint || '',
+                visit_type: 'outpatient'
+            });
+            
+            showAlert(`Patient ${patientName} checked in successfully! Visit #: ${response.visit.visit_number}`, 'success');
+            
+            // Ask if user wants to start triage now
+            if (confirm('Do you want to start triage now?')) {
+                window.location.href = `/triage/assessment/${response.visit.id}/`;
+            } else {
+                window.location.href = '/visits/list/';
+            }
+        } catch (error) {
+            showAlert('Failed to check in patient', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+
+{% block title %}Widget Gallery - MedLink EHR{% endblock %}
+
+{% block page_title %}Widget Gallery{% endblock %}
+
+{% block content %}
+<style>
+    .widget-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+    .widget-card {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    .widget-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    .widget-preview {
+        height: 200px;
+        background: #f7fafc;
+        padding: 15px;
+        position: relative;
+    }
+    .widget-info {
+        padding: 15px;
+    }
+    .widget-actions {
+        padding: 15px;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        gap: 10px;
+    }
+</style>
+
+<div class="widget-gallery" id="widgetGallery">
+    <!-- Widgets will be loaded here -->
+</div>
+
+<script>
+    const widgets = [
+        {
+            id: 'patient_summary',
+            name: 'Patient Summary',
+            description: 'Shows total patients, new patients, and patient demographics',
+            preview: 'stats',
+            sizes: ['col-3', 'col-4', 'col-6']
+        },
+        {
+            id: 'visit_trends',
+            name: 'Visit Trends',
+            description: 'Line chart showing visit trends over time',
+            preview: 'chart',
+            sizes: ['col-6', 'col-8', 'col-12']
+        },
+        {
+            id: 'waiting_times',
+            name: 'Waiting Times',
+            description: 'Real-time waiting times by department',
+            preview: 'waiting',
+            sizes: ['col-4', 'col-6', 'col-8']
+        },
+        {
+            id: 'bed_occupancy',
+            name: 'Bed Occupancy',
+            description: 'Current bed occupancy rates by ward',
+            preview: 'beds',
+            sizes: ['col-4', 'col-6', 'col-8']
+        },
+        {
+            id: 'lab_backlog',
+            name: 'Lab Backlog',
+            description: 'Pending lab tests by category',
+            preview: 'lab',
+            sizes: ['col-4', 'col-6', 'col-8']
+        },
+        {
+            id: 'prescription_alerts',
+            name: 'Prescription Alerts',
+            description: 'Pending prescriptions and low stock alerts',
+            preview: 'rx',
+            sizes: ['col-4', 'col-6', 'col-8']
+        },
+        {
+            id: 'revenue_tracker',
+            name: 'Revenue Tracker',
+            description: 'Daily, weekly, and monthly revenue',
+            preview: 'revenue',
+            sizes: ['col-4', 'col-6', 'col-8']
+        },
+        {
+            id: 'appointment_calendar',
+            name: 'Appointment Calendar',
+            description: 'Upcoming appointments and schedule',
+            preview: 'calendar',
+            sizes: ['col-6', 'col-8', 'col-12']
+        },
+        {
+            id: 'referral_monitor',
+            name: 'Referral Monitor',
+            description: 'Track outgoing and incoming referrals',
+            preview: 'referral',
+            sizes: ['col-4', 'col-6', 'col-8']
+        }
+    ];
+    
+    function renderWidgetGallery() {
+        const gallery = document.getElementById('widgetGallery');
+        gallery.innerHTML = widgets.map(widget => `
+            <div class="widget-card">
+                <div class="widget-preview" id="preview-${widget.id}">
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
+                        Loading preview...
+                    </div>
+                </div>
+                <div class="widget-info">
+                    <h3>${widget.name}</h3>
+                    <p style="color: #718096;">${widget.description}</p>
+                </div>
+                <div class="widget-actions">
+                    <select id="size-${widget.id}" class="form-control">
+                        ${widget.sizes.map(size => `<option value="${size}">${size.replace('col-', '')} columns</option>`).join('')}
+                    </select>
+                    <button class="btn btn-primary" onclick="addWidgetToDashboard('${widget.id}')">
+                        <i class="fas fa-plus"></i> Add
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        // Load previews
+        widgets.forEach(widget => loadPreview(widget.id, widget.preview));
+    }
+    
+    async function loadPreview(widgetId, previewType) {
+        const container = document.getElementById(`preview-${widgetId}`);
+        if (!container) return;
+        
+        try {
+            switch(previewType) {
+                case 'stats':
+                    const stats = await apiCall('/dashboard/stats/');
+                    container.innerHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+                            <div><strong>${stats.patients.total.toLocaleString()}</strong><br><small>Patients</small></div>
+                            <div><strong>${stats.visits.today}</strong><br><small>Today</small></div>
+                            <div><strong>${stats.visits.waiting}</strong><br><small>Waiting</small></div>
+                            <div><strong>${stats.admissions.current}</strong><br><small>Admitted</small></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'chart':
+                    container.innerHTML = `<canvas id="previewChart-${widgetId}" height="150"></canvas>`;
+                    setTimeout(() => {
+                        const ctx = document.getElementById(`previewChart-${widgetId}`)?.getContext('2d');
+                        if (ctx) {
+                            new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                                    datasets: [{ data: [30, 45, 38, 52, 48, 60, 55], borderColor: '#667eea', fill: false }]
+                                },
+                                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
+                            });
+                        }
+                    }, 100);
+                    break;
+                    
+                case 'waiting':
+                    container.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between;"><span>Registration:</span><strong>5</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Triage:</span><strong>3</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Consultation:</span><strong>8</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Pharmacy:</span><strong>4</strong></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'beds':
+                    container.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between;"><span>General Ward:</span><div><span style="color: #48bb78;">●</span> 12/20</div></div>
+                            <div style="display: flex; justify-content: space-between;"><span>ICU:</span><div><span style="color: #f56565;">●</span> 8/8</div></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Pediatric:</span><div><span style="color: #ecc94b;">●</span> 5/10</div></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'lab':
+                    container.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between;"><span>Hematology:</span><strong>12</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Microbiology:</span><strong>8</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Chemistry:</span><strong>15</strong></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'rx':
+                    container.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between;"><span>Pending Rx:</span><strong>23</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Low Stock:</span><strong>7</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>Out of Stock:</span><strong>3</strong></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'revenue':
+                    container.innerHTML = `
+                        <div>
+                            <div style="display: flex; justify-content: space-between;"><span>Today:</span><strong>KES 45,200</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>This Week:</span><strong>KES 312,500</strong></div>
+                            <div style="display: flex; justify-content: space-between;"><span>This Month:</span><strong>KES 1.2M</strong></div>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'calendar':
+                    const today = new Date();
+                    container.innerHTML = `
+                        <div style="text-align: center;">
+                            <strong>${today.toLocaleDateString('en-KE', { month: 'long', year: 'numeric' })}</strong>
+                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 10px;">
+                                ${['S','M','T','W','T','F','S'].map(d => `<div><small>${d}</small></div>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                    break;
+                    
+                default:
+                    container.innerHTML = '<div class="alert alert-info">Preview not available</div>';
+            }
+        } catch (error) {
+            container.innerHTML = '<div class="alert alert-danger">Failed to load preview</div>';
+        }
+    }
+    
+    async function addWidgetToDashboard(widgetId) {
+        const sizeSelect = document.getElementById(`size-${widgetId}`);
+        const size = sizeSelect.value;
+        const colNumber = parseInt(size.replace('col-', ''));
+        
+        showLoading();
+        try {
+            // Get current dashboard layout
+            const dashboard = await apiCall('/dashboard/my_dashboard/');
+            const currentLayout = dashboard.layout?.widgets || [];
+            
+            // Add new widget
+            currentLayout.push({
+                id: widgetId,
+                size: colNumber,
+                position: currentLayout.length
+            });
+            
+            await apiCall('/dashboard/update_layout/', 'POST', { layout: { widgets: currentLayout } });
+            showAlert('Widget added to dashboard', 'success');
+            
+            // Ask user if they want to go to dashboard
+            if (confirm('Widget added! Go to dashboard now?')) {
+                window.location.href = '/dashboard/';
+            }
+        } catch (error) {
+            showAlert('Failed to add widget', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    renderWidgetGallery();
+</script>
+{% endblock %}

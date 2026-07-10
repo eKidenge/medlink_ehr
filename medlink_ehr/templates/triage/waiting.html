@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Triage Waiting List - MedLink EHR{% endblock %}
+
+{% block page_title %}Triage Waiting List{% endblock %}
+
+{% block content %}
+<style>
+    .waiting-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .waiting-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-left: 5px solid #e2e8f0;
+    }
+    .waiting-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .waiting-card.critical { border-left-color: #f56565; }
+    .waiting-card.emergency { border-left-color: #ed8936; }
+    .waiting-card.urgent { border-left-color: #ecc94b; }
+    .waiting-card.routine { border-left-color: #48bb78; }
+    .waiting-time {
+        font-size: 0.85rem;
+        color: #718096;
+    }
+    .patient-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Patients Waiting for Triage</div>
+        <button class="btn btn-primary" onclick="refreshList()">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+    
+    <div id="waitingList" class="waiting-list">
+        <div style="text-align: center; padding: 40px;">Loading...</div>
+    </div>
+</div>
+
+<!-- Start Triage Modal -->
+<div id="startTriageModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+            <h3>Start Triage Assessment</h3>
+            <span onclick="closeModal('startTriageModal')" style="cursor: pointer;">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Starting triage for: <strong id="triagePatientName"></strong></p>
+            <div class="form-group">
+                <label class="form-label">Chief Complaint</label>
+                <textarea id="chiefComplaint" class="form-control" rows="3" placeholder="Enter patient's main complaint..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('startTriageModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="beginTriage()">Start Triage</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedVisitId = null;
+    let refreshTimer;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadWaitingList();
+        refreshTimer = setInterval(loadWaitingList, 30000);
+    });
+    
+    async function loadWaitingList() {
+        try {
+            const data = await apiCall('/triage/waiting_list/');
+            renderWaitingList(data.patients);
+        } catch (error) {
+            console.error('Failed to load waiting list:', error);
+            document.getElementById('waitingList').innerHTML = '<div class="alert alert-danger">Failed to load waiting list</div>';
+        }
+    }
+    
+    function renderWaitingList(patients) {
+        const container = document.getElementById('waitingList');
+        
+        if (patients.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 40px; color: #718096;">No patients waiting for triage</div>';
+            return;
+        }
+        
+        container.innerHTML = patients.map(patient => `
+            <div class="waiting-card ${patient.priority}" onclick="promptStartTriage(${patient.visit_id}, '${patient.patient_name}', '${patient.chief_complaint || ''}')">
+                <div>
+                    <div class="patient-name">${patient.patient_name}</div>
+                    <div class="waiting-time">
+                        <i class="fas fa-clock"></i> Waiting: ${patient.waiting_minutes} minutes
+                    </div>
+                    <div style="font-size: 0.85rem; margin-top: 5px;">
+                        Age: ${patient.patient_age} | Gender: ${patient.patient_gender}
+                    </div>
+                    ${patient.chief_complaint ? `<div style="font-size: 0.85rem; color: #718096; margin-top: 5px;">Complaint: ${patient.chief_complaint}</div>` : ''}
+                </div>
+                <div>
+                    <span class="badge badge-${patient.priority === 'critical' ? 'danger' : (patient.priority === 'emergency' ? 'warning' : 'info')}">
+                        ${patient.priority.toUpperCase()}
+                    </span>
+                    <button class="btn btn-sm btn-primary" style="margin-left: 10px;">Start Triage</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function promptStartTriage(visitId, patientName, chiefComplaint) {
+        selectedVisitId = visitId;
+        document.getElementById('triagePatientName').textContent = patientName;
+        document.getElementById('chiefComplaint').value = chiefComplaint;
+        document.getElementById('startTriageModal').style.display = 'flex';
+    }
+    
+    async function beginTriage() {
+        const chiefComplaint = document.getElementById('chiefComplaint').value;
+        
+        showLoading();
+        
+        try {
+            await apiCall(`/triage/start_triage/`, 'POST', {
+                visit_id: selectedVisitId,
+                chief_complaint: chiefComplaint
+            });
+            
+            showAlert('Triage started', 'success');
+            closeModal('startTriageModal');
+            window.location.href = `/triage/assessment/${selectedVisitId}/`;
+        } catch (error) {
+            showAlert('Failed to start triage', 'danger');
+        } finally {
+            hideLoading();
+        }
+    }
+    
+    function refreshList() {
+        loadWaitingList();
+        showAlert('List refreshed', 'success');
+    }
+</script>
+{% endblock %}

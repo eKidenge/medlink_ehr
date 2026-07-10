@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Report Templates - MedLink EHR{% endblock %}
+
+{% block page_title %}Report Templates{% endblock %}
+
+{% block content %}
+<div class="quick-actions"><button class="btn btn-primary" onclick="showCreateTemplateModal()"><i class="fas fa-plus"></i> Create Template</button></div>
+<div id="templatesList" class="stats-grid"></div>
+
+<script>
+    async function loadTemplates() {
+        const templates = await apiCall('/reports/templates/');
+        const container = document.getElementById('templatesList');
+        container.innerHTML = templates.results.map(t => `<div class="report-card" onclick="useTemplate(${t.id})"><h3>${t.name}</h3><p>${t.description || 'No description'}</p><small>${t.report_type} | ${t.default_format}</small></div>`).join('');
+    }
+    function useTemplate(id) { window.location.href = `/reports/generate/${id}/`; }
+    loadTemplates();
+</script>
+{% endblock %}

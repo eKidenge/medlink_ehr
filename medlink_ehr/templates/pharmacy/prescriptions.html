@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Prescriptions - MedLink EHR{% endblock %}
+
+{% block page_title %}Prescription Management{% endblock %}
+
+{% block content %}
+<style>
+    .rx-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    .rx-card.pending { border-left-color: #ecc94b; }
+    .rx-card.dispensed { border-left-color: #48bb78; }
+    .rx-card.cancelled { border-left-color: #f56565; opacity: 0.7; }
+    .rx-card:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+</style>
+
+<div class="stats-grid" id="rxStats"></div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">Prescriptions</div>
+        <button class="btn btn-primary" onclick="window.location.href='/pharmacy/create/'">
+            <i class="fas fa-plus"></i> New Prescription
+        </button>
+    </div>
+    
+    <div class="filter-bar">
+        <select id="statusFilter" class="form-control" style="width: 150px;">
+            <option value="">All Status</option>
+            <option value="pending">Pending</option>
+            <option value="partial">Partially Dispensed</option>
+            <option value="dispensed">Dispensed</option>
+        </select>
+        <input type="text" id="searchInput" placeholder="Search patient..." class="form-control" style="width: 250px;">
+        <button class="btn btn-primary" onclick="loadPrescriptions()">Filter</button>
+    </div>
+    
+    <div id="prescriptionsList"></div>
+    <div id="pagination" style="margin-top: 20px; text-align: center;"></div>
+</div>
+
+<script>
+    let currentPage = 1;
+    let totalPages = 1;
+    
+    async function loadStats() {
+        try {
+            const stats = await apiCall('/pharmacy/prescriptions/statistics/');
+            const container = document.getElementById('rxStats');
+            container.innerHTML = `
+                <div class="stat-card"><div class="stat-info"><h3>${stats.today.prescribed}</h3><p>Prescribed Today</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.today.dispensed}</h3><p>Dispensed Today</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.today.pending}</h3><p>Pending</p></div></div>
+                <div class="stat-card"><div class="stat-info"><h3>${stats.inventory_status.low_stock_items}</h3><p>Low Stock Items</p></div></div>
+            `;
+        } catch (error) { console.error('Failed to load stats:', error); }
+    }
+    
+    async function loadPrescriptions() {
+        showLoading();
+        const params = new URLSearchParams({
+            page: currentPage,
+            status: document.getElementById('statusFilter').value,
+            search: document.getElementById('searchInput').value
+        });
+        try {
+            const data = await apiCall(`/pharmacy/prescriptions/?${params}`);
+            totalPages = Math.ceil(data.count / 20);
+            renderPrescriptions(data.results);
+            renderPagination();
+        } catch (error) { showAlert('Failed to load prescriptions', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    function renderPrescriptions(prescriptions) {
+        const container = document.getElementById('prescriptionsList');
+        if (prescriptions.length === 0) { container.innerHTML = '<div class="alert alert-info">No prescriptions found</div>'; return; }
+        
+        container.innerHTML = prescriptions.map(rx => `
+            <div class="rx-card ${rx.status}" onclick="viewPrescription(${rx.id})">
+                <div style="display: flex; justify-content: space-between;">
+                    <div><strong>${rx.prescription_number}</strong> - ${rx.patient_name}</div>
+                    <span class="badge badge-${rx.status === 'pending' ? 'warning' : (rx.status === 'dispensed' ? 'success' : 'info')}">${rx.status_display}</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div><strong>Medication:</strong> ${rx.medication_name} - ${rx.dosage}</div>
+                    <div><strong>Quantity:</strong> ${rx.dispensed_quantity}/${rx.quantity} dispensed</div>
+                    <div><strong>Prescribed:</strong> ${formatDate(rx.prescribed_at)} by ${rx.doctor_name}</div>
+                </div>
+                <div style="margin-top: 10px;">
+                    ${rx.status === 'pending' ? `<button class="btn btn-sm btn-success" onclick="event.stopPropagation();dispensePrescription(${rx.id})">Dispense</button>` : ''}
+                    <button class="btn btn-sm btn-info" onclick="event.stopPropagation();viewPrescription(${rx.id})">Details</button>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        let html = '';
+        if (currentPage > 1) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage - 1})">Prev</button>`;
+        for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+            html += `<button class="btn btn-sm ${i === currentPage ? 'btn-primary' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        if (currentPage < totalPages) html += `<button class="btn btn-sm" onclick="goToPage(${currentPage + 1})">Next</button>`;
+        container.innerHTML = html;
+    }
+    
+    function goToPage(page) { currentPage = page; loadPrescriptions(); }
+    function viewPrescription(id) { window.location.href = `/pharmacy/detail/${id}/`; }
+    
+    async function dispensePrescription(id) {
+        const quantity = prompt('Enter quantity to dispense:');
+        if (!quantity) return;
+        showLoading();
+        try {
+            await apiCall(`/pharmacy/prescriptions/${id}/dispense/`, 'POST', { quantity: parseInt(quantity) });
+            showAlert('Prescription dispensed', 'success');
+            loadPrescriptions();
+            loadStats();
+        } catch (error) { showAlert('Failed to dispense', 'danger'); }
+        finally { hideLoading(); }
+    }
+    
+    loadStats();
+    loadPrescriptions();
+</script>
+{% endblock %}
