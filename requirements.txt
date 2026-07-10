@@ -4,9 +4,7 @@ Django==5.0.3
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 django-filter==24.2
-# drf-yasg is outdated - consider using drf-spectacular instead
-# drf-yasg==1.21.7  
-drf-spectacular==0.27.2  # Better alternative with OpenAPI 3 support
+drf-spectacular==0.27.2  # Replaces drf-yasg
 
 # Database
 psycopg2-binary==2.9.9
@@ -46,11 +44,7 @@ gunicorn==21.2.0
 # Development
 django-debug-toolbar==4.3.0
 
-# Critical: For Python 3.13 compatibility
+# Python 3.13 compatibility
 setuptools>=75.0.0
 pip>=24.0
 wheel>=0.42.0
-
-# Additional dependencies that might be needed
-python-dateutil>=2.8.2
-typing-extensions>=4.12.0

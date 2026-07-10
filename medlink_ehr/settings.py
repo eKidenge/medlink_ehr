@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'django_cleanup.apps.CleanupConfig',
+    'drf_spectacular',  # Added for API documentation
     
     # Local apps
     'apps.accounts',
@@ -189,6 +190,23 @@ REST_FRAMEWORK = {
         'anon': '100/day',
         'user': '1000/day',
     },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',  # Added for drf-spectacular
+}
+
+# DRF Spectacular Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'MedLink EHR API',
+    'DESCRIPTION': 'Electronic Health Record System for Kenyan Healthcare Facilities',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'deepLinking': True,
+        'persistAuthorization': True,
+        'displayOperationId': True,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SORT_OPERATIONS': False,
+    'ENABLE_DJANGO_DEPLOYMENT': True,
 }
 
 # JWT Settings
