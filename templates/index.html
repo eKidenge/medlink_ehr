@@ -339,20 +339,25 @@
         <i class="fas fa-arrow-up"></i>
     </div>
 
-    <!-- Header / Navigation -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 transition-shadow duration-300">
-        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16 md:h-20">
-                <!-- Logo -->
-                <a href="/" class="flex items-center space-x-3 group">
-                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg">
-                        <i class="fas fa-heartbeat text-white text-xl"></i>
-                    </div>
-                    <div>
-                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">MedLink EHR</span>
-                        <span class="hidden md:inline-block text-xs text-gray-500 ml-2">Healthcare System</span>
-                    </div>
-                </a>
+  <!-- Logo -->
+<a href="/" class="flex items-center space-x-3 group">
+    <!-- Logo Image -->
+    <img
+        src="{% static 'images/logo.png' %}"
+        alt="MedLink EHR Logo"
+        class="w-12 h-12 object-contain transition-transform duration-300 group-hover:scale-110"
+    >
+
+    <!-- Logo Text -->
+    <div>
+        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            MedLink EHR
+        </span>
+        <span class="hidden md:inline-block text-xs text-gray-500 ml-2">
+            Healthcare System
+        </span>
+    </div>
+</a>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
