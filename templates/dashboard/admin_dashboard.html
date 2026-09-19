@@ -435,12 +435,12 @@
             Quick Actions
         </div>
         <div class="gov-grid">
-            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/users/'">
+            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/users-page/'">
                 <div class="gov-card-icon"><i class="fas fa-users"></i></div>
                 <div class="gov-card-title">User Management</div>
                 <div class="gov-card-desc">Add, edit, or deactivate system users and manage roles</div>
             </div>
-            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/departments/'">
+            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/departments-page/'">
                 <div class="gov-card-icon"><i class="fas fa-building"></i></div>
                 <div class="gov-card-title">Department Management</div>
                 <div class="gov-card-desc">Create, manage, and organize hospital departments</div>
@@ -556,7 +556,7 @@
         if (!token) return;
 
         try {
-            const usersResponse = await fetch('/api/users/', {
+            const usersResponse = await fetch('/api/accounts/users/', {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
             if (usersResponse.ok) {
@@ -573,7 +573,7 @@
                 }
             }
 
-            const deptResponse = await fetch('/api/departments/', {
+            const deptResponse = await fetch('/api/accounts/departments/', {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
             if (deptResponse.ok) {
@@ -620,7 +620,7 @@
         container.innerHTML = '<div class="gov-loading"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
 
         try {
-            const response = await fetch('/api/users/?limit=10', {
+            const response = await fetch('/api/accounts/users/?limit=10', {
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
             });
             if (response.ok) {
@@ -639,7 +639,7 @@
 
                 container.innerHTML = users.map((user, index) => `
                     <div class="gov-user-item gov-fade" style="animation-delay: ${index * 0.05}s;"
-                         onclick="window.location.href='/accounts/users/${user.id}/'">
+                         onclick="window.location.href='/accounts/users-page/${user.id}/'">
                         <div class="gov-user-info">
                             <div class="gov-user-name">
                                 ${escapeHtml(user.full_name || user.username)}
