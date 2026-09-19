@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>MedLink EHR - Secure Login | Kenya Healthcare System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -18,11 +18,124 @@
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============================================
+           HEADER (matches landing page)
+           ============================================ */
+        .site-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #16304f 40%, #0d9488 100%);
+            border-bottom: 2px solid rgba(20, 184, 166, 0.3);
+            box-shadow: 0 8px 32px rgba(30, 58, 95, 0.25);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 60;
+            transition: all 0.3s ease;
+        }
+        .site-header.scrolled {
+            background: rgba(30, 58, 95, 0.96);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+            box-shadow: 0 4px 24px rgba(30, 58, 95, 0.15);
+        }
+        .site-header .nav-link {
+            color: #bfdbfe;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .site-header .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2.5px;
+            background: linear-gradient(135deg, #5eead4, #93bbfc);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .site-header .nav-link:hover { color: #ffffff; }
+        .site-header .nav-link:hover::after { width: 80%; }
+        .site-header .logo-text {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #93bbfc, #5eead4, #93bbfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+        }
+        .site-header .btn-primary-nav {
+            background: linear-gradient(135deg, #0d9488, #2563eb);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(13, 148, 136, 0.35);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .site-header .btn-primary-nav:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 35px rgba(13, 148, 136, 0.5); }
+        .site-header .btn-outline-nav {
+            padding: 0.6rem 1.6rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1.5px solid rgba(191, 219, 254, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+            color: #bfdbfe;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .site-header .btn-outline-nav:hover { border-color: #5eead4; color: white; background: rgba(13, 148, 136, 0.12); transform: translateY(-2px); }
+        .site-header .mobile-menu-btn {
+            color: #bfdbfe;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: pointer;
+        }
+        .site-header .mobile-menu-btn:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+
+        /* ============================================
+           MAIN CONTENT AREA
+           ============================================ */
+        .page-main {
+            flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 120px 20px 60px;
             position: relative;
-            overflow-x: hidden;
         }
 
         body::before {
@@ -32,6 +145,7 @@
             height: 100%;
             background: radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
             animation: pulse 8s ease-in-out infinite;
+            pointer-events: none;
         }
 
         body::after {
@@ -41,6 +155,7 @@
             height: 100%;
             background: radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
             animation: pulse 8s ease-in-out infinite reverse;
+            pointer-events: none;
         }
 
         @keyframes pulse {
@@ -93,7 +208,7 @@
         .logo-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0d9488 0%, #1e3a5f 100%);
             border-radius: 20px;
             display: flex;
             align-items: center;
@@ -103,8 +218,8 @@
         }
 
         @keyframes logoGlow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
-            50% { box-shadow: 0 0 0 15px rgba(102, 126, 234, 0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.4); }
+            50% { box-shadow: 0 0 0 15px rgba(13, 148, 136, 0); }
         }
 
         .logo-icon i {
@@ -115,11 +230,12 @@
         .logo h1 {
             font-size: 2rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0d9488 0%, #1e3a5f 100%);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             margin-bottom: 8px;
+            font-family: 'Playfair Display', serif;
         }
 
         .logo p {
@@ -143,7 +259,7 @@
 
         .form-label i {
             margin-right: 8px;
-            color: #667eea;
+            color: #0d9488;
             font-size: 0.875rem;
         }
 
@@ -175,8 +291,8 @@
 
         .form-control:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
         }
 
         .form-control.error {
@@ -202,13 +318,13 @@
         }
 
         .password-toggle:hover {
-            color: #667eea;
+            color: #0d9488;
         }
 
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0d9488 0%, #1e3a5f 100%);
             color: white;
             border: none;
             border-radius: 16px;
@@ -219,6 +335,8 @@
             position: relative;
             overflow: hidden;
             margin-top: 8px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         .btn-login::before {
@@ -241,7 +359,7 @@
 
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
         }
 
         .btn-login:active {
@@ -322,7 +440,7 @@
             width: 60px;
             height: 60px;
             border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid #667eea;
+            border-top: 3px solid #5eead4;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -359,8 +477,8 @@
 
         .otp-digit:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #0d9488;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
         }
 
         .otp-digit.error {
@@ -374,7 +492,7 @@
         }
 
         .resend-link {
-            color: #667eea;
+            color: #0d9488;
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 500;
@@ -383,7 +501,7 @@
         }
 
         .resend-link:hover {
-            color: #5a67d8;
+            color: #0f766e;
             text-decoration: underline;
         }
 
@@ -393,35 +511,83 @@
             margin-top: 8px;
         }
 
-        .footer {
+        .register-link-block {
             text-align: center;
-            margin-top: 32px;
-            padding-top: 24px;
+            margin-top: 24px;
+            padding-top: 20px;
             border-top: 1px solid #e5e7eb;
-        }
-
-        .footer p {
+            font-size: 0.875rem;
             color: #6b7280;
-            font-size: 0.8rem;
         }
-
-        .footer-links {
-            margin-top: 12px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        .footer-links a {
-            color: #9ca3af;
+        .register-link-block a {
+            color: #0d9488;
+            font-weight: 600;
             text-decoration: none;
-            font-size: 0.75rem;
-            transition: color 0.3s ease;
         }
+        .register-link-block a:hover { text-decoration: underline; }
 
-        .footer-links a:hover {
-            color: #667eea;
+        /* ============================================
+           FOOTER (matches landing page)
+           ============================================ */
+        .site-footer {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 60px 0 30px;
+            margin-top: 40px;
+            position: relative;
+            z-index: 10;
         }
+        .site-footer .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 48px;
+            margin-bottom: 48px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 24px;
+        }
+        @media (max-width: 900px) {
+            .site-footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+        }
+        @media (max-width: 600px) {
+            .site-footer .footer-grid { grid-template-columns: 1fr; }
+        }
+        .site-footer h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ffffff;
+            font-family: 'Playfair Display', serif;
+        }
+        .site-footer p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .site-footer .footer-link {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 4px 0;
+            transition: color 0.3s ease, transform 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .site-footer .footer-link:hover { color: #ffffff; transform: translateX(4px); }
+        .site-footer .footer-bottom {
+            border-top: 1px solid #1e293b;
+            padding-top: 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+        .site-footer .footer-bottom a { color: #94a3b8; text-decoration: none; }
+        .site-footer .footer-bottom a:hover { color: #ffffff; }
 
         @media (max-width: 640px) {
             .login-card {
@@ -461,98 +627,158 @@
     </style>
 </head>
 <body>
-    <div id="particles"></div>
-
-    <div class="login-container">
-        <div class="login-card">
-            <div class="logo">
-                <div class="logo-icon">
-                    <i class="fas fa-heartbeat"></i>
+    <!-- HEADER -->
+    <header class="site-header" id="navbar">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+                <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #0d9488, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-heartbeat" style="color: white; font-size: 20px;"></i>
                 </div>
-                <h1>MedLink EHR</h1>
-                <p>Kenya Healthcare System</p>
+                <span class="logo-text">SCATON EHR</span>
+            </a>
+
+            <div class="hidden md:flex" style="display: flex; align-items: center; gap: 32px;">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/dashboard/" class="nav-link">Dashboard</a>
+                <a href="/patients/list/" class="nav-link">Patients</a>
+                <a href="/visits/list/" class="nav-link">Visits</a>
+                <a href="/reports/" class="nav-link">Reports</a>
             </div>
 
-            <div id="alertContainer"></div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-user"></i>
-                        Username
-                    </label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-user-circle"></i>
-                        <input type="text" id="username" class="form-control" placeholder="Enter your username" required autocomplete="username">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-lock"></i>
-                        Password
-                    </label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-key"></i>
-                        <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
-                        <i class="fas fa-eye-slash password-toggle" onclick="togglePassword()"></i>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-login" id="loginBtn">
-                    <span id="loginBtnText">Sign In</span>
-                    <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                </button>
-            </form>
-
-            <form id="twoFactorForm" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">
-                        <i class="fas fa-shield-alt"></i>
-                        Enter Verification Code
-                    </label>
-                    <div class="otp-input-container" id="otpContainer">
-                        <input type="text" maxlength="1" class="otp-digit" data-index="0" id="otp0" autofocus>
-                        <input type="text" maxlength="1" class="otp-digit" data-index="1" id="otp1">
-                        <input type="text" maxlength="1" class="otp-digit" data-index="2" id="otp2">
-                        <input type="text" maxlength="1" class="otp-digit" data-index="3" id="otp3">
-                        <input type="text" maxlength="1" class="otp-digit" data-index="4" id="otp4">
-                        <input type="text" maxlength="1" class="otp-digit" data-index="5" id="otp5">
-                    </div>
-                    <input type="hidden" id="otpCode" value="">
-                    <div class="resend-otp">
-                        <a class="resend-link" onclick="resendOTP()">Didn't receive code? Resend</a>
-                        <div class="timer" id="timerDisplay"></div>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn-login" id="verifyBtn">
-                    <span>Verify & Continue</span>
-                    <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
-                </button>
-                <button type="button" class="btn-login" onclick="backToLogin()" style="background: #6b7280; margin-top: 12px;">
-                    <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
-                    Back to Login
-                </button>
-            </form>
-
-            <!-- Register Link - ADDED HERE -->
-            <div class="text-center mt-6">
-                <p class="text-gray-600">Don't have an account? 
-                    <a href="/register/" class="text-blue-600 hover:text-blue-700 font-medium">Create an account</a>
-                </p>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="/register/" class="btn-primary-nav">
+                    Get Started <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
+        </div>
+    </header>
 
-            <div class="footer">
-                <p>© 2026 MedLink EHR. All rights reserved.</p>
-                <div class="footer-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Contact Support</a>
+    <!-- MAIN -->
+    <main class="page-main">
+        <div id="particles"></div>
+
+        <div class="login-container">
+            <div class="login-card">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h1>MedLink EHR</h1>
+                    <p>Kenya Healthcare System</p>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-user"></i>
+                            Username
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user-circle"></i>
+                            <input type="text" id="username" class="form-control" placeholder="Enter your username" required autocomplete="username">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-key"></i>
+                            <input type="password" id="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password">
+                            <i class="fas fa-eye-slash password-toggle" onclick="togglePassword()"></i>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" id="loginBtn">
+                        <span id="loginBtnText">Sign In</span>
+                        <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                    </button>
+                </form>
+
+                <form id="twoFactorForm" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-shield-alt"></i>
+                            Enter Verification Code
+                        </label>
+                        <div class="otp-input-container" id="otpContainer">
+                            <input type="text" maxlength="1" class="otp-digit" data-index="0" id="otp0" autofocus>
+                            <input type="text" maxlength="1" class="otp-digit" data-index="1" id="otp1">
+                            <input type="text" maxlength="1" class="otp-digit" data-index="2" id="otp2">
+                            <input type="text" maxlength="1" class="otp-digit" data-index="3" id="otp3">
+                            <input type="text" maxlength="1" class="otp-digit" data-index="4" id="otp4">
+                            <input type="text" maxlength="1" class="otp-digit" data-index="5" id="otp5">
+                        </div>
+                        <input type="hidden" id="otpCode" value="">
+                        <div class="resend-otp">
+                            <a class="resend-link" onclick="resendOTP()">Didn't receive code? Resend</a>
+                            <div class="timer" id="timerDisplay"></div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-login" id="verifyBtn">
+                        <span>Verify & Continue</span>
+                        <i class="fas fa-check-circle" style="margin-left: 8px;"></i>
+                    </button>
+                    <button type="button" class="btn-login" onclick="backToLogin()" style="background: #6b7280; margin-top: 12px;">
+                        <i class="fas fa-arrow-left" style="margin-right: 8px;"></i>
+                        Back to Login
+                    </button>
+                </form>
+
+                <div class="register-link-block">
+                    Don't have an account? <a href="/register/">Create an account</a>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #0d9488, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-heartbeat" style="color: white; font-size: 18px;"></i>
+                    </div>
+                    <span style="font-size: 1.25rem; font-weight: 700; color: white; font-family: 'Playfair Display', serif;">Scaton EHR</span>
+                </div>
+                <p>Revolutionizing healthcare delivery in Kenya through innovative electronic health record solutions.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <a href="/" class="footer-link">Home</a>
+                <a href="/dashboard/" class="footer-link">Dashboard</a>
+                <a href="/patients/list/" class="footer-link">Patients</a>
+                <a href="/visits/list/" class="footer-link">Visits</a>
+                <a href="/admissions/list/" class="footer-link">Admissions</a>
+            </div>
+            <div>
+                <h4>Services</h4>
+                <a href="/laboratory/requests/" class="footer-link">Laboratory</a>
+                <a href="/pharmacy/prescriptions/" class="footer-link">Pharmacy</a>
+                <a href="/referrals/list/" class="footer-link">Referrals</a>
+                <a href="/reports/" class="footer-link">Reports</a>
+                <a href="/accounts/profile-page/" class="footer-link">My Profile</a>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>Westlands Business Park<br>Nairobi, Kenya</p>
+                <p><i class="fas fa-phone" style="margin-right: 8px;"></i>+254 114 271 816</p>
+                <p><i class="fas fa-envelope" style="margin-right: 8px;"></i>info@scaton.co.ke</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Scaton EHR. All rights reserved. |
+            <a href="#">Privacy Policy</a> |
+            <a href="#">Terms of Service</a> |
+            <a href="#">Cookie Policy</a>
+        </div>
+    </footer>
 
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-spinner"></div>
@@ -688,7 +914,7 @@
             showLoading();
             
             try {
-                const response = await fetch('/api/auth/resend_otp/', {
+                const response = await fetch('/api/accounts/auth/resend_otp/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -849,7 +1075,7 @@
             clearAlerts();
             
             try {
-                const response = await fetch('/api/auth/login/', {
+                const response = await fetch('/api/accounts/auth/login/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -924,7 +1150,7 @@
             showLoading();
             
             try {
-                const response = await fetch('/api/auth/verify_2fa/', {
+                const response = await fetch('/api/accounts/auth/verify_2fa/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -973,9 +1199,6 @@
             document.getElementById('password').classList.remove('error');
         });
         
-        // Auto-login check removed to prevent redirect loops
-        // Users will need to log in manually each time
-        
         createParticles();
         
         document.querySelectorAll('.form-control').forEach(input => {
@@ -991,6 +1214,13 @@
         });
 
         window.getDashboardUrl = getDashboardUrl;
+
+        // Sticky header scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
+        });
     </script>
 </body>
 </html>

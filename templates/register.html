@@ -5,50 +5,190 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Register - MedLink EHR</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #16304f 50%, #0d9488 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
         }
-        
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        .site-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #16304f 40%, #0d9488 100%);
+            border-bottom: 2px solid rgba(20, 184, 166, 0.3);
+            box-shadow: 0 8px 32px rgba(30, 58, 95, 0.25);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 60;
+            transition: all 0.3s ease;
+        }
+        .site-header.scrolled {
+            background: rgba(30, 58, 95, 0.96);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(20, 184, 166, 0.2);
+            box-shadow: 0 4px 24px rgba(30, 58, 95, 0.15);
+        }
+        .site-header .nav-link {
+            color: #bfdbfe;
+            font-weight: 500;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+        .site-header .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2.5px;
+            background: linear-gradient(135deg, #5eead4, #93bbfc);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+        .site-header .nav-link:hover { color: #ffffff; }
+        .site-header .nav-link:hover::after { width: 80%; }
+        .site-header .logo-text {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #93bbfc, #5eead4, #93bbfc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+            font-family: 'Playfair Display', serif;
+        }
+        .site-header .btn-primary-nav {
+            background: linear-gradient(135deg, #0d9488, #2563eb);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 20px rgba(13, 148, 136, 0.35);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .site-header .btn-primary-nav:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 12px 35px rgba(13, 148, 136, 0.5); }
+        .site-header .btn-outline-nav {
+            padding: 0.6rem 1.6rem;
+            border-radius: 40px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1.5px solid rgba(191, 219, 254, 0.25);
+            background: rgba(255, 255, 255, 0.04);
+            color: #bfdbfe;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            text-decoration: none;
+        }
+        .site-header .btn-outline-nav:hover { border-color: #5eead4; color: white; background: rgba(13, 148, 136, 0.12); transform: translateY(-2px); }
+
+        /* ============================================
+           MAIN
+           ============================================ */
+        .page-main {
+            flex: 1;
+            padding: 120px 20px 60px;
+            position: relative;
+            z-index: 10;
+        }
+
         .register-container {
             animation: fadeInUp 0.6s ease-out;
         }
-        
-        .form-input:focus {
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-            border-color: #667eea;
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .form-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+            border-color: #0d9488;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .form-label i { color: #0d9488; margin-right: 4px; }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            letter-spacing: 0.01em;
+        }
+
         .alert {
             padding: 12px 16px;
             border-radius: 12px;
             margin-bottom: 20px;
             animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
         .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
         .alert-success { background: #dcfce7; color: #166534; border-left: 4px solid #22c55e; }
-        
+
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -58,216 +198,325 @@
             border-top-color: white;
             animation: spin 0.8s linear infinite;
         }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .role-card {
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-register {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0d9488 0%, #1e3a5f 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 2px solid #e5e7eb;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
-        
-        .role-card:hover {
-            transform: translateY(-3px);
-            border-color: #667eea;
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.1);
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
         }
-        
-        .role-card.selected {
-            border-color: #667eea;
-            background: #f0f4ff;
+        .btn-register:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .site-footer {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 60px 0 30px;
+            position: relative;
+            z-index: 10;
+        }
+        .site-footer .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 48px;
+            margin-bottom: 48px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 24px;
+        }
+        @media (max-width: 900px) {
+            .site-footer .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+        }
+        @media (max-width: 600px) {
+            .site-footer .footer-grid { grid-template-columns: 1fr; }
+        }
+        .site-footer h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ffffff;
+            font-family: 'Playfair Display', serif;
+        }
+        .site-footer p {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .site-footer .footer-link {
+            display: block;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 4px 0;
+            transition: color 0.3s ease, transform 0.3s ease;
+            font-size: 0.875rem;
+        }
+        .site-footer .footer-link:hover { color: #ffffff; transform: translateX(4px); }
+        .site-footer .footer-bottom {
+            border-top: 1px solid #1e293b;
+            padding-top: 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+        }
+        .site-footer .footer-bottom a { color: #94a3b8; text-decoration: none; }
+        .site-footer .footer-bottom a:hover { color: #ffffff; }
+
+        @media (max-width: 640px) {
+            .register-card { padding: 24px 20px; }
         }
     </style>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <div class="max-w-2xl mx-auto register-container">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl mb-4">
-                    <i class="fas fa-user-plus text-white text-2xl"></i>
+<body>
+    <!-- HEADER -->
+    <header class="site-header" id="navbar">
+        <div style="max-width: 1400px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;">
+            <a href="/" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+                <div style="width: 42px; height: 42px; background: linear-gradient(135deg, #0d9488, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-heartbeat" style="color: white; font-size: 20px;"></i>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800">Create Account</h1>
-                <p class="text-gray-600 mt-2">Join MedLink EHR System</p>
+                <span class="logo-text">SCATON EHR</span>
+            </a>
+
+            <div style="display: flex; align-items: center; gap: 32px;" class="desktop-nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/dashboard/" class="nav-link">Dashboard</a>
+                <a href="/patients/list/" class="nav-link">Patients</a>
+                <a href="/visits/list/" class="nav-link">Visits</a>
+                <a href="/reports/" class="nav-link">Reports</a>
             </div>
 
-            <!-- Alert Container -->
-            <div id="alertContainer"></div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="/login/" class="btn-primary-nav">
+                    Sign In <i class="fas fa-sign-in-alt"></i>
+                </a>
+            </div>
+        </div>
+    </header>
 
-            <!-- Registration Form -->
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <form id="registerForm">
-                    {% csrf_token %}
-                    
-                    <!-- Personal Information -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b">Personal Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-user text-blue-500 mr-1"></i> First Name *
-                            </label>
-                            <input type="text" id="firstName" name="first_name" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-user text-blue-500 mr-1"></i> Last Name *
-                            </label>
-                            <input type="text" id="lastName" name="last_name" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
+    <!-- MAIN -->
+    <main class="page-main">
+        <div class="container mx-auto" style="max-width: 800px; margin: 0 auto;">
+            <div class="register-container">
+
+                <!-- Header -->
+                <div class="text-center mb-8" style="text-align: center; margin-bottom: 32px; color: white;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; background: linear-gradient(135deg, #0d9488, #1e3a5f); border-radius: 16px; margin-bottom: 16px;">
+                        <i class="fas fa-user-plus" style="color: white; font-size: 28px;"></i>
                     </div>
+                    <h1 style="font-size: 2rem; font-weight: 800; color: white; font-family: 'Playfair Display', serif; margin-bottom: 6px;">Create Account</h1>
+                    <p style="color: #bfdbfe; font-size: 0.95rem;">Join MedLink EHR System</p>
+                </div>
 
-                    <!-- Account Information -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b mt-4">Account Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-envelope text-blue-500 mr-1"></i> Email *
-                            </label>
-                            <input type="email" id="email" name="email" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-user-circle text-blue-500 mr-1"></i> Username *
-                            </label>
-                            <input type="text" id="username" name="username" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                    </div>
+                <!-- Alert Container -->
+                <div id="alertContainer"></div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-lock text-blue-500 mr-1"></i> Password *
-                            </label>
-                            <input type="password" id="password" name="password" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-lock text-blue-500 mr-1"></i> Confirm Password *
-                            </label>
-                            <input type="password" id="password2" name="password2" required
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                    </div>
+                <!-- Registration Form Card -->
+                <div class="register-card">
+                    <form id="registerForm">
+                        {% csrf_token %}
 
-                    <!-- Contact Information -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b mt-4">Contact Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-phone text-blue-500 mr-1"></i> Phone Number
-                            </label>
-                            <input type="tel" id="phone" name="phone_number"
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
+                        <!-- Personal Information -->
+                        <h3 class="section-title">Personal Information</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-user"></i> First Name *
+                                </label>
+                                <input type="text" id="firstName" name="first_name" required class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-user"></i> Last Name *
+                                </label>
+                                <input type="text" id="lastName" name="last_name" required class="form-input">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-id-card text-blue-500 mr-1"></i> Employee Number
-                            </label>
-                            <input type="text" id="employeeNumber" name="employee_number"
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-venus-mars text-blue-500 mr-1"></i> Gender
+                        <!-- Account Information -->
+                        <h3 class="section-title">Account Information</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-envelope"></i> Email *
+                                </label>
+                                <input type="email" id="email" name="email" required class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-user-circle"></i> Username *
+                                </label>
+                                <input type="text" id="username" name="username" required class="form-input">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-lock"></i> Password *
+                                </label>
+                                <input type="password" id="password" name="password" required class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-lock"></i> Confirm Password *
+                                </label>
+                                <input type="password" id="password2" name="password2" required class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- Contact Information -->
+                        <h3 class="section-title">Contact Information</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-phone"></i> Phone Number
+                                </label>
+                                <input type="tel" id="phone" name="phone_number" class="form-input">
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-id-card"></i> Employee Number
+                                </label>
+                                <input type="text" id="employeeNumber" name="employee_number" class="form-input">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-venus-mars"></i> Gender
+                                </label>
+                                <select id="gender" name="gender" class="form-input">
+                                    <option value="">Select Gender</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="form-label">
+                                    <i class="fas fa-calendar"></i> Date of Birth
+                                </label>
+                                <input type="date" id="dob" name="date_of_birth" class="form-input">
+                            </div>
+                        </div>
+
+                        <!-- Role Selection — DROPDOWN -->
+                        <h3 class="section-title">Select Your Role</h3>
+                        <div style="margin-bottom: 24px;">
+                            <label class="form-label">
+                                <i class="fas fa-user-tag"></i> Role *
                             </label>
-                            <select id="gender" name="gender" class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                                <option value="">Select Gender</option>
-                                <option value="M">Male</option>
-                                <option value="F">Female</option>
-                                <option value="O">Other</option>
+                            <select id="role" name="role" required class="form-input">
+                                <option value="">-- Select your role --</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="nurse">Nurse</option>
+                                <option value="clinical_officer">Clinical Officer</option>
+                                <option value="lab_technician">Laboratory Technician</option>
+                                <option value="pharmacist">Pharmacist</option>
+                                <option value="pharmacy_tech">Pharmacy Technician</option>
+                                <option value="records_officer">Medical Records Officer</option>
+                                <option value="receptionist">Receptionist</option>
+                                <option value="cashier">Cashier</option>
+                                <option value="ward_clerk">Ward Clerk</option>
+                                <option value="manager">Manager</option>
+                                <option value="viewer">Viewer</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                <i class="fas fa-calendar text-blue-500 mr-1"></i> Date of Birth
-                            </label>
-                            <input type="date" id="dob" name="date_of_birth"
-                                class="form-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none">
-                        </div>
+
+                        <button type="submit" class="btn-register" id="registerBtn">
+                            <span id="btnText">Create Account</span>
+                            <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                        </button>
+                    </form>
+
+                    <div style="text-align: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                        <p style="color: #6b7280; font-size: 0.875rem;">
+                            Already have an account?
+                            <a href="/login/" style="color: #0d9488; font-weight: 600; text-decoration: none;">Login here</a>
+                        </p>
                     </div>
-
-                    <!-- Role Selection -->
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 pb-2 border-b mt-4">Select Your Role</h3>
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-6">
-                        <div class="role-card rounded-lg p-3 text-center" data-role="doctor">
-                            <i class="fas fa-user-md text-2xl text-blue-500 mb-2"></i>
-                            <p class="text-sm font-medium">Doctor</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="nurse">
-                            <i class="fas fa-user-nurse text-2xl text-green-500 mb-2"></i>
-                            <p class="text-sm font-medium">Nurse</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="lab_technician">
-                            <i class="fas fa-microscope text-2xl text-purple-500 mb-2"></i>
-                            <p class="text-sm font-medium">Lab Technician</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="pharmacist">
-                            <i class="fas fa-capsules text-2xl text-orange-500 mb-2"></i>
-                            <p class="text-sm font-medium">Pharmacist</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="receptionist">
-                            <i class="fas fa-calendar-check text-2xl text-teal-500 mb-2"></i>
-                            <p class="text-sm font-medium">Receptionist</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="cashier">
-                            <i class="fas fa-money-bill-wave text-2xl text-yellow-500 mb-2"></i>
-                            <p class="text-sm font-medium">Cashier</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="clinical_officer">
-                            <i class="fas fa-stethoscope text-2xl text-indigo-500 mb-2"></i>
-                            <p class="text-sm font-medium">Clinical Officer</p>
-                        </div>
-                        <div class="role-card rounded-lg p-3 text-center" data-role="viewer">
-                            <i class="fas fa-eye text-2xl text-gray-500 mb-2"></i>
-                            <p class="text-sm font-medium">Viewer</p>
-                        </div>
-                    </div>
-                    <input type="hidden" id="role" name="role" value="">
-
-                    <button type="submit" class="btn-register w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
-                        <span id="btnText">Create Account</span>
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </form>
-
-                <div class="text-center mt-6">
-                    <p class="text-gray-600">Already have an account? 
-                        <a href="/login/" class="text-blue-600 hover:text-blue-700 font-medium">Login here</a>
-                    </p>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-grid">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #0d9488, #2563eb); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-heartbeat" style="color: white; font-size: 18px;"></i>
+                    </div>
+                    <span style="font-size: 1.25rem; font-weight: 700; color: white; font-family: 'Playfair Display', serif;">Scaton EHR</span>
+                </div>
+                <p>Revolutionizing healthcare delivery in Kenya through innovative electronic health record solutions.</p>
+            </div>
+            <div>
+                <h4>Quick Links</h4>
+                <a href="/" class="footer-link">Home</a>
+                <a href="/dashboard/" class="footer-link">Dashboard</a>
+                <a href="/patients/list/" class="footer-link">Patients</a>
+                <a href="/visits/list/" class="footer-link">Visits</a>
+                <a href="/admissions/list/" class="footer-link">Admissions</a>
+            </div>
+            <div>
+                <h4>Services</h4>
+                <a href="/laboratory/requests/" class="footer-link">Laboratory</a>
+                <a href="/pharmacy/prescriptions/" class="footer-link">Pharmacy</a>
+                <a href="/referrals/list/" class="footer-link">Referrals</a>
+                <a href="/reports/" class="footer-link">Reports</a>
+                <a href="/accounts/profile-page/" class="footer-link">My Profile</a>
+            </div>
+            <div>
+                <h4>Contact</h4>
+                <p><i class="fas fa-map-marker-alt" style="margin-right: 8px;"></i>Westlands Business Park<br>Nairobi, Kenya</p>
+                <p><i class="fas fa-phone" style="margin-right: 8px;"></i>+254 114 271 816</p>
+                <p><i class="fas fa-envelope" style="margin-right: 8px;"></i>info@scaton.co.ke</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Scaton EHR. All rights reserved. |
+            <a href="#">Privacy Policy</a> |
+            <a href="#">Terms of Service</a> |
+            <a href="#">Cookie Policy</a>
+        </div>
+    </footer>
 
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        let selectedRole = '';
-
-        // Role selection
-        document.querySelectorAll('.role-card').forEach(card => {
-            card.addEventListener('click', () => {
-                document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedRole = card.dataset.role;
-                document.getElementById('role').value = selectedRole;
-            });
-        });
 
         function showAlert(message, type) {
             const container = document.getElementById('alertContainer');
             const alert = document.createElement('div');
             alert.className = `alert alert-${type}`;
-            alert.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'} mr-2"></i> ${message}`;
+            alert.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> <span>${message}</span>`;
             container.appendChild(alert);
             setTimeout(() => alert.remove(), 5000);
         }
@@ -278,35 +527,36 @@
 
         function showLoading() {
             document.getElementById('btnText').innerHTML = '<span class="loading-spinner"></span> Creating...';
-            document.querySelector('.btn-register').disabled = true;
+            document.getElementById('registerBtn').disabled = true;
         }
 
         function hideLoading() {
             document.getElementById('btnText').innerHTML = 'Create Account';
-            document.querySelector('.btn-register').disabled = false;
+            document.getElementById('registerBtn').disabled = false;
         }
 
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const password = document.getElementById('password').value;
             const password2 = document.getElementById('password2').value;
-            
+            const role = document.getElementById('role').value;
+
             if (password !== password2) {
                 showAlert('Passwords do not match', 'error');
                 return;
             }
-            
+
             if (password.length < 6) {
                 showAlert('Password must be at least 6 characters', 'error');
                 return;
             }
-            
-            if (!selectedRole) {
+
+            if (!role) {
                 showAlert('Please select a role', 'error');
                 return;
             }
-            
+
             const formData = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
@@ -315,15 +565,15 @@
                 first_name: document.getElementById('firstName').value,
                 last_name: document.getElementById('lastName').value,
                 phone_number: document.getElementById('phone').value,
-                role: selectedRole,
+                role: role,
                 employee_number: document.getElementById('employeeNumber').value,
                 gender: document.getElementById('gender').value,
                 date_of_birth: document.getElementById('dob').value
             };
-            
+
             clearAlerts();
             showLoading();
-            
+
             try {
                 const response = await fetch('/api/accounts/auth/register/', {
                     method: 'POST',
@@ -333,16 +583,16 @@
                     },
                     body: JSON.stringify(formData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok && data.success) {
                     localStorage.setItem('access_token', data.access);
                     localStorage.setItem('refresh_token', data.refresh);
                     localStorage.setItem('user_role', data.role);
-                    
+
                     showAlert('Registration successful! Redirecting to dashboard...', 'success');
-                    
+
                     setTimeout(() => {
                         window.location.href = data.dashboard_url;
                     }, 1500);
@@ -361,6 +611,13 @@
             } finally {
                 hideLoading();
             }
+        });
+
+        // Sticky header scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', function() {
+            if (window.scrollY > 50) navbar.classList.add('scrolled');
+            else navbar.classList.remove('scrolled');
         });
     </script>
 </body>
