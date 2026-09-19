@@ -399,7 +399,8 @@ class AuthViewSet(viewsets.GenericViewSet):
     def verify_2fa(self, request):
         """Verify 2FA code and return JWT tokens with role-based redirect"""
         otp = request.data.get('otp')
-        user_id = request.session.get('2fa_user_id')
+        # Accept user_id from session OR from request body (frontend sends it)
+        user_id = request.session.get('2fa_user_id') or request.data.get('user_id')
         
         if not user_id:
             return Response(
@@ -412,7 +413,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         
         if cached_otp and cached_otp == otp:
             cache.delete(f'2fa_{user.id}')
-            del request.session['2fa_user_id']
+            if '2fa_user_id' in request.session:
+                del request.session['2fa_user_id']
             
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
@@ -445,6 +447,40 @@ class AuthViewSet(viewsets.GenericViewSet):
         
         user.increment_login_attempts()
         return Response({'error': 'Invalid OTP'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    def resend_otp(self, request):
+        """Resend OTP for pending 2FA login"""
+        user_id = request.data.get('user_id') or request.session.get('2fa_user_id')
+        
+        if not user_id:
+            return Response(
+                {'error': 'user_id required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Generate fresh OTP and cache it
+        otp = generate_otp()
+        cache.set(f'2fa_{user.id}', otp, timeout=300)
+        
+        # Send via preferred channel
+        if user.receive_sms_notifications and user.phone_number:
+            send_otp_sms(user.phone_number, otp)
+        else:
+            send_otp_email(user.email, otp)
+        
+        # Keep session marker alive
+        request.session['2fa_user_id'] = user.id
+        
+        return Response({'message': 'OTP resent successfully'})
     
     @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated, IsAuthenticatedAndActive])
     def logout(self, request):
