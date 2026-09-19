@@ -82,33 +82,75 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
-    
+
+    # Make optional fields tolerant of blank strings and nulls
+    employee_number = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    gender = serializers.ChoiceField(
+        choices=User.GENDER_CHOICES,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+    )
+    date_of_birth = serializers.DateField(required=False, allow_null=True)
+
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'password2', 'first_name', 'last_name', 
-                  'phone_number', 'role', 'employee_number', 'gender', 'date_of_birth']
-    
+        fields = [
+            'username', 'email', 'password', 'password2', 'first_name', 'last_name',
+            'phone_number', 'role', 'employee_number', 'gender', 'date_of_birth'
+        ]
+
+    def validate_date_of_birth(self, value):
+        # Treat blank string as None
+        if value == '' or value is None:
+            return None
+        return value
+
+    def validate_employee_number(self, value):
+        # Treat blank string as None so the model auto-generates one
+        if value == '' or value is None:
+            return None
+        return value
+
+    def validate_gender(self, value):
+        # Treat blank string as None
+        if value == '' or value is None:
+            return None
+        return value
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password2": "Password fields didn't match."})
-        
+
         # Prevent admin/super_admin registration through public registration
         if attrs.get('role') in ['admin', 'super_admin']:
-            raise serializers.ValidationError({"role": "Admin accounts cannot be created through registration. Contact system administrator."})
-        
+            raise serializers.ValidationError({
+                "role": "Admin accounts cannot be created through registration. Contact system administrator."
+            })
+
         # Validate role is valid
-        valid_roles = ['doctor', 'clinical_officer', 'nurse', 'lab_technician', 
-                       'pharmacist', 'pharmacy_tech', 'records_officer', 'receptionist', 
-                       'cashier', 'manager', 'viewer']
+        valid_roles = [
+            'doctor', 'clinical_officer', 'nurse', 'lab_technician',
+            'pharmacist', 'pharmacy_tech', 'records_officer', 'receptionist',
+            'cashier', 'manager', 'viewer'
+        ]
         if attrs.get('role') not in valid_roles:
-            raise serializers.ValidationError({"role": f"Invalid role. Valid roles are: {', '.join(valid_roles)}"})
-        
+            raise serializers.ValidationError({
+                "role": f"Invalid role. Valid roles are: {', '.join(valid_roles)}"
+            })
+
         return attrs
-    
+
     @transaction.atomic
     def create(self, validated_data):
         validated_data.pop('password2')
         password = validated_data.pop('password')
+
+        # Drop blank/None optional fields so the model defaults kick in
+        for key in ['employee_number', 'gender', 'date_of_birth']:
+            if key in validated_data and (validated_data[key] == '' or validated_data[key] is None):
+                validated_data.pop(key, None)
+
         user = User(**validated_data)
         user.set_password(password)
         user.is_active = True

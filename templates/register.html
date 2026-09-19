@@ -426,7 +426,7 @@
                             </div>
                         </div>
 
-                        <!-- Role Selection — DROPDOWN -->
+                        <!-- Role Selection -->
                         <h3 class="section-title">Select Your Role</h3>
                         <div style="margin-bottom: 24px;">
                             <label class="form-label">
@@ -557,6 +557,7 @@
                 return;
             }
 
+            // Build base required payload
             const formData = {
                 username: document.getElementById('username').value,
                 email: document.getElementById('email').value,
@@ -564,12 +565,22 @@
                 password2: password2,
                 first_name: document.getElementById('firstName').value,
                 last_name: document.getElementById('lastName').value,
-                phone_number: document.getElementById('phone').value,
                 role: role,
+            };
+
+            // Only include optional fields if they actually have values
+            const optional = {
+                phone_number: document.getElementById('phone').value,
                 employee_number: document.getElementById('employeeNumber').value,
                 gender: document.getElementById('gender').value,
-                date_of_birth: document.getElementById('dob').value
+                date_of_birth: document.getElementById('dob').value,
             };
+
+            Object.entries(optional).forEach(([key, value]) => {
+                if (value && value.trim() !== '') {
+                    formData[key] = value;
+                }
+            });
 
             clearAlerts();
             showLoading();
@@ -597,12 +608,24 @@
                         window.location.href = data.dashboard_url;
                     }, 1500);
                 } else {
+                    // Show first error from response
                     let errorMsg = 'Registration failed';
-                    if (data.role) errorMsg = data.role[0];
-                    else if (data.username) errorMsg = data.username[0];
-                    else if (data.email) errorMsg = data.email[0];
-                    else if (data.password) errorMsg = data.password[0];
-                    else if (data.non_field_errors) errorMsg = data.non_field_errors[0];
+                    const fields = ['role', 'username', 'email', 'password', 'password2',
+                                    'gender', 'date_of_birth', 'employee_number',
+                                    'phone_number', 'first_name', 'last_name'];
+
+                    for (const field of fields) {
+                        if (data[field]) {
+                            errorMsg = Array.isArray(data[field]) ? data[field][0] : data[field];
+                            break;
+                        }
+                    }
+                    if (errorMsg === 'Registration failed' && data.non_field_errors) {
+                        errorMsg = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors;
+                    }
+                    if (errorMsg === 'Registration failed' && data.detail) {
+                        errorMsg = data.detail;
+                    }
                     showAlert(errorMsg, 'error');
                 }
             } catch (error) {
