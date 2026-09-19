@@ -14,9 +14,6 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiExampl
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect
 
-# Schema view for API documentation is now handled by drf-spectacular
-# No need for get_schema_view as we use SpectacularAPIView directly
-
 # Custom logout view that accepts GET requests
 def custom_logout(request):
     from django.contrib.auth import logout
@@ -30,11 +27,11 @@ urlpatterns = [
     # API Documentation - drf-spectacular
     path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='schema-swagger-ui'),
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='schema-redoc'),
-    path('api.json/', SpectacularAPIView.as_view(), name='schema'),  # Changed from schema-json to schema
+    path('api.json/', SpectacularAPIView.as_view(), name='schema'),
     
     # Authentication URLs
     path('login/', LoginView.as_view(template_name='login.html'), name='login'),
-    path('logout/', custom_logout, name='logout'),  # Changed to custom logout
+    path('logout/', custom_logout, name='logout'),
     path('register/', TemplateView.as_view(template_name='register.html'), name='register'),
     
     # JWT Authentication API
@@ -60,8 +57,7 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     
     # API URLs (all under /api/ prefix)
-    # NOTE: accounts is NOT included here — its API lives under /accounts/api/
-    # because apps/accounts/urls.py mounts the router at 'api/'.
+    path('api/', include('apps.accounts.urls')),
     path('api/patients/', include('apps.patients.urls')),
     path('api/visits/', include('apps.visits.urls')),
     path('api/triage/', include('apps.triage.urls')),
@@ -70,7 +66,7 @@ urlpatterns = [
     path('api/pharmacy/', include('apps.pharmacy.urls')),
     path('api/referrals/', include('apps.referrals.urls')),
     path('api/reports/', include('apps.reports.urls')),
-    path('api/', include('apps.dashboard.urls')),
+    path('api/dashboard/', include('apps.dashboard.urls')),
 ]
 
 # Serve media and static files in development

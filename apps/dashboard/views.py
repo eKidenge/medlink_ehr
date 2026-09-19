@@ -485,7 +485,7 @@ class DashboardViewSet(viewsets.GenericViewSet):
         
         return Response(kpis)
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['get'], url_path='activity')
     def activity_feed(self, request):
         """Get recent activity feed"""
         from apps.accounts.models import AuditLog
