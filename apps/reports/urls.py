@@ -20,17 +20,14 @@ urlpatterns = [
     # ------------------------------------------------------------
     # HTML PAGES — must come before the router include
     # ------------------------------------------------------------
+    path('', reports_index_page, name='reports-index-page'),
     path('generate/', reports_generate_page, name='reports-generate-page'),
     path('templates-html/', reports_templates_page, name='reports-templates-page'),
     path('view/', reports_view_page, name='reports-view-page'),
     path('view/<int:job_id>/', reports_view_page, name='reports-view-detail-page'),
 
     # ------------------------------------------------------------
-    # DRF API + index page
+    # DRF API
     # ------------------------------------------------------------
     path('', include(router.urls)),
-
-    # The index page is served at the very root of /reports/
-    # Put it LAST so it doesn't shadow the router above
-    path('', reports_index_page, name='reports-index-page'),
 ]
