@@ -1133,6 +1133,106 @@
             display: none;
         }
     }
+
+        /* ============================================================
+       CRITICAL LAYOUT FIXES — force grid display against parent overrides
+       ============================================================ */
+    .admin-container .admin-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+        gap: 18px !important;
+        grid-auto-flow: row !important;
+    }
+
+    .admin-container .admin-section {
+        display: block !important;
+        width: auto !important;
+        padding: 28px 32px !important;
+    }
+
+    .admin-container .admin-card {
+        display: block !important;
+        width: auto !important;
+        float: none !important;
+        padding: 22px 24px !important;
+    }
+
+    .admin-container .quick-stat {
+        display: block !important;
+        width: auto !important;
+        float: none !important;
+        padding: 22px 18px !important;
+        text-align: center !important;
+    }
+
+    .admin-container .user-item {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        width: auto !important;
+    }
+
+    /* Force Font Awesome to render */
+    .admin-container i.fas,
+    .admin-container i.far,
+    .admin-container i.fab {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        display: inline-block !important;
+    }
+
+    /* Stat number: force visible navy color */
+    .admin-container .quick-stat-number {
+        color: #1a2947 !important;
+        -webkit-text-fill-color: #1a2947 !important;
+        background: none !important;
+        background-clip: initial !important;
+        -webkit-background-clip: initial !important;
+        font-size: 2.4rem !important;
+        font-weight: 700 !important;
+        line-height: 1.1 !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+    }
+
+    /* Icon box: navy block with white glyph */
+    .admin-container .quick-stat-icon {
+        color: #1a2947 !important;
+        font-size: 1.6rem !important;
+        margin-bottom: 10px !important;
+        display: block !important;
+    }
+
+    .admin-container .quick-stat-icon i {
+        color: #1a2947 !important;
+    }
+
+    /* Section title flex layout */
+    .admin-container .admin-section-title {
+        display: flex !important;
+        align-items: center !important;
+        gap: 14px !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .admin-container .admin-section-title i {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        background: #1a2947 !important;
+        color: #ffffff !important;
+        border-radius: 50% !important;
+    }
+
+    /* Refresh button: keep on same line as title */
+    .admin-container .admin-section-title .btn-refresh {
+        display: inline-flex !important;
+        margin-left: auto !important;
+    }
 </style>
 {% endblock %}
 
