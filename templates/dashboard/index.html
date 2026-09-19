@@ -1106,12 +1106,12 @@
 <!-- Admin Quick Actions - Only visible to admin users -->
 {% if user.role == 'super_admin' or user.role == 'admin' %}
 <div class="admin-actions">
-    <div class="admin-card" onclick="window.location.href='/api/accounts/users/'">
+    <div class="admin-card" onclick="window.location.href='/accounts/users-page/'">
         <i class="fas fa-users" style="color: #1a2947;"></i>
         <h4>User Management</h4>
         <p>Add, edit, or deactivate users</p>
     </div>
-    <div class="admin-card" onclick="window.location.href='/api/accounts/departments/'">
+    <div class="admin-card" onclick="window.location.href='/accounts/departments-page/'">
         <i class="fas fa-building" style="color: #1a2947;"></i>
         <h4>Departments</h4>
         <p>Manage departments and wards</p>
@@ -1121,7 +1121,7 @@
         <h4>Reports</h4>
         <p>Generate system reports</p>
     </div>
-    <div class="admin-card" onclick="window.location.href='/reports/'">
+    <div class="admin-card" onclick="window.location.href='/accounts/audit-page/'">
         <i class="fas fa-history" style="color: #1a2947;"></i>
         <h4>Audit Logs</h4>
         <p>View all system activities</p>
@@ -1441,9 +1441,9 @@
             if (!stats || stats.error) return;
 
             const tasks = [];
-            if (stats.users?.online > 0) tasks.push({ type: 'Users', count: stats.users.online, label: 'Users online now', link: '/api/accounts/users/', icon: 'fa-users', color: '#1e3a5f' });
-            if (stats.users?.locked > 0) tasks.push({ type: 'Security', count: stats.users.locked, label: 'Locked accounts', link: '/api/accounts/users/', icon: 'fa-lock', color: '#7a2b2b' });
-            if (stats.departments?.total > 0) tasks.push({ type: 'Departments', count: stats.departments.total, label: 'Total departments', link: '/api/accounts/departments/', icon: 'fa-building', color: '#2d5a3d' });
+            if (stats.users?.online > 0) tasks.push({ type: 'Users', count: stats.users.online, label: 'Users online now', link: '/accounts/users-page/', icon: 'fa-users', color: '#1e3a5f' });
+            if (stats.users?.locked > 0) tasks.push({ type: 'Security', count: stats.users.locked, label: 'Locked accounts', link: '/accounts/users-page/', icon: 'fa-lock', color: '#7a2b2b' });
+            if (stats.departments?.total > 0) tasks.push({ type: 'Departments', count: stats.departments.total, label: 'Total departments', link: '/accounts/departments-page/', icon: 'fa-building', color: '#2d5a3d' });
 
             if (tasks.length === 0) {
                 container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-check-circle" style="color: #2d5a3d;"></i> All caught up! No pending tasks.</div>';
