@@ -301,3 +301,41 @@ class LabResultViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(lab_request_id=lab_request_id)
         
         return queryset
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def lab_requests_page(request):
+    """Render the lab requests list page."""
+    return render(request, 'laboratory/requests.html')
+
+
+@login_required
+def lab_create_page(request):
+    """Render the lab request creation page."""
+    return render(request, 'laboratory/create.html')
+
+
+@login_required
+def lab_detail_page(request, pk):
+    """Render a single lab request detail page."""
+    return render(request, 'laboratory/detail.html', {'request_id': pk})
+
+
+@login_required
+def lab_processing_page(request):
+    """Render the lab processing page."""
+    return render(request, 'laboratory/processing.html')
+
+
+@login_required
+def lab_results_page(request, pk=None):
+    """Render the lab results page (list or single request)."""
+    return render(request, 'laboratory/results.html', {'request_id': pk})

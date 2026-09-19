@@ -268,3 +268,47 @@ class PatientViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def patients_list_page(request):
+    """Render the patients list page."""
+    return render(request, 'patients/list.html')
+
+
+@login_required
+def patient_create_page(request):
+    """Render the patient create page."""
+    return render(request, 'patients/create.html')
+
+
+@login_required
+def patient_detail_page(request, pk):
+    """Render a single patient's detail page."""
+    return render(request, 'patients/detail.html', {'patient_id': pk})
+
+
+@login_required
+def patient_edit_page(request, pk):
+    """Render the patient edit page."""
+    return render(request, 'patients/edit.html', {'patient_id': pk})
+
+
+@login_required
+def patient_merge_page(request):
+    """Render the patient merge page."""
+    return render(request, 'patients/merge.html')
+
+
+@login_required
+def patient_qr_page(request, pk):
+    """Render the patient QR code page."""
+    return render(request, 'patients/qr.html', {'patient_id': pk})
