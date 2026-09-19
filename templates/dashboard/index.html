@@ -1106,25 +1106,25 @@
 <!-- Admin Quick Actions - Only visible to admin users -->
 {% if user.role == 'super_admin' or user.role == 'admin' %}
 <div class="admin-actions">
-    <div class="admin-card" onclick="window.location.href='/accounts/users/'">
+    <div class="admin-card" onclick="window.location.href='/api/accounts/users/'">
         <i class="fas fa-users" style="color: #1a2947;"></i>
         <h4>User Management</h4>
         <p>Add, edit, or deactivate users</p>
     </div>
-    <div class="admin-card" onclick="window.location.href='/accounts/departments/'">
+    <div class="admin-card" onclick="window.location.href='/api/accounts/departments/'">
         <i class="fas fa-building" style="color: #1a2947;"></i>
         <h4>Departments</h4>
         <p>Manage departments and wards</p>
-    </div>
-    <div class="admin-card" onclick="window.location.href='/audit-logs/'">
-        <i class="fas fa-history" style="color: #1a2947;"></i>
-        <h4>Audit Logs</h4>
-        <p>View all system activities</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/reports/'">
         <i class="fas fa-chart-pie" style="color: #1a2947;"></i>
         <h4>Reports</h4>
         <p>Generate system reports</p>
+    </div>
+    <div class="admin-card" onclick="window.location.href='/reports/'">
+        <i class="fas fa-history" style="color: #1a2947;"></i>
+        <h4>Audit Logs</h4>
+        <p>View all system activities</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/settings/backup/'">
         <i class="fas fa-database" style="color: #1a2947;"></i>
@@ -1276,12 +1276,10 @@
     let visitsChart, admissionsChart;
     let refreshInterval;
 
-    // Format number with commas
     function formatNumber(num) {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    // Safe JSON parser — returns {} if the server sends HTML instead of JSON
     async function safeJson(response) {
         const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('application/json')) {
@@ -1291,15 +1289,10 @@
         return { error: 'Server returned non-JSON response (HTTP ' + response.status + ')' };
     }
 
-    async function apiCall(endpoint, method = 'GET', data = null) {
+    async function dashboardApiCall(endpoint, method = 'GET', data = null) {
         const token = localStorage.getItem('access_token');
-        
-        if (!token) {
-            console.error('No authentication token found');
-            window.location.href = '/login/';
-            return null;
-        }
-        
+        if (!token) { window.location.href = '/login/'; return null; }
+
         const options = {
             method: method,
             headers: {
@@ -1308,14 +1301,11 @@
                 'X-CSRFToken': csrfToken
             }
         };
-        
-        if (data) {
-            options.body = JSON.stringify(data);
-        }
-        
+        if (data) options.body = JSON.stringify(data);
+
         try {
-            const response = await fetch(`/api/dashboard${endpoint}`, options);
-            
+            const response = await fetch(`${endpoint}`, options);
+
             if (response.status === 401) {
                 const refreshToken = localStorage.getItem('refresh_token');
                 if (refreshToken) {
@@ -1324,11 +1314,10 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ refresh: refreshToken })
                     });
-                    
                     if (refreshResponse.ok) {
                         const refreshData = await refreshResponse.json();
                         localStorage.setItem('access_token', refreshData.access);
-                        return apiCall(endpoint, method, data);
+                        return dashboardApiCall(endpoint, method, data);
                     } else {
                         localStorage.removeItem('access_token');
                         localStorage.removeItem('refresh_token');
@@ -1340,16 +1329,10 @@
                     return null;
                 }
             }
-            
-            if (response.status === 404) {
-                console.warn(`Endpoint not found: /api/dashboard${endpoint}`);
-                return null;
-            }
-            
+
             if (!response.ok) {
                 throw new Error(`API call failed: ${response.status}`);
             }
-            
             return await safeJson(response);
         } catch (error) {
             console.error(`API call failed: ${endpoint}`, error);
@@ -1359,33 +1342,26 @@
 
     async function loadDashboardData() {
         const token = localStorage.getItem('access_token');
-        if (!token) {
-            window.location.href = '/login/';
-            return;
-        }
-        
+        if (!token) { window.location.href = '/login/'; return; }
+
         try {
-            const stats = await apiCall('/dashboard/stats/');
+            const stats = await dashboardApiCall('/api/dashboard/stats/');
             if (stats && !stats.error) {
                 const el = (id) => document.getElementById(id);
-                if (el('totalPatients')) el('totalPatients').textContent = formatNumber(stats.patients?.total || 0);
-                if (el('todayVisits')) el('todayVisits').textContent = formatNumber(stats.visits?.today || 0);
-                if (el('waitingPatients')) el('waitingPatients').textContent = formatNumber(stats.visits?.waiting || 0);
-                if (el('currentAdmissions')) el('currentAdmissions').textContent = formatNumber(stats.admissions?.current || 0);
+                if (el('totalPatients')) el('totalPatients').textContent = formatNumber(stats.users?.total || 0);
+                if (el('todayVisits')) el('todayVisits').textContent = formatNumber(stats.users?.active || 0);
+                if (el('waitingPatients')) el('waitingPatients').textContent = formatNumber(stats.users?.online || 0);
+                if (el('currentAdmissions')) el('currentAdmissions').textContent = formatNumber(stats.departments?.total || 0);
             }
 
-            const kpis = await apiCall('/dashboard/kpis/');
-            if (kpis && !kpis.error) {
-                renderKPIs(kpis);
-            }
-            
+            const kpis = await dashboardApiCall('/api/dashboard/kpis/');
+            if (kpis && !kpis.error) renderKPIs(kpis);
+
             await loadActivityFeed();
             await loadPendingTasks();
             await loadCharts();
-            
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
-            showAlert('Failed to load dashboard data. Please refresh.', 'danger');
         }
     }
 
@@ -1393,7 +1369,7 @@
         const kpisContainer = document.getElementById('kpisContainer');
         if (!kpisContainer) return;
         kpisContainer.innerHTML = '';
-        
+
         const kpiItems = [
             { label: 'Patient Satisfaction', value: kpis.patient_satisfaction?.value || 0, trend: kpis.patient_satisfaction?.trend || '0%', target: kpis.patient_satisfaction?.target || 90, unit: '%', icon: 'fa-smile' },
             { label: 'Avg Wait Time', value: kpis.average_wait_time?.value || 0, trend: kpis.average_wait_time?.trend || '0%', target: kpis.average_wait_time?.target || 20, unit: 'min', icon: 'fa-hourglass-half' },
@@ -1402,12 +1378,12 @@
             { label: 'Lab Turnaround', value: kpis.lab_turnaround_time?.value || 0, trend: kpis.lab_turnaround_time?.trend || '0%', target: kpis.lab_turnaround_time?.target || 24, unit: 'hrs', icon: 'fa-microscope' },
             { label: 'Revenue Growth', value: Math.abs(kpis.revenue_growth?.value || 0).toFixed(1), trend: kpis.revenue_growth?.trend || '0%', target: kpis.revenue_growth?.target || 15, unit: '%', icon: 'fa-chart-bar' }
         ];
-        
+
         kpiItems.forEach(kpi => {
             const trendValue = parseFloat(kpi.trend) || 0;
             const trendClass = trendValue >= 0 ? 'trend-up' : 'trend-down';
             const trendIcon = trendValue >= 0 ? '↑' : '↓';
-            
+
             kpisContainer.innerHTML += `
                 <div class="kpi-card">
                     <div class="kpi-value">${typeof kpi.value === 'number' ? kpi.value.toFixed(1) : kpi.value}${kpi.unit}</div>
@@ -1423,17 +1399,17 @@
 
     async function loadActivityFeed() {
         try {
-            const activities = await apiCall('/dashboard/activity/');
+            const activities = await dashboardApiCall('/api/dashboard/activity/');
             const container = document.getElementById('activityFeed');
             if (!container) return;
-            
+
             if (!activities || activities.error || (Array.isArray(activities) && activities.length === 0)) {
                 container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-inbox"></i> No recent activity</div>';
                 return;
             }
-            
+
             const list = Array.isArray(activities) ? activities : (activities.results || []);
-            
+
             container.innerHTML = list.slice(0, 15).map((activity, index) => `
                 <div class="activity-item" style="animation-delay: ${index * 0.05}s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1458,24 +1434,22 @@
 
     async function loadPendingTasks() {
         try {
-            const stats = await apiCall('/dashboard/stats/');
+            const stats = await dashboardApiCall('/api/dashboard/stats/');
             const container = document.getElementById('pendingTasks');
             if (!container) return;
-            
+
             if (!stats || stats.error) return;
-            
+
             const tasks = [];
-            if (stats.laboratory?.pending > 0) tasks.push({ type: 'Laboratory', count: stats.laboratory.pending, label: 'Pending lab tests', link: '/laboratory/requests/', icon: 'fa-microscope', color: '#1e3a5f' });
-            if (stats.pharmacy?.pending_prescriptions > 0) tasks.push({ type: 'Pharmacy', count: stats.pharmacy.pending_prescriptions, label: 'Pending prescriptions', link: '/pharmacy/prescriptions/', icon: 'fa-capsules', color: '#2d5a3d' });
-            if (stats.visits?.waiting > 0) tasks.push({ type: 'Triage', count: stats.visits.waiting, label: 'Patients waiting', link: '/triage/waiting/', icon: 'fa-clock', color: '#8a5a1e' });
-            if (stats.admissions?.available_beds < 10 && stats.admissions?.available_beds >= 0) tasks.push({ type: 'Admissions', count: stats.admissions.available_beds, label: 'Available beds remaining', link: '/admissions/wards/', icon: 'fa-bed', color: '#7a2b2b' });
-            if (stats.pharmacy?.low_stock > 0) tasks.push({ type: 'Inventory', count: stats.pharmacy.low_stock, label: 'Low stock medications', link: '/pharmacy/inventory/', icon: 'fa-boxes', color: '#8b6f3d' });
-            
+            if (stats.users?.online > 0) tasks.push({ type: 'Users', count: stats.users.online, label: 'Users online now', link: '/api/accounts/users/', icon: 'fa-users', color: '#1e3a5f' });
+            if (stats.users?.locked > 0) tasks.push({ type: 'Security', count: stats.users.locked, label: 'Locked accounts', link: '/api/accounts/users/', icon: 'fa-lock', color: '#7a2b2b' });
+            if (stats.departments?.total > 0) tasks.push({ type: 'Departments', count: stats.departments.total, label: 'Total departments', link: '/api/accounts/departments/', icon: 'fa-building', color: '#2d5a3d' });
+
             if (tasks.length === 0) {
                 container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-check-circle" style="color: #2d5a3d;"></i> All caught up! No pending tasks.</div>';
                 return;
             }
-            
+
             container.innerHTML = tasks.map(task => `
                 <div class="activity-item" onclick="window.location.href='${task.link}'" style="cursor: pointer;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1502,10 +1476,10 @@
             const last7Days = [];
             const visitsCount = [];
             const today = new Date();
-            
-            const stats = await apiCall('/dashboard/stats/');
-            const currentVisits = (stats && !stats.error) ? (stats.visits?.today || 0) : 0;
-            
+
+            const stats = await dashboardApiCall('/api/dashboard/stats/');
+            const currentVisits = (stats && !stats.error) ? (stats.users?.active || 0) : 0;
+
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
                 date.setDate(today.getDate() - i);
@@ -1518,10 +1492,10 @@
                 }
                 visitsCount.push(dailyCount);
             }
-            
+
             if (visitsChart) visitsChart.destroy();
             if (admissionsChart) admissionsChart.destroy();
-            
+
             const visitsEl = document.getElementById('visitsChart');
             if (!visitsEl) return;
             const ctx1 = visitsEl.getContext('2d');
@@ -1530,7 +1504,7 @@
                 data: {
                     labels: last7Days,
                     datasets: [{
-                        label: 'Visits',
+                        label: 'Active Users',
                         data: visitsCount,
                         borderColor: '#1a2947',
                         backgroundColor: 'rgba(26, 41, 71, 0.06)',
@@ -1551,37 +1525,16 @@
                         legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: "'Times New Roman', serif", size: 13 } } },
                         tooltip: { backgroundColor: '#1a2947', titleColor: '#fff', bodyColor: '#f0ece4', padding: 10, cornerRadius: 2 }
                     },
-                    scales: { 
-                        y: { beginAtZero: true, grid: { color: 'rgba(201, 197, 188, 0.6)' }, title: { display: true, text: 'Number of Visits', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }, 
-                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } } 
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(201, 197, 188, 0.6)' }, title: { display: true, text: 'Active Users', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } },
+                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }
                     }
                 }
             });
-            
-            let wardNames = ['General Ward', 'ICU', 'Pediatric', 'Maternity', 'Emergency'];
-            let wardOccupancy = [0, 0, 0, 0, 0];
-            
-            try {
-                const wardsData = await apiCall('/admissions/wards/');
-                if (wardsData && !wardsData.error && wardsData.results && wardsData.results.length > 0) {
-                    wardNames = wardsData.results.map(w => w.name);
-                    wardOccupancy = wardsData.results.map(w => w.occupied_beds || 0);
-                } else {
-                    const admissionsStats = await apiCall('/dashboard/stats/');
-                    const currentAdm = (admissionsStats && !admissionsStats.error) ? (admissionsStats.admissions?.current || 0) : 0;
-                    wardOccupancy = [
-                        Math.floor(currentAdm * 0.35),
-                        Math.floor(currentAdm * 0.20),
-                        Math.floor(currentAdm * 0.15),
-                        Math.floor(currentAdm * 0.15),
-                        Math.floor(currentAdm * 0.15)
-                    ];
-                }
-            } catch (e) {
-                console.log('Using sample data for admissions chart');
-                wardOccupancy = [12, 8, 5, 6, 3];
-            }
-            
+
+            let wardNames = ['No data'];
+            let wardOccupancy = [0];
+
             const admEl = document.getElementById('admissionsChart');
             if (!admEl) return;
             const ctx2 = admEl.getContext('2d');
@@ -1590,9 +1543,9 @@
                 data: {
                     labels: wardNames,
                     datasets: [{
-                        label: 'Occupied Beds',
+                        label: 'Count',
                         data: wardOccupancy,
-                        backgroundColor: ['#1a2947', '#2d5a3d', '#8a5a1e', '#7a2b2b', '#2e5077'],
+                        backgroundColor: ['#1a2947'],
                         borderRadius: 2,
                         barPercentage: 0.65,
                         categoryPercentage: 0.8
@@ -1603,30 +1556,25 @@
                     maintainAspectRatio: false,
                     plugins: {
                         legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: "'Times New Roman', serif", size: 13 } } },
-                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} beds occupied` }, backgroundColor: '#1a2947', titleColor: '#fff', bodyColor: '#f0ece4', cornerRadius: 2 }
+                        tooltip: { backgroundColor: '#1a2947', titleColor: '#fff', bodyColor: '#f0ece4', cornerRadius: 2 }
                     },
-                    scales: { 
-                        y: { beginAtZero: true, title: { display: true, text: 'Number of Beds', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, grid: { color: 'rgba(201, 197, 188, 0.6)' }, max: Math.max(...wardOccupancy, 20) + 5, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }, 
-                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } } 
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Count', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, grid: { color: 'rgba(201, 197, 188, 0.6)' }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } },
+                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }
                     }
                 }
             });
-            
+
         } catch (error) {
             console.error('Failed to load charts:', error);
         }
     }
 
     function refreshActivity() {
-        const refreshBtn = document.querySelector('#activityFeed ~ .card-header .btn i');
-        if (refreshBtn) {
-            refreshBtn.style.animation = 'spin 0.6s ease-in-out';
-            setTimeout(() => { refreshBtn.style.animation = ''; }, 600);
-        }
         loadActivityFeed();
         showAlert('Activity feed refreshed', 'success');
     }
-    
+
     function escapeHtml(text) {
         if (!text) return '';
         const div = document.createElement('div');
@@ -1664,7 +1612,7 @@
             return;
         }
         loadDashboardData();
-        
+
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = setInterval(() => {
             if (localStorage.getItem('access_token')) {
