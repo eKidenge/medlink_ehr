@@ -669,26 +669,31 @@
        Below this line: formal institutional styling using
        Times New Roman / Source Serif and navy-gold institutional palette.
        Loaded AFTER the styles above so it takes visual precedence.
+       Uses "gov-" prefix to guarantee no collision with parent
+       template (.admin-* used by dashboard/index.html).
        ============================================================
        ============================================================ */
 
-    .admin-container {
+    .gov-container {
         font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
         font-size: 15px;
         color: #1f1f1f;
         max-width: 1400px;
         margin: 0 auto;
+        padding: 0 6px;
     }
 
-    .admin-container,
-    .admin-container *,
-    .admin-container *::before,
-    .admin-container *::after {
+    .gov-container,
+    .gov-container *,
+    .gov-container *::before,
+    .gov-container *::after {
         font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+        box-sizing: border-box;
     }
 
     /* Section: navy top rule, sharp corners, formal border */
-    .admin-container .admin-section {
+    .gov-container .gov-section {
+        display: block;
         background: #ffffff;
         border: 1px solid #c9c5bc;
         border-top: 3px solid #1a2947;
@@ -696,121 +701,108 @@
         padding: 28px 32px;
         margin-bottom: 24px;
         box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
-        transform: none;
     }
 
-    .admin-container .admin-section:hover {
+    .gov-container .gov-section:hover {
         box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
         border-top-color: #2e5077;
-        transform: none;
-    }
-
-    .admin-container .admin-section::before {
-        display: none;
-    }
-
-    .admin-container .admin-section:hover::before {
-        display: none;
-        opacity: 0;
-        animation: none;
     }
 
     /* Section title: circular navy badge, gold underline */
-    .admin-container .admin-section-title {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-title {
+        display: flex;
+        align-items: center;
+        gap: 14px;
         font-size: 1.35rem;
         font-weight: 700;
         color: #1a2947;
         letter-spacing: 0.02em;
-        text-transform: none;
         border-bottom: 2px solid #1a2947;
         padding-bottom: 12px;
-        margin-bottom: 24px;
-        gap: 14px;
+        margin: 0 0 24px 0;
+        position: relative;
+        flex-wrap: nowrap;
     }
 
-    .admin-container .admin-section-title i {
+    .gov-container .gov-title i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 32px;
         height: 32px;
-        border-radius: 50%;
+        min-width: 32px;
         background: #1a2947;
-        box-shadow: none;
+        color: #ffffff;
+        border-radius: 50%;
         font-size: 0.95rem;
+        flex-shrink: 0;
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
     }
 
-    .admin-container .admin-section-title::after {
+    .gov-container .gov-title::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
         width: 60px;
         height: 2px;
         background: #8b6f3d;
-        border-radius: 0;
     }
 
     /* Grid */
-    .admin-container .admin-grid {
+    .gov-container .gov-grid {
+        display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 18px;
     }
 
     /* Cards: left navy border, flat, formal */
-    .admin-container .admin-card {
+    .gov-container .gov-card {
+        display: block;
         background: #f7f5f0;
         border: 1px solid #c9c5bc;
         border-left: 4px solid #1a2947;
         border-radius: 2px;
         padding: 22px 24px;
-        transform: none;
-        overflow: visible;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .admin-container .admin-card::before {
-        display: none;
-    }
-
-    .admin-container .admin-card::after {
-        display: none;
-    }
-
-    .admin-container .admin-card:hover {
+    .gov-container .gov-card:hover {
         background: #ffffff;
         border-left-color: #8b6f3d;
         box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
         transform: translateX(3px);
     }
 
-    .admin-container .admin-card:active {
-        transform: translateX(1px);
-    }
-
-    .admin-container .admin-card-icon {
+    .gov-container .gov-card-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
         width: 48px;
         height: 48px;
-        border-radius: 2px;
         background: #1a2947;
-        border: none;
-        transform: none;
+        border-radius: 2px;
         margin-bottom: 14px;
+        transition: background 0.2s ease;
     }
 
-    .admin-container .admin-card:hover .admin-card-icon {
+    .gov-container .gov-card:hover .gov-card-icon {
         background: #8b6f3d;
-        transform: none;
-        box-shadow: none;
-        border-color: transparent;
     }
 
-    .admin-container .admin-card-icon i {
+    .gov-container .gov-card-icon i {
         color: #ffffff;
         font-size: 1.35rem;
-        transform: none;
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
     }
 
-    .admin-container .admin-card:hover .admin-card-icon i {
-        color: #ffffff;
-        transform: none;
-    }
-
-    .admin-container .admin-card-title {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-card-title {
+        display: block;
         font-size: 1.1rem;
         font-weight: 700;
         color: #1a2947;
@@ -818,12 +810,8 @@
         margin-bottom: 6px;
     }
 
-    .admin-container .admin-card:hover .admin-card-title {
-        color: #1a2947;
-    }
-
-    .admin-container .admin-card-desc {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-card-desc {
+        display: block;
         font-size: 0.88rem;
         color: #4a4a4a;
         font-style: italic;
@@ -831,51 +819,52 @@
     }
 
     /* Quick Stats: flat, navy top border */
-    .admin-container .quick-stat {
+    .gov-container .gov-stat {
+        display: block;
         background: #f7f5f0;
         border: 1px solid #c9c5bc;
         border-top: 3px solid #1a2947;
         border-radius: 2px;
         padding: 24px 18px;
-        transform: none;
+        text-align: center;
     }
 
-    .admin-container .quick-stat:hover {
+    .gov-container .gov-stat:hover {
         background: #ffffff;
         border-top-color: #8b6f3d;
         box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
-        transform: none;
     }
 
-    .admin-container .quick-stat-icon {
+    .gov-container .gov-stat-icon {
+        display: block;
         font-size: 1.6rem;
         color: #1a2947;
         margin-bottom: 10px;
     }
 
-    .admin-container .quick-stat:hover .quick-stat-icon {
-        color: #8b6f3d;
+    .gov-container .gov-stat-icon i {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        color: #1a2947;
     }
 
-    .admin-container .quick-stat-number {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-stat-number {
+        display: block;
         font-size: 2.4rem;
         font-weight: 700;
         color: #1a2947;
         background: none;
-        -webkit-background-clip: initial;
-        -webkit-text-fill-color: initial;
+        -webkit-text-fill-color: #1a2947;
         background-clip: initial;
+        -webkit-background-clip: initial;
         letter-spacing: -0.02em;
-        transform: none;
+        line-height: 1.1;
+        margin-bottom: 6px;
     }
 
-    .admin-container .quick-stat:hover .quick-stat-number {
-        transform: none;
-    }
-
-    .admin-container .quick-stat-label {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-stat-label {
+        display: block;
         color: #4a4a4a;
         font-size: 0.78rem;
         font-weight: 700;
@@ -884,127 +873,153 @@
     }
 
     /* User List */
-    .admin-container .user-list {
+    .gov-container .gov-user-list {
         max-height: 420px;
+        overflow-y: auto;
         padding-right: 6px;
     }
 
-    .admin-container .user-list::-webkit-scrollbar {
+    .gov-container .gov-user-list::-webkit-scrollbar {
         width: 10px;
     }
 
-    .admin-container .user-list::-webkit-scrollbar-track {
+    .gov-container .gov-user-list::-webkit-scrollbar-track {
         background: #f0ece4;
-        border-radius: 0;
         border-left: 1px solid #d4d1c9;
     }
 
-    .admin-container .user-list::-webkit-scrollbar-thumb {
+    .gov-container .gov-user-list::-webkit-scrollbar-thumb {
         background: #1a2947;
-        border-radius: 0;
     }
 
     /* User Item */
-    .admin-container .user-item {
+    .gov-container .gov-user-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         background: #ffffff;
         border-bottom: 1px solid #d4d1c9;
-        border-radius: 0;
         padding: 16px 18px;
-        margin-bottom: 0;
-        transform: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
-    .admin-container .user-item:hover {
+    .gov-container .gov-user-item:hover {
         background: #f7f5f0;
         border-left: 3px solid #8b6f3d;
         padding-left: 15px;
-        transform: none;
     }
 
-    .admin-container .user-item .user-name {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-user-item:last-child {
+        border-bottom: none;
+    }
+
+    .gov-container .gov-user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+    }
+
+    .gov-container .gov-user-name {
+        display: block;
         font-weight: 700;
         color: #1a2947;
         font-size: 1rem;
         letter-spacing: 0.01em;
     }
 
-    .admin-container .user-item .user-email {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-user-email {
+        display: block;
         font-size: 0.82rem;
         color: #4a4a4a;
         font-style: italic;
     }
 
+    .gov-container .gov-user-badges {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+    }
+
     /* Badges: outlined, uppercase, serif */
-    .admin-container .user-role,
-    .admin-container .badge {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-role,
+    .gov-container .gov-badge {
         font-size: 0.72rem;
         padding: 4px 12px;
         border-radius: 2px;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        border-width: 1px;
-        border-style: solid;
+        border: 1px solid;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
     }
 
-    .admin-container .user-role {
+    .gov-container .gov-role {
         background: #f0ece4;
         color: #1a2947;
         border-color: #1a2947;
     }
 
-    .admin-container .badge-success {
+    .gov-container .gov-badge-success {
         background: #e6ede7;
         color: #2d5a3d;
         border-color: #2d5a3d;
     }
 
-    .admin-container .badge-danger {
+    .gov-container .gov-badge-danger {
         background: #f2e6e6;
         color: #7a2b2b;
         border-color: #7a2b2b;
     }
 
-    .admin-container .status-dot {
+    /* Status Dot */
+    .gov-container .gov-status-dot {
+        display: inline-block;
         width: 8px;
         height: 8px;
         border-radius: 50%;
-        box-shadow: none;
+        flex-shrink: 0;
     }
 
-    .admin-container .status-dot.active {
+    .gov-container .gov-status-dot.active {
         background: #2d5a3d;
-        border: 1px solid #2d5a3d;
-        box-shadow: none;
     }
 
-    .admin-container .status-dot.inactive {
+    .gov-container .gov-status-dot.inactive {
         background: #7a2b2b;
-        border: 1px solid #7a2b2b;
-        box-shadow: none;
     }
 
     /* Loading */
-    .admin-container .loading-placeholder {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
-        font-size: 0.95rem;
-        font-style: italic;
-        color: #6b6b6b;
+    .gov-container .gov-loading {
+        text-align: center;
         padding: 60px 20px;
+        color: #6b6b6b;
+        font-style: italic;
+        font-size: 0.95rem;
     }
 
-    .admin-container .loading-placeholder i {
+    .gov-container .gov-loading i {
+        display: block;
         font-size: 2rem;
         color: #1a2947;
         opacity: 0.5;
+        margin-bottom: 14px;
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
     }
 
     /* Refresh Button: rectangular, uppercase, navy/gold */
-    .admin-container .btn-refresh {
-        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+    .gov-container .gov-refresh {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
         padding: 8px 20px;
         background: #1a2947;
         color: #ffffff;
@@ -1014,224 +1029,76 @@
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        box-shadow: none;
-        transform: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-left: auto;
     }
 
-    .admin-container .btn-refresh:hover {
+    .gov-container .gov-refresh:hover {
         background: #8b6f3d;
         border-color: #8b6f3d;
-        color: #ffffff;
-        box-shadow: none;
-        transform: none;
     }
 
-    .admin-container .btn-refresh:active {
-        transform: translateY(1px);
+    .gov-container .gov-refresh i {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+        transition: transform 0.3s ease;
     }
 
-    .admin-container .btn-refresh:hover i {
+    .gov-container .gov-refresh:hover i {
         transform: rotate(180deg);
     }
 
     /* Animation: subtle, formal */
-    .admin-container .fade-in {
-        animation: fadeInFormal 0.35s ease-out forwards;
+    .gov-container .gov-fade {
+        animation: govFadeIn 0.35s ease-out forwards;
+        opacity: 0;
     }
 
-    @keyframes fadeInFormal {
-        from {
-            opacity: 0;
-            transform: translateY(6px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .gov-container .gov-fade:nth-child(1) { animation-delay: 0.03s; }
+    .gov-container .gov-fade:nth-child(2) { animation-delay: 0.06s; }
+    .gov-container .gov-fade:nth-child(3) { animation-delay: 0.09s; }
+    .gov-container .gov-fade:nth-child(4) { animation-delay: 0.12s; }
+    .gov-container .gov-fade:nth-child(5) { animation-delay: 0.15s; }
+    .gov-container .gov-fade:nth-child(6) { animation-delay: 0.18s; }
+
+    @keyframes govFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* Dark mode: override to a formal, print-friendly dark palette */
-    @media (prefers-color-scheme: dark) {
-        .admin-container .admin-section {
-            background: #f7f5f0;
-            border-color: #c9c5bc;
-            border-top-color: #1a2947;
+    /* Responsive */
+    @media (max-width: 768px) {
+        .gov-container .gov-section { padding: 20px 16px; }
+        .gov-container .gov-grid { grid-template-columns: 1fr; gap: 14px; }
+        .gov-container .gov-card { padding: 18px 16px; }
+        .gov-container .gov-stat-number { font-size: 1.9rem; }
+        .gov-container .gov-user-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
+        .gov-container .gov-user-badges { width: 100%; }
+        .gov-container .gov-title { font-size: 1.1rem; }
+    }
 
-        .admin-container .admin-section-title {
-            color: #1a2947;
-            border-bottom-color: #1a2947;
-        }
-
-        .admin-container .admin-card {
-            background: #ffffff;
-            border-color: #c9c5bc;
-            border-left-color: #1a2947;
-        }
-
-        .admin-container .admin-card:hover {
-            background: #ffffff;
-        }
-
-        .admin-container .admin-card-title {
-            color: #1a2947;
-        }
-
-        .admin-container .user-item {
-            background: #ffffff;
-            border-bottom-color: #d4d1c9;
-        }
-
-        .admin-container .user-item:hover {
-            background: #f7f5f0;
-        }
-
-        .admin-container .user-item .user-name {
-            color: #1a2947;
-        }
-
-        .admin-container .quick-stat {
-            background: #f7f5f0;
-            border-color: #c9c5bc;
-            border-top-color: #1a2947;
-        }
-
-        .admin-container .quick-stat-label {
-            color: #4a4a4a;
-        }
-
-        .admin-container .badge-success {
-            background: #e6ede7;
-            color: #2d5a3d;
-        }
-
-        .admin-container .badge-danger {
-            background: #f2e6e6;
-            color: #7a2b2b;
-        }
-
-        .admin-container .user-role {
-            background: #f0ece4;
-            color: #1a2947;
-            border-color: #1a2947;
-        }
-
-        .admin-container .user-list::-webkit-scrollbar-track {
-            background: #f0ece4;
-        }
+    @media (max-width: 480px) {
+        .gov-container .gov-section { padding: 16px 12px; }
+        .gov-container .gov-title { font-size: 1rem; gap: 10px; }
+        .gov-container .gov-title i { width: 28px; height: 28px; font-size: 0.85rem; }
+        .gov-container .gov-stat-number { font-size: 1.6rem; }
+        .gov-container .gov-refresh { padding: 6px 14px; font-size: 0.7rem; }
     }
 
     /* Print: formal reporting */
     @media print {
-        .admin-container .admin-section {
+        .gov-container .gov-section {
             box-shadow: none;
             border: 1px solid #000;
             page-break-inside: avoid;
         }
-
-        .admin-container .btn-refresh {
-            display: none;
-        }
-    }
-
-        /* ============================================================
-       CRITICAL LAYOUT FIXES — force grid display against parent overrides
-       ============================================================ */
-    .admin-container .admin-grid {
-        display: grid !important;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-        gap: 18px !important;
-        grid-auto-flow: row !important;
-    }
-
-    .admin-container .admin-section {
-        display: block !important;
-        width: auto !important;
-        padding: 28px 32px !important;
-    }
-
-    .admin-container .admin-card {
-        display: block !important;
-        width: auto !important;
-        float: none !important;
-        padding: 22px 24px !important;
-    }
-
-    .admin-container .quick-stat {
-        display: block !important;
-        width: auto !important;
-        float: none !important;
-        padding: 22px 18px !important;
-        text-align: center !important;
-    }
-
-    .admin-container .user-item {
-        display: flex !important;
-        justify-content: space-between !important;
-        align-items: center !important;
-        width: auto !important;
-    }
-
-    /* Force Font Awesome to render */
-    .admin-container i.fas,
-    .admin-container i.far,
-    .admin-container i.fab {
-        font-family: "Font Awesome 6 Free" !important;
-        font-weight: 900 !important;
-        font-style: normal !important;
-        display: inline-block !important;
-    }
-
-    /* Stat number: force visible navy color */
-    .admin-container .quick-stat-number {
-        color: #1a2947 !important;
-        -webkit-text-fill-color: #1a2947 !important;
-        background: none !important;
-        background-clip: initial !important;
-        -webkit-background-clip: initial !important;
-        font-size: 2.4rem !important;
-        font-weight: 700 !important;
-        line-height: 1.1 !important;
-        margin-bottom: 6px !important;
-        display: block !important;
-    }
-
-    /* Icon box: navy block with white glyph */
-    .admin-container .quick-stat-icon {
-        color: #1a2947 !important;
-        font-size: 1.6rem !important;
-        margin-bottom: 10px !important;
-        display: block !important;
-    }
-
-    .admin-container .quick-stat-icon i {
-        color: #1a2947 !important;
-    }
-
-    /* Section title flex layout */
-    .admin-container .admin-section-title {
-        display: flex !important;
-        align-items: center !important;
-        gap: 14px !important;
-        flex-wrap: nowrap !important;
-    }
-
-    .admin-container .admin-section-title i {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        width: 32px !important;
-        height: 32px !important;
-        min-width: 32px !important;
-        background: #1a2947 !important;
-        color: #ffffff !important;
-        border-radius: 50% !important;
-    }
-
-    /* Refresh button: keep on same line as title */
-    .admin-container .admin-section-title .btn-refresh {
-        display: inline-flex !important;
-        margin-left: auto !important;
+        .gov-container .gov-refresh { display: none; }
     }
 </style>
 {% endblock %}
@@ -1240,109 +1107,109 @@
 {{ block.super }}
 
 <!-- Admin Container -->
-<div class="admin-container">
+<div class="gov-container">
 
     <!-- Admin Quick Actions Section -->
-    <div class="admin-section">
-        <div class="admin-section-title">
+    <div class="gov-section">
+        <div class="gov-title">
             <i class="fas fa-cog"></i>
             Quick Actions
         </div>
-        <div class="admin-grid">
-            <div class="admin-card fade-in" onclick="window.location.href='/accounts/users/'">
-                <div class="admin-card-icon">
+        <div class="gov-grid">
+            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/users/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="admin-card-title">User Management</div>
-                <div class="admin-card-desc">Add, edit, or deactivate system users and manage roles</div>
+                <div class="gov-card-title">User Management</div>
+                <div class="gov-card-desc">Add, edit, or deactivate system users and manage roles</div>
             </div>
-            <div class="admin-card fade-in" onclick="window.location.href='/accounts/departments/'">
-                <div class="admin-card-icon">
+            <div class="gov-card gov-fade" onclick="window.location.href='/accounts/departments/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-building"></i>
                 </div>
-                <div class="admin-card-title">Department Management</div>
-                <div class="admin-card-desc">Create, manage, and organize hospital departments</div>
+                <div class="gov-card-title">Department Management</div>
+                <div class="gov-card-desc">Create, manage, and organize hospital departments</div>
             </div>
-            <div class="admin-card fade-in" onclick="window.location.href='/audit-logs/'">
-                <div class="admin-card-icon">
+            <div class="gov-card gov-fade" onclick="window.location.href='/audit-logs/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-history"></i>
                 </div>
-                <div class="admin-card-title">Audit Logs</div>
-                <div class="admin-card-desc">View all system activities, changes, and user actions</div>
+                <div class="gov-card-title">Audit Logs</div>
+                <div class="gov-card-desc">View all system activities, changes, and user actions</div>
             </div>
-            <div class="admin-card fade-in" onclick="window.location.href='/reports/'">
-                <div class="admin-card-icon">
+            <div class="gov-card gov-fade" onclick="window.location.href='/reports/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-chart-pie"></i>
                 </div>
-                <div class="admin-card-title">System Reports</div>
-                <div class="admin-card-desc">Generate and download comprehensive system reports</div>
+                <div class="gov-card-title">System Reports</div>
+                <div class="gov-card-desc">Generate and download comprehensive system reports</div>
             </div>
-            <div class="admin-card fade-in" onclick="window.location.href='/settings/backup/'">
-                <div class="admin-card-icon">
+            <div class="gov-card gov-fade" onclick="window.location.href='/settings/backup/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-database"></i>
                 </div>
-                <div class="admin-card-title">Backup & Restore</div>
-                <div class="admin-card-desc">Perform database backup and restoration operations</div>
+                <div class="gov-card-title">Backup & Restore</div>
+                <div class="gov-card-desc">Perform database backup and restoration operations</div>
             </div>
-            <div class="admin-card fade-in" onclick="window.location.href='/settings/system/'">
-                <div class="admin-card-icon">
+            <div class="gov-card gov-fade" onclick="window.location.href='/settings/system/'">
+                <div class="gov-card-icon">
                     <i class="fas fa-server"></i>
                 </div>
-                <div class="admin-card-title">System Settings</div>
-                <div class="admin-card-desc">Configure system parameters and global settings</div>
+                <div class="gov-card-title">System Settings</div>
+                <div class="gov-card-desc">Configure system parameters and global settings</div>
             </div>
         </div>
     </div>
 
     <!-- System Statistics Row -->
-    <div class="admin-section">
-        <div class="admin-section-title">
+    <div class="gov-section">
+        <div class="gov-title">
             <i class="fas fa-chart-bar"></i>
             System Statistics
         </div>
-        <div class="admin-grid">
-            <div class="quick-stat">
-                <div class="quick-stat-icon">
+        <div class="gov-grid">
+            <div class="gov-stat">
+                <div class="gov-stat-icon">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="quick-stat-number" id="totalUsers">--</div>
-                <div class="quick-stat-label">Total Users</div>
+                <div class="gov-stat-number" id="totalUsers">--</div>
+                <div class="gov-stat-label">Total Users</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-icon">
-                    <span class="status-dot active" style="width:12px;height:12px;"></span>
+            <div class="gov-stat">
+                <div class="gov-stat-icon">
+                    <i class="fas fa-user-check"></i>
                 </div>
-                <div class="quick-stat-number" id="activeUsers">--</div>
-                <div class="quick-stat-label">Active Users</div>
+                <div class="gov-stat-number" id="activeUsers">--</div>
+                <div class="gov-stat-label">Active Users</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-icon">
-                    <span class="status-dot active" style="width:12px;height:12px;box-shadow:0 0 12px rgba(16,185,129,0.5);"></span>
+            <div class="gov-stat">
+                <div class="gov-stat-icon">
+                    <i class="fas fa-signal"></i>
                 </div>
-                <div class="quick-stat-number" id="onlineUsers">--</div>
-                <div class="quick-stat-label">Online Now</div>
+                <div class="gov-stat-number" id="onlineUsers">--</div>
+                <div class="gov-stat-label">Online Now</div>
             </div>
-            <div class="quick-stat">
-                <div class="quick-stat-icon">
+            <div class="gov-stat">
+                <div class="gov-stat-icon">
                     <i class="fas fa-building"></i>
                 </div>
-                <div class="quick-stat-number" id="totalDepartments">--</div>
-                <div class="quick-stat-label">Departments</div>
+                <div class="gov-stat-number" id="totalDepartments">--</div>
+                <div class="gov-stat-label">Departments</div>
             </div>
         </div>
     </div>
 
     <!-- Recent Users Section -->
-    <div class="admin-section">
-        <div class="admin-section-title">
+    <div class="gov-section">
+        <div class="gov-title">
             <i class="fas fa-user-clock"></i>
             Recent Users
-            <button class="btn-refresh" onclick="loadRecentUsers()" style="margin-left: auto;">
+            <button class="gov-refresh" onclick="loadRecentUsers()">
                 <i class="fas fa-sync-alt"></i> Refresh
             </button>
         </div>
-        <div class="user-list" id="recentUsers">
-            <div class="loading-placeholder">
+        <div class="gov-user-list" id="recentUsers">
+            <div class="gov-loading">
                 <i class="fas fa-spinner fa-spin"></i>
                 Loading users...
             </div>
@@ -1453,7 +1320,7 @@
         
         const container = document.getElementById('recentUsers');
         if (!container) return;
-        container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
+        container.innerHTML = '<div class="gov-loading"><i class="fas fa-spinner fa-spin"></i> Loading users...</div>';
         
         try {
             const response = await fetch('/api/users/?limit=10', {
@@ -1464,46 +1331,44 @@
                 const users = data.results || data;
                 
                 if (!Array.isArray(users)) {
-                    container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-exclamation-circle" style="color:var(--admin-danger);"></i> Unexpected response from server</div>';
+                    container.innerHTML = '<div class="gov-loading"><i class="fas fa-exclamation-circle"></i> Unexpected response from server</div>';
                     return;
                 }
                 
                 if (users.length === 0) {
-                    container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-inbox"></i> No users found</div>';
+                    container.innerHTML = '<div class="gov-loading"><i class="fas fa-inbox"></i> No users found</div>';
                     return;
                 }
                 
                 container.innerHTML = users.map((user, index) => `
-                    <div class="user-item fade-in" style="animation-delay: ${index * 0.05}s;" 
+                    <div class="gov-user-item gov-fade" style="animation-delay: ${index * 0.05}s;" 
                          onclick="window.location.href='/accounts/users/${user.id}/'">
-                        <div class="user-info">
-                            <div class="user-name">
+                        <div class="gov-user-info">
+                            <div class="gov-user-name">
                                 ${escapeHtml(user.full_name || user.username)}
-                                ${user.is_online ? '<span class="status-dot active" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#10b981;margin-left:6px;box-shadow:0 0 10px rgba(16,185,129,0.4);"></span>' : ''}
+                                ${user.is_online ? '<span class="gov-status-dot active" style="margin-left:6px;"></span>' : ''}
                             </div>
-                            <div class="user-email">
-                                <i class="fas fa-envelope" style="font-size:0.6rem;margin-right:4px;color:var(--admin-gray-400);"></i>
+                            <div class="gov-user-email">
                                 ${escapeHtml(user.email || 'No email')}
-                                <span style="margin:0 6px;color:var(--admin-gray-300);">|</span>
-                                <i class="fas fa-calendar" style="font-size:0.6rem;margin-right:4px;color:var(--admin-gray-400);"></i>
+                                &nbsp;|&nbsp;
                                 Joined ${formatDate(user.date_joined)}
                             </div>
                         </div>
-                        <div class="user-badges">
-                            <span class="user-role">${escapeHtml(user.role_display || user.role)}</span>
+                        <div class="gov-user-badges">
+                            <span class="gov-role">${escapeHtml(user.role_display || user.role)}</span>
                             ${user.is_active ? 
-                                '<span class="badge badge-success"><span class="status-dot active"></span>Active</span>' : 
-                                '<span class="badge badge-danger"><span class="status-dot inactive"></span>Inactive</span>'
+                                '<span class="gov-badge gov-badge-success"><span class="gov-status-dot active"></span>Active</span>' : 
+                                '<span class="gov-badge gov-badge-danger"><span class="gov-status-dot inactive"></span>Inactive</span>'
                             }
                         </div>
                     </div>
                 `).join('');
             } else {
-                container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-exclamation-circle" style="color:var(--admin-danger);"></i> Failed to load users</div>';
+                container.innerHTML = '<div class="gov-loading"><i class="fas fa-exclamation-circle"></i> Failed to load users</div>';
             }
         } catch(e) {
             console.error('Failed to load recent users:', e);
-            container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-exclamation-triangle" style="color:var(--admin-warning);"></i> Error loading users</div>';
+            container.innerHTML = '<div class="gov-loading"><i class="fas fa-exclamation-triangle"></i> Error loading users</div>';
         }
     }
 
