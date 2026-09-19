@@ -5,6 +5,9 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
     /* ========================================
        MAIN DASHBOARD STYLES
@@ -700,38 +703,433 @@
             color: #fed7d7;
         }
     }
+
+    /* ============================================================
+       GOVERNMENT-STYLE OVERRIDE LAYER (APPENDED — NOT A REPLACEMENT)
+       Below this line: formal institutional styling using
+       Times New Roman / Source Serif and navy-gold institutional palette.
+       Loaded AFTER the styles above so it takes visual precedence.
+       ============================================================ */
+
+    /* Force serif font on all dashboard elements */
+    .stats-grid,
+    .stats-grid *,
+    .admin-actions,
+    .admin-actions *,
+    .card,
+    .card *,
+    .kpi-grid,
+    .kpi-grid *,
+    .activity-feed,
+    .activity-feed *,
+    .chart-container,
+    .chart-container *,
+    .loading-placeholder,
+    .loading-placeholder *,
+    .badge,
+    .btn {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+    }
+
+    /* Stat Cards: flat, navy top rule, formal */
+    .stats-grid .stat-card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+        padding: 22px 24px;
+        box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+        transform: none;
+    }
+
+    .stats-grid .stat-card::before {
+        display: none;
+    }
+
+    .stats-grid .stat-card:hover {
+        background: #ffffff;
+        border-top-color: #8b6f3d;
+        box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
+        transform: translateX(3px);
+    }
+
+    .stats-grid .stat-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 2px;
+        background: #f0ece4 !important;
+        color: #1a2947 !important;
+        border: 1px solid #1a2947;
+        font-size: 1.5rem;
+        transform: none;
+    }
+
+    .stats-grid .stat-card:hover .stat-icon {
+        background: #1a2947 !important;
+        color: #ffffff !important;
+        transform: none;
+    }
+
+    .stats-grid .stat-icon i {
+        color: inherit !important;
+    }
+
+    .stats-grid .stat-info h3 {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1a2947;
+        background: none;
+        -webkit-background-clip: initial;
+        -webkit-text-fill-color: initial;
+        background-clip: initial;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+    }
+
+    .stats-grid .stat-info p {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        color: #4a4a4a;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .stats-grid .stat-change {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        border-radius: 2px;
+        padding: 3px 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .stats-grid .stat-change.positive {
+        background: #e6ede7;
+        color: #2d5a3d;
+        border: 1px solid #2d5a3d;
+    }
+
+    .stats-grid .stat-change.negative {
+        background: #f2e6e6;
+        color: #7a2b2b;
+        border: 1px solid #7a2b2b;
+    }
+
+    /* Admin Quick Action Cards: flat, left navy border */
+    .admin-actions .admin-card {
+        background: #f7f5f0;
+        border: 1px solid #c9c5bc;
+        border-left: 4px solid #1a2947;
+        border-radius: 2px;
+        padding: 20px 16px;
+        overflow: visible;
+        transform: none;
+    }
+
+    .admin-actions .admin-card::after {
+        display: none;
+    }
+
+    .admin-actions .admin-card:hover {
+        background: #ffffff;
+        border-left-color: #8b6f3d;
+        box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
+        transform: translateX(3px);
+    }
+
+    .admin-actions .admin-card i {
+        font-size: 1.8rem;
+        transform: none;
+        margin-bottom: 10px;
+    }
+
+    .admin-actions .admin-card:hover i {
+        transform: none;
+    }
+
+    .admin-actions .admin-card h4 {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #1a2947;
+        letter-spacing: 0.01em;
+        margin-bottom: 4px;
+    }
+
+    .admin-actions .admin-card p {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 0.78rem;
+        color: #4a4a4a;
+        font-style: italic;
+        line-height: 1.4;
+    }
+
+    /* Cards: sharp corners, navy top rule */
+    .card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+        padding: 24px;
+        box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+    }
+
+    .card:hover {
+        box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
+        border-top-color: #2e5077;
+        border-color: #c9c5bc;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #1a2947;
+        padding-bottom: 12px;
+        margin-bottom: 20px;
+    }
+
+    .card-title {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a2947;
+        letter-spacing: 0.01em;
+    }
+
+    .card-title i {
+        background: #1a2947;
+        color: #ffffff;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 0.9rem;
+    }
+
+    /* KPI Cards: flat, border, formal */
+    .kpi-grid .kpi-card {
+        background: #f7f5f0;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+        padding: 20px 16px;
+        transform: none;
+    }
+
+    .kpi-grid .kpi-card::before {
+        display: none;
+    }
+
+    .kpi-grid .kpi-card:hover {
+        background: #ffffff;
+        border-top-color: #8b6f3d;
+        box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+        transform: none;
+    }
+
+    .kpi-grid .kpi-value {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: #1a2947;
+        background: none;
+        -webkit-background-clip: initial;
+        -webkit-text-fill-color: initial;
+        background-clip: initial;
+        letter-spacing: -0.02em;
+    }
+
+    .kpi-grid .kpi-label {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        color: #4a4a4a;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+    }
+
+    .kpi-grid .trend-up {
+        color: #2d5a3d;
+    }
+
+    .kpi-grid .trend-down {
+        color: #7a2b2b;
+    }
+
+    /* Activity Feed: formal, serif */
+    .activity-feed .activity-item {
+        background: #ffffff;
+        border-bottom: 1px solid #d4d1c9;
+        border-radius: 0;
+        padding: 14px 16px;
+        margin-bottom: 0;
+        transform: none;
+    }
+
+    .activity-feed .activity-item:hover {
+        background: #f7f5f0;
+        border-left: 3px solid #8b6f3d;
+        padding-left: 13px;
+        transform: none;
+    }
+
+    .activity-feed .activity-user {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-weight: 700;
+        color: #1a2947;
+    }
+
+    .activity-feed .activity-action,
+    .activity-feed .activity-model,
+    .activity-feed .activity-object {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        color: #4a4a4a;
+    }
+
+    .activity-feed .activity-time {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        color: #6b6b6b;
+        font-style: italic;
+    }
+
+    /* Badges: outlined, uppercase, serif */
+    .badge {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        font-size: 0.72rem;
+        padding: 4px 12px;
+        border-radius: 2px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-width: 1px;
+        border-style: solid;
+    }
+
+    .badge-warning {
+        background: #fdf3e0;
+        color: #8a5a1e;
+        border-color: #8a5a1e;
+    }
+
+    .badge-success {
+        background: #e6ede7;
+        color: #2d5a3d;
+        border-color: #2d5a3d;
+    }
+
+    .badge-danger {
+        background: #f2e6e6;
+        color: #7a2b2b;
+        border-color: #7a2b2b;
+    }
+
+    .badge-info {
+        background: #e6ecf2;
+        color: #1e3a5f;
+        border-color: #1e3a5f;
+    }
+
+    .badge-primary {
+        background: #f0ece4;
+        color: #1a2947;
+        border-color: #1a2947;
+    }
+
+    /* Buttons: rectangular, uppercase, navy/gold */
+    .btn {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        border-radius: 2px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .btn-primary {
+        background: #1a2947;
+        border: 2px solid #1a2947;
+        color: #ffffff;
+        box-shadow: none;
+    }
+
+    .btn-primary:hover {
+        background: #8b6f3d;
+        border-color: #8b6f3d;
+        color: #ffffff;
+        box-shadow: none;
+        transform: none;
+    }
+
+    .btn-primary:active {
+        transform: translateY(1px);
+    }
+
+    /* Loading: formal italic */
+    .loading-placeholder {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+        color: #6b6b6b;
+        font-style: italic;
+        font-size: 0.95rem;
+        padding: 40px 20px;
+    }
+
+    .loading-placeholder i {
+        color: #1a2947;
+        opacity: 0.5;
+    }
+
+    /* Chart container keeps serif for legends */
+    .chart-container {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+    }
+
+    /* Print: formal government reporting */
+    @media print {
+        .stats-grid .stat-card,
+        .admin-actions .admin-card,
+        .card,
+        .kpi-grid .kpi-card {
+            box-shadow: none;
+            border: 1px solid #000;
+            page-break-inside: avoid;
+        }
+
+        .btn,
+        .btn-primary {
+            display: none;
+        }
+    }
 </style>
 
 <!-- Admin Quick Actions - Only visible to admin users -->
 {% if user.role == 'super_admin' or user.role == 'admin' %}
 <div class="admin-actions">
     <div class="admin-card" onclick="window.location.href='/accounts/users/'">
-        <i class="fas fa-users" style="color: #667eea;"></i>
+        <i class="fas fa-users" style="color: #1a2947;"></i>
         <h4>User Management</h4>
         <p>Add, edit, or deactivate users</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/accounts/departments/'">
-        <i class="fas fa-building" style="color: #48bb78;"></i>
+        <i class="fas fa-building" style="color: #1a2947;"></i>
         <h4>Departments</h4>
         <p>Manage departments and wards</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/audit-logs/'">
-        <i class="fas fa-history" style="color: #ed8936;"></i>
+        <i class="fas fa-history" style="color: #1a2947;"></i>
         <h4>Audit Logs</h4>
         <p>View all system activities</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/reports/'">
-        <i class="fas fa-chart-pie" style="color: #f56565;"></i>
+        <i class="fas fa-chart-pie" style="color: #1a2947;"></i>
         <h4>Reports</h4>
         <p>Generate system reports</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/settings/backup/'">
-        <i class="fas fa-database" style="color: #4299e1;"></i>
+        <i class="fas fa-database" style="color: #1a2947;"></i>
         <h4>Backup</h4>
         <p>Database backup & restore</p>
     </div>
     <div class="admin-card" onclick="window.location.href='/settings/system/'">
-        <i class="fas fa-server" style="color: #764ba2;"></i>
+        <i class="fas fa-server" style="color: #1a2947;"></i>
         <h4>System Settings</h4>
         <p>Configure system parameters</p>
     </div>
@@ -741,7 +1139,7 @@
 <!-- Stats Grid -->
 <div class="stats-grid" id="statsGrid">
     <div class="stat-card" onclick="window.location.href='/patients/list/'">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%); color: var(--primary);">
+        <div class="stat-icon">
             <i class="fas fa-users fa-2x"></i>
         </div>
         <div class="stat-info">
@@ -751,7 +1149,7 @@
         </div>
     </div>
     <div class="stat-card" onclick="window.location.href='/visits/list/'">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #48bb7820 0%, #38a16920 100%); color: var(--success);">
+        <div class="stat-icon">
             <i class="fas fa-stethoscope fa-2x"></i>
         </div>
         <div class="stat-info">
@@ -761,7 +1159,7 @@
         </div>
     </div>
     <div class="stat-card" onclick="window.location.href='/triage/waiting/'">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #ed893620 0%, #dd6b2020 100%); color: var(--warning);">
+        <div class="stat-icon">
             <i class="fas fa-clock fa-2x"></i>
         </div>
         <div class="stat-info">
@@ -771,7 +1169,7 @@
         </div>
     </div>
     <div class="stat-card" onclick="window.location.href='/admissions/list/'">
-        <div class="stat-icon" style="background: linear-gradient(135deg, #f5656520 0%, #e53e3e20 100%); color: var(--danger);">
+        <div class="stat-icon">
             <i class="fas fa-hospital-user fa-2x"></i>
         </div>
         <div class="stat-info">
@@ -789,7 +1187,7 @@
             <i class="fas fa-chart-line"></i>
             Key Performance Indicators
         </div>
-        <div style="color: var(--gray); font-size: 0.7rem;">
+        <div style="color: #6b6b6b; font-size: 0.72rem; font-style: italic;">
             <i class="fas fa-calendar-alt"></i> Last 30 days
         </div>
     </div>
@@ -809,7 +1207,7 @@
                 <i class="fas fa-chart-line"></i>
                 Visits Trend
             </div>
-            <div style="color: var(--gray); font-size: 0.7rem;">Last 7 days</div>
+            <div style="color: #6b6b6b; font-size: 0.72rem; font-style: italic;">Last 7 days</div>
         </div>
         <div class="chart-container">
             <canvas id="visitsChart"></canvas>
@@ -823,7 +1221,7 @@
                 <i class="fas fa-building"></i>
                 Admissions by Ward
             </div>
-            <div style="color: var(--gray); font-size: 0.7rem;">Current occupancy</div>
+            <div style="color: #6b6b6b; font-size: 0.72rem; font-style: italic;">Current occupancy</div>
         </div>
         <div class="chart-container">
             <canvas id="admissionsChart"></canvas>
@@ -858,7 +1256,7 @@
                 <i class="fas fa-tasks"></i>
                 Pending Tasks
             </div>
-            <div style="color: var(--gray); font-size: 0.7rem;">Requires attention</div>
+            <div style="color: #6b6b6b; font-size: 0.72rem; font-style: italic;">Requires attention</div>
         </div>
         <div class="activity-feed" id="pendingTasks">
             <div class="loading-placeholder">
@@ -876,6 +1274,16 @@
     // Format number with commas
     function formatNumber(num) {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    // Safe JSON parser — returns {} if the server sends HTML instead of JSON
+    async function safeJson(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            return await response.json();
+        }
+        const text = await response.text();
+        return { error: 'Server returned non-JSON response (HTTP ' + response.status + ')' };
     }
 
     async function apiCall(endpoint, method = 'GET', data = null) {
@@ -937,7 +1345,7 @@
                 throw new Error(`API call failed: ${response.status}`);
             }
             
-            return response.json();
+            return await safeJson(response);
         } catch (error) {
             console.error(`API call failed: ${endpoint}`, error);
             throw error;
@@ -953,15 +1361,16 @@
         
         try {
             const stats = await apiCall('/dashboard/stats/');
-            if (stats) {
-                document.getElementById('totalPatients').textContent = formatNumber(stats.patients?.total || 0);
-                document.getElementById('todayVisits').textContent = formatNumber(stats.visits?.today || 0);
-                document.getElementById('waitingPatients').textContent = formatNumber(stats.visits?.waiting || 0);
-                document.getElementById('currentAdmissions').textContent = formatNumber(stats.admissions?.current || 0);
+            if (stats && !stats.error) {
+                const el = (id) => document.getElementById(id);
+                if (el('totalPatients')) el('totalPatients').textContent = formatNumber(stats.patients?.total || 0);
+                if (el('todayVisits')) el('todayVisits').textContent = formatNumber(stats.visits?.today || 0);
+                if (el('waitingPatients')) el('waitingPatients').textContent = formatNumber(stats.visits?.waiting || 0);
+                if (el('currentAdmissions')) el('currentAdmissions').textContent = formatNumber(stats.admissions?.current || 0);
             }
 
             const kpis = await apiCall('/dashboard/kpis/');
-            if (kpis) {
+            if (kpis && !kpis.error) {
                 renderKPIs(kpis);
             }
             
@@ -977,6 +1386,7 @@
 
     function renderKPIs(kpis) {
         const kpisContainer = document.getElementById('kpisContainer');
+        if (!kpisContainer) return;
         kpisContainer.innerHTML = '';
         
         const kpiItems = [
@@ -996,10 +1406,10 @@
             kpisContainer.innerHTML += `
                 <div class="kpi-card">
                     <div class="kpi-value">${typeof kpi.value === 'number' ? kpi.value.toFixed(1) : kpi.value}${kpi.unit}</div>
-                    <div class="kpi-label"><i class="fas ${kpi.icon}" style="margin-right: 5px; color: var(--primary);"></i>${kpi.label}</div>
-                    <div style="font-size: 0.7rem; margin-top: 8px;">
+                    <div class="kpi-label"><i class="fas ${kpi.icon}" style="margin-right: 5px; color: #1a2947;"></i>${kpi.label}</div>
+                    <div style="font-size: 0.72rem; margin-top: 8px; font-style: italic;">
                         <span class="${trendClass}">${trendIcon} ${kpi.trend}</span>
-                        <span style="color: #a0aec0;"> vs ${kpi.target}${kpi.unit}</span>
+                        <span style="color: #6b6b6b;"> vs ${kpi.target}${kpi.unit}</span>
                     </div>
                 </div>
             `;
@@ -1010,13 +1420,16 @@
         try {
             const activities = await apiCall('/dashboard/activity/');
             const container = document.getElementById('activityFeed');
+            if (!container) return;
             
-            if (!activities || activities.length === 0) {
+            if (!activities || activities.error || (Array.isArray(activities) && activities.length === 0)) {
                 container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-inbox"></i> No recent activity</div>';
                 return;
             }
             
-            container.innerHTML = activities.slice(0, 15).map((activity, index) => `
+            const list = Array.isArray(activities) ? activities : (activities.results || []);
+            
+            container.innerHTML = list.slice(0, 15).map((activity, index) => `
                 <div class="activity-item" style="animation-delay: ${index * 0.05}s;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
@@ -1031,7 +1444,10 @@
             `).join('');
         } catch (error) {
             console.error('Failed to load activity feed:', error);
-            document.getElementById('activityFeed').innerHTML = '<div class="loading-placeholder" style="color: var(--danger);"><i class="fas fa-exclamation-circle"></i> Failed to load activity</div>';
+            const container = document.getElementById('activityFeed');
+            if (container) {
+                container.innerHTML = '<div class="loading-placeholder" style="color: #7a2b2b;"><i class="fas fa-exclamation-circle"></i> Failed to load activity</div>';
+            }
         }
     }
 
@@ -1039,18 +1455,19 @@
         try {
             const stats = await apiCall('/dashboard/stats/');
             const container = document.getElementById('pendingTasks');
+            if (!container) return;
             
-            if (!stats) return;
+            if (!stats || stats.error) return;
             
             const tasks = [];
-            if (stats.laboratory?.pending > 0) tasks.push({ type: 'Laboratory', count: stats.laboratory.pending, label: 'Pending lab tests', link: '/laboratory/requests/', icon: 'fa-microscope', color: '#4299e1' });
-            if (stats.pharmacy?.pending_prescriptions > 0) tasks.push({ type: 'Pharmacy', count: stats.pharmacy.pending_prescriptions, label: 'Pending prescriptions', link: '/pharmacy/prescriptions/', icon: 'fa-capsules', color: '#48bb78' });
-            if (stats.visits?.waiting > 0) tasks.push({ type: 'Triage', count: stats.visits.waiting, label: 'Patients waiting', link: '/triage/waiting/', icon: 'fa-clock', color: '#ed8936' });
-            if (stats.admissions?.available_beds < 10 && stats.admissions?.available_beds >= 0) tasks.push({ type: 'Admissions', count: stats.admissions.available_beds, label: 'Available beds remaining', link: '/admissions/wards/', icon: 'fa-bed', color: '#f56565' });
-            if (stats.pharmacy?.low_stock > 0) tasks.push({ type: 'Inventory', count: stats.pharmacy.low_stock, label: 'Low stock medications', link: '/pharmacy/inventory/', icon: 'fa-boxes', color: '#ecc94b' });
+            if (stats.laboratory?.pending > 0) tasks.push({ type: 'Laboratory', count: stats.laboratory.pending, label: 'Pending lab tests', link: '/laboratory/requests/', icon: 'fa-microscope', color: '#1e3a5f' });
+            if (stats.pharmacy?.pending_prescriptions > 0) tasks.push({ type: 'Pharmacy', count: stats.pharmacy.pending_prescriptions, label: 'Pending prescriptions', link: '/pharmacy/prescriptions/', icon: 'fa-capsules', color: '#2d5a3d' });
+            if (stats.visits?.waiting > 0) tasks.push({ type: 'Triage', count: stats.visits.waiting, label: 'Patients waiting', link: '/triage/waiting/', icon: 'fa-clock', color: '#8a5a1e' });
+            if (stats.admissions?.available_beds < 10 && stats.admissions?.available_beds >= 0) tasks.push({ type: 'Admissions', count: stats.admissions.available_beds, label: 'Available beds remaining', link: '/admissions/wards/', icon: 'fa-bed', color: '#7a2b2b' });
+            if (stats.pharmacy?.low_stock > 0) tasks.push({ type: 'Inventory', count: stats.pharmacy.low_stock, label: 'Low stock medications', link: '/pharmacy/inventory/', icon: 'fa-boxes', color: '#8b6f3d' });
             
             if (tasks.length === 0) {
-                container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-check-circle" style="color: var(--success);"></i> All caught up! No pending tasks.</div>';
+                container.innerHTML = '<div class="loading-placeholder"><i class="fas fa-check-circle" style="color: #2d5a3d;"></i> All caught up! No pending tasks.</div>';
                 return;
             }
             
@@ -1059,8 +1476,8 @@
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <i class="fas ${task.icon}" style="color: ${task.color}; width: 25px;"></i>
-                            <strong style="color: var(--dark);">${escapeHtml(task.type)}</strong>
-                            <span style="color: var(--gray);">${escapeHtml(task.label)}</span>
+                            <strong style="color: #1a2947;">${escapeHtml(task.type)}</strong>
+                            <span style="color: #4a4a4a;">${escapeHtml(task.label)}</span>
                         </div>
                         <span class="badge badge-warning">${task.count}</span>
                     </div>
@@ -1068,7 +1485,10 @@
             `).join('');
         } catch (error) {
             console.error('Failed to load pending tasks:', error);
-            document.getElementById('pendingTasks').innerHTML = '<div class="loading-placeholder" style="color: var(--danger);"><i class="fas fa-exclamation-circle"></i> Failed to load tasks</div>';
+            const container = document.getElementById('pendingTasks');
+            if (container) {
+                container.innerHTML = '<div class="loading-placeholder" style="color: #7a2b2b;"><i class="fas fa-exclamation-circle"></i> Failed to load tasks</div>';
+            }
         }
     }
 
@@ -1079,7 +1499,7 @@
             const today = new Date();
             
             const stats = await apiCall('/dashboard/stats/');
-            const currentVisits = stats?.visits?.today || 0;
+            const currentVisits = (stats && !stats.error) ? (stats.visits?.today || 0) : 0;
             
             for (let i = 6; i >= 0; i--) {
                 const date = new Date();
@@ -1097,7 +1517,9 @@
             if (visitsChart) visitsChart.destroy();
             if (admissionsChart) admissionsChart.destroy();
             
-            const ctx1 = document.getElementById('visitsChart').getContext('2d');
+            const visitsEl = document.getElementById('visitsChart');
+            if (!visitsEl) return;
+            const ctx1 = visitsEl.getContext('2d');
             visitsChart = new Chart(ctx1, {
                 type: 'line',
                 data: {
@@ -1105,12 +1527,12 @@
                     datasets: [{
                         label: 'Visits',
                         data: visitsCount,
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.05)',
+                        borderColor: '#1a2947',
+                        backgroundColor: 'rgba(26, 41, 71, 0.06)',
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true,
-                        pointBackgroundColor: '#667eea',
+                        pointBackgroundColor: '#1a2947',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
                         pointRadius: 5,
@@ -1121,12 +1543,12 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
-                        tooltip: { backgroundColor: '#1a202c', titleColor: '#fff', bodyColor: '#cbd5e0', padding: 10, cornerRadius: 8 }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { family: "'Times New Roman', serif", size: 13 } } },
+                        tooltip: { backgroundColor: '#1a2947', titleColor: '#fff', bodyColor: '#f0ece4', padding: 10, cornerRadius: 2 }
                     },
                     scales: { 
-                        y: { beginAtZero: true, grid: { color: 'rgba(226, 232, 240, 0.5)' }, title: { display: true, text: 'Number of Visits', color: '#718096' } }, 
-                        x: { grid: { display: false } } 
+                        y: { beginAtZero: true, grid: { color: 'rgba(201, 197, 188, 0.6)' }, title: { display: true, text: 'Number of Visits', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }, 
+                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } } 
                     }
                 }
             });
@@ -1136,12 +1558,12 @@
             
             try {
                 const wardsData = await apiCall('/admissions/wards/');
-                if (wardsData && wardsData.results && wardsData.results.length > 0) {
+                if (wardsData && !wardsData.error && wardsData.results && wardsData.results.length > 0) {
                     wardNames = wardsData.results.map(w => w.name);
                     wardOccupancy = wardsData.results.map(w => w.occupied_beds || 0);
                 } else {
                     const admissionsStats = await apiCall('/dashboard/stats/');
-                    const currentAdm = admissionsStats?.admissions?.current || 0;
+                    const currentAdm = (admissionsStats && !admissionsStats.error) ? (admissionsStats.admissions?.current || 0) : 0;
                     wardOccupancy = [
                         Math.floor(currentAdm * 0.35),
                         Math.floor(currentAdm * 0.20),
@@ -1155,7 +1577,9 @@
                 wardOccupancy = [12, 8, 5, 6, 3];
             }
             
-            const ctx2 = document.getElementById('admissionsChart').getContext('2d');
+            const admEl = document.getElementById('admissionsChart');
+            if (!admEl) return;
+            const ctx2 = admEl.getContext('2d');
             admissionsChart = new Chart(ctx2, {
                 type: 'bar',
                 data: {
@@ -1163,8 +1587,8 @@
                     datasets: [{
                         label: 'Occupied Beds',
                         data: wardOccupancy,
-                        backgroundColor: ['#667eea', '#48bb78', '#ed8936', '#f56565', '#4299e1'],
-                        borderRadius: 10,
+                        backgroundColor: ['#1a2947', '#2d5a3d', '#8a5a1e', '#7a2b2b', '#2e5077'],
+                        borderRadius: 2,
                         barPercentage: 0.65,
                         categoryPercentage: 0.8
                     }]
@@ -1173,12 +1597,12 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'bottom', labels: { usePointStyle: true } },
-                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} beds occupied` }, backgroundColor: '#1a202c', cornerRadius: 8 }
+                        legend: { position: 'bottom', labels: { usePointStyle: true, font: { family: "'Times New Roman', serif", size: 13 } } },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.raw} beds occupied` }, backgroundColor: '#1a2947', titleColor: '#fff', bodyColor: '#f0ece4', cornerRadius: 2 }
                     },
                     scales: { 
-                        y: { beginAtZero: true, title: { display: true, text: 'Number of Beds', color: '#718096' }, grid: { color: 'rgba(226, 232, 240, 0.5)' }, max: Math.max(...wardOccupancy, 20) + 5 }, 
-                        x: { grid: { display: false } } 
+                        y: { beginAtZero: true, title: { display: true, text: 'Number of Beds', color: '#4a4a4a', font: { family: "'Times New Roman', serif", size: 13 } }, grid: { color: 'rgba(201, 197, 188, 0.6)' }, max: Math.max(...wardOccupancy, 20) + 5, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } }, 
+                        x: { grid: { display: false }, ticks: { font: { family: "'Times New Roman', serif", size: 12 } } } 
                     }
                 }
             });
@@ -1215,10 +1639,12 @@
             right: 20px;
             z-index: 9999;
             padding: 12px 20px;
-            border-radius: 12px;
-            background: ${type === 'success' ? '#48bb78' : '#f56565'};
+            border-radius: 2px;
+            background: ${type === 'success' ? '#2d5a3d' : '#7a2b2b'};
             color: white;
-            font-weight: 500;
+            font-family: 'Times New Roman', serif;
+            font-weight: 700;
+            letter-spacing: 0.05em;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             animation: slideInRight 0.3s ease;
         `;
