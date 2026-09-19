@@ -57,7 +57,7 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     
     # API URLs (all under /api/ prefix)
-    path('api/', include('apps.accounts.urls')),
+    path('api/accounts/', include('apps.accounts.urls')),
     path('api/patients/', include('apps.patients.urls')),
     path('api/visits/', include('apps.visits.urls')),
     path('api/triage/', include('apps.triage.urls')),
