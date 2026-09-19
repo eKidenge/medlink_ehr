@@ -46,7 +46,7 @@
     h1, h2, h3, .serif { font-family: 'Playfair Display', Georgia, serif; }
 
     /* ============================================
-       HEADER — light/white, matches logo background
+       HEADER
        ============================================ */
     .site-header {
       position: fixed;
@@ -69,7 +69,6 @@
       align-items: center;
       gap: 40px;
     }
-
     .brand {
       display: flex;
       align-items: center;
@@ -187,7 +186,7 @@
     }
 
     /* ============================================
-       HERO — photo background + navy overlay
+       HERO — with crossfading background images
        ============================================ */
     .hero {
       position: relative;
@@ -202,20 +201,28 @@
       position: absolute; inset: 0; z-index: 1;
     }
     .hero-bg img {
+      position: absolute;
+      inset: 0;
       width: 100%; height: 100%;
       object-fit: cover;
       filter: brightness(0.5) saturate(0.9);
+      opacity: 0;
+      transition: opacity 1.6s ease-in-out;
+    }
+    .hero-bg img.active {
+      opacity: 1;
     }
     .hero-bg::after {
       content: '';
       position: absolute; inset: 0;
+      z-index: 2;
       background: linear-gradient(100deg,
         rgba(10, 26, 47, 0.98) 0%,
         rgba(10, 26, 47, 0.88) 45%,
         rgba(10, 26, 47, 0.55) 100%);
     }
     .hero-inner {
-      position: relative; z-index: 2;
+      position: relative; z-index: 3;
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 32px;
@@ -379,62 +386,6 @@
     .hero-strip-item i { color: #5eead4; font-size: 0.9rem; }
 
     /* ============================================
-       HERO IMAGE SLIDER — below the writing
-       ============================================ */
-    .hero-slider-section {
-      position: relative;
-      z-index: 5;
-      background: #ffffff;
-      padding: 20px 0 30px;
-    }
-    .slider-wrapper {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 32px;
-    }
-    .slider-track {
-      display: flex;
-      gap: 18px;
-      overflow-x: auto;
-      scroll-behavior: smooth;
-      padding: 8px 0 22px;
-      scrollbar-width: thin;
-      scrollbar-color: #14a89a #e5e7eb;
-    }
-    .slider-track::-webkit-scrollbar { height: 6px; }
-    .slider-track::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 10px; }
-    .slider-track::-webkit-scrollbar-thumb { background: #14a89a; border-radius: 10px; }
-    .slide-item {
-      flex: 0 0 320px;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(10, 26, 47, 0.12);
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-    }
-    .slide-item:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 20px 50px rgba(20, 168, 154, 0.2);
-      border-color: #14a89a;
-    }
-    .slide-item img {
-      width: 100%;
-      height: 210px;
-      object-fit: cover;
-      display: block;
-    }
-    @media (max-width: 900px) {
-      .slide-item { flex: 0 0 260px; }
-      .slide-item img { height: 170px; }
-      .slider-wrapper { padding: 0 20px; }
-    }
-    @media (max-width: 540px) {
-      .slide-item { flex: 0 0 220px; }
-      .slide-item img { height: 140px; }
-    }
-
-    /* ============================================
        SECTIONS — shared
        ============================================ */
     .section { padding: 100px 0; }
@@ -467,9 +418,7 @@
       line-height: 1.7;
     }
 
-    /* ============================================
-       BENEFITS
-       ============================================ */
+    /* BENEFITS */
     .why-grid {
       display: grid;
       grid-template-columns: 1fr 1.15fr;
@@ -518,9 +467,7 @@
       line-height: 1.65;
     }
 
-    /* ============================================
-       FEATURES
-       ============================================ */
+    /* FEATURES */
     .features { background: #f8fafc; }
     .features-head { text-align: center; margin-bottom: 60px; }
     .features-head h2 {
@@ -579,9 +526,7 @@
       line-height: 1.65;
     }
 
-    /* ============================================
-       WORKFLOW
-       ============================================ */
+    /* WORKFLOW */
     .workflow { background: #ffffff; }
     .workflow-head { max-width: 720px; margin-bottom: 60px; }
     .workflow-steps {
@@ -624,9 +569,7 @@
       line-height: 1.65;
     }
 
-    /* ============================================
-       INTEGRATIONS
-       ============================================ */
+    /* INTEGRATIONS */
     .integrations { background: #f8fafc; text-align: center; }
     .integrations h2 {
       max-width: 780px;
@@ -677,9 +620,7 @@
       line-height: 1.6;
     }
 
-    /* ============================================
-       SECURITY
-       ============================================ */
+    /* SECURITY */
     .security {
       background: linear-gradient(135deg, #0a1a2f 0%, #12263f 100%);
       color: #ffffff;
@@ -748,9 +689,7 @@
       line-height: 1.65;
     }
 
-    /* ============================================
-       CTA
-       ============================================ */
+    /* CTA */
     .cta-section { padding: 100px 0; background: #f8fafc; }
     .cta-card {
       max-width: 1000px;
@@ -831,9 +770,7 @@
       transform: translateY(-3px);
     }
 
-    /* ============================================
-       FOOTER
-       ============================================ */
+    /* FOOTER */
     .site-footer {
       background: #0a1a2f;
       color: #b8cee6;
@@ -966,8 +903,14 @@
 
   <!-- HERO -->
   <section class="hero">
-    <div class="hero-bg">
-      <img src="{% static 'images/hero-bg.jpg' %}" alt="Healthcare team at work">
+    <div class="hero-bg" id="heroBg">
+      <img src="{% static 'images/hero-bg.jpg' %}" alt="" class="active">
+      <img src="{% static 'images/1.png' %}" alt="">
+      <img src="{% static 'images/2.png' %}" alt="">
+      <img src="{% static 'images/3.png' %}" alt="">
+      <img src="{% static 'images/4.png' %}" alt="">
+      <img src="{% static 'images/5.png' %}" alt="">
+      <img src="{% static 'images/6.png' %}" alt="">
     </div>
     <div class="hero-inner">
       <div class="hero-badge">
@@ -999,21 +942,6 @@
         <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Patient records in one place</div>
         <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Billing follows care</div>
         <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Built for real clinical teams</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- HERO IMAGE SLIDER -->
-  <section class="hero-slider-section">
-    <div class="slider-wrapper">
-      <div class="slider-track" id="heroSliderTrack">
-        <div class="slide-item"><img src="{% static 'images/1.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/2.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/3.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/4.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/5.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/6.png' %}" alt=""></div>
-        <div class="slide-item"><img src="{% static 'images/hero-bg.jpg' %}" alt=""></div>
       </div>
     </div>
   </section>
@@ -1304,28 +1232,18 @@
         });
       });
 
-      /* Hero slider — auto slide left and right */
+      /* Hero background crossfade slideshow */
       (function() {
-        const track = document.getElementById('heroSliderTrack');
-        if (!track) return;
-        let pos = 0;
-        let dir = 1;
-        let paused = false;
-
-        function tick() {
-          if (!paused) {
-            pos += 1 * dir;
-            track.scrollLeft = pos;
-            if (pos + track.clientWidth >= track.scrollWidth - 2) dir = -1;
-            if (pos <= 0) dir = 1;
-          }
-          requestAnimationFrame(tick);
-        }
-        track.addEventListener('mouseenter', () => paused = true);
-        track.addEventListener('mouseleave', () => paused = false);
-        track.addEventListener('touchstart', () => paused = true);
-        track.addEventListener('touchend', () => paused = false);
-        requestAnimationFrame(tick);
+        const bg = document.getElementById('heroBg');
+        if (!bg) return;
+        const imgs = bg.querySelectorAll('img');
+        if (imgs.length < 2) return;
+        let i = 0;
+        setInterval(function() {
+          imgs[i].classList.remove('active');
+          i = (i + 1) % imgs.length;
+          imgs[i].classList.add('active');
+        }, 4500);
       })();
     })();
   </script>
