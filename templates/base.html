@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}MedLink EHR System{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,12 +16,14 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
 
-        /* Sidebar Styles */
+        /* ============================================================
+           SIDEBAR
+           ============================================================ */
         .sidebar {
             position: fixed;
             left: 0;
@@ -30,6 +35,22 @@
             transition: all 0.3s ease;
             z-index: 1000;
             overflow-y: auto;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.35);
         }
 
         .sidebar-header {
@@ -78,7 +99,80 @@
             text-align: center;
         }
 
-        /* Main Content */
+        /* ============================================================
+           SIDEBAR DROPDOWN MENUS
+           ============================================================ */
+        .sidebar-group {
+            display: block;
+        }
+
+        .sidebar-group-toggle {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            user-select: none;
+        }
+
+        .sidebar-group-toggle:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #667eea;
+        }
+
+        .sidebar-group.open > .sidebar-group-toggle {
+            background: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+        }
+
+        .sidebar-group-toggle i.group-icon {
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-group-toggle .group-label {
+            flex: 1;
+        }
+
+        .sidebar-group-toggle .group-chevron {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            transition: transform 0.3s ease;
+            width: auto;
+        }
+
+        .sidebar-group.open .sidebar-group-toggle .group-chevron {
+            transform: rotate(90deg);
+        }
+
+        .sidebar-group-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar-group.open .sidebar-group-items {
+            max-height: 600px;
+        }
+
+        .sidebar-group-items .sidebar-menu-item {
+            padding-left: 56px;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-group-items .sidebar-menu-item i {
+            width: 20px;
+            font-size: 0.85rem;
+        }
+
+        /* ============================================================
+           MAIN CONTENT
+           ============================================================ */
         .main-content {
             margin-left: 280px;
             padding: 20px;
@@ -511,6 +605,370 @@
         .mt-4 { margin-top: 20px; }
         .p-3 { padding: 12px; }
         .p-4 { padding: 20px; }
+
+        /* ============================================================
+           GOVERNMENT-STYLE OVERRIDE LAYER (APPENDED)
+           Formal institutional styling using Times New Roman
+           ============================================================ */
+
+        /* Force serif everywhere */
+        body,
+        body *,
+        body *::before,
+        body *::after {
+            font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif;
+        }
+
+        body {
+            background: #f0ece4;
+            color: #1f1f1f;
+            font-size: 15px;
+        }
+
+        /* Sidebar: navy institutional */
+        .sidebar {
+            background: #1a2947;
+            border-right: 3px solid #8b6f3d;
+        }
+
+        .sidebar-header {
+            border-bottom: 2px solid #8b6f3d;
+            padding: 24px 20px;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar-header p {
+            font-style: italic;
+            letter-spacing: 0.02em;
+        }
+
+        .sidebar-menu-item,
+        .sidebar-group-toggle {
+            color: #f0ece4;
+            letter-spacing: 0.01em;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-item:hover,
+        .sidebar-group-toggle:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-left-color: #8b6f3d;
+        }
+
+        .sidebar-menu-item.active {
+            background: rgba(139, 111, 61, 0.25);
+            border-left-color: #8b6f3d;
+            color: #ffffff;
+        }
+
+        .sidebar-group.open > .sidebar-group-toggle {
+            background: rgba(139, 111, 61, 0.2);
+            border-left-color: #8b6f3d;
+        }
+
+        .sidebar-group-items {
+            background: #0f1b33;
+        }
+
+        .sidebar-group-items .sidebar-menu-item {
+            color: #d4d1c9;
+        }
+
+        .sidebar-group-items .sidebar-menu-item:hover {
+            color: #ffffff;
+            background: rgba(139, 111, 61, 0.15);
+        }
+
+        /* Top bar: institutional white */
+        .top-bar {
+            background: #ffffff;
+            border: 1px solid #c9c5bc;
+            border-top: 3px solid #1a2947;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+        }
+
+        .page-title {
+            color: #1a2947;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        .user-avatar {
+            background: #1a2947;
+            border: 2px solid #8b6f3d;
+        }
+
+        /* Cards: flat, navy top rule */
+        .card {
+            background: #ffffff;
+            border: 1px solid #c9c5bc;
+            border-top: 3px solid #1a2947;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+        }
+
+        .card-header {
+            border-bottom: 2px solid #1a2947;
+        }
+
+        .card-title {
+            color: #1a2947;
+            font-weight: 700;
+        }
+
+        /* Stat cards: formal */
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #c9c5bc;
+            border-top: 3px solid #1a2947;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(15, 27, 51, 0.10);
+        }
+
+        .stat-card:hover {
+            border-top-color: #8b6f3d;
+            transform: translateX(3px);
+        }
+
+        .stat-info h3 {
+            color: #1a2947;
+            font-weight: 700;
+        }
+
+        .stat-info p {
+            color: #4a4a4a;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        /* Tables */
+        .data-table thead tr {
+            background: #f0ece4;
+            border-bottom: 2px solid #1a2947;
+        }
+
+        .data-table th {
+            color: #1a2947;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.82rem;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f7f5f0;
+        }
+
+        /* Buttons: rectangular institutional */
+        .btn {
+            border-radius: 2px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background: #1a2947;
+            border: 2px solid #1a2947;
+        }
+
+        .btn-primary:hover {
+            background: #8b6f3d;
+            border-color: #8b6f3d;
+        }
+
+        .btn-success {
+            background: #2d5a3d;
+            border: 2px solid #2d5a3d;
+        }
+
+        .btn-success:hover {
+            background: #1f3d29;
+            border-color: #1f3d29;
+        }
+
+        .btn-danger {
+            background: #7a2b2b;
+            border: 2px solid #7a2b2b;
+        }
+
+        .btn-danger:hover {
+            background: #5c1f1f;
+            border-color: #5c1f1f;
+        }
+
+        .btn-warning {
+            background: #8a5a1e;
+            border: 2px solid #8a5a1e;
+        }
+
+        .btn-warning:hover {
+            background: #6b4517;
+            border-color: #6b4517;
+        }
+
+        .btn-info {
+            background: #1e3a5f;
+            border: 2px solid #1e3a5f;
+        }
+
+        .btn-info:hover {
+            background: #142a47;
+            border-color: #142a47;
+        }
+
+        .btn-secondary {
+            background: #6b6b6b;
+            border: 2px solid #6b6b6b;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4a;
+            border-color: #4a4a4a;
+        }
+
+        /* Form controls */
+        .form-control {
+            border: 1px solid #c9c5bc;
+            border-radius: 2px;
+            background: #ffffff;
+        }
+
+        .form-control:focus {
+            border-color: #1a2947;
+            box-shadow: 0 0 0 3px rgba(26, 41, 71, 0.1);
+        }
+
+        .form-label {
+            color: #1a2947;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        /* Alerts: outlined, no rounded */
+        .alert {
+            border-radius: 2px;
+            border-left-width: 4px;
+            border-left-style: solid;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #e6ede7;
+            color: #2d5a3d;
+            border-left-color: #2d5a3d;
+            border-top: 1px solid #2d5a3d;
+            border-right: 1px solid #2d5a3d;
+            border-bottom: 1px solid #2d5a3d;
+        }
+
+        .alert-danger {
+            background: #f2e6e6;
+            color: #7a2b2b;
+            border-left-color: #7a2b2b;
+            border-top: 1px solid #7a2b2b;
+            border-right: 1px solid #7a2b2b;
+            border-bottom: 1px solid #7a2b2b;
+        }
+
+        .alert-warning {
+            background: #fdf3e0;
+            color: #8a5a1e;
+            border-left-color: #8a5a1e;
+            border-top: 1px solid #8a5a1e;
+            border-right: 1px solid #8a5a1e;
+            border-bottom: 1px solid #8a5a1e;
+        }
+
+        .alert-info {
+            background: #e6ecf2;
+            color: #1e3a5f;
+            border-left-color: #1e3a5f;
+            border-top: 1px solid #1e3a5f;
+            border-right: 1px solid #1e3a5f;
+            border-bottom: 1px solid #1e3a5f;
+        }
+
+        /* Badges */
+        .badge {
+            border-radius: 2px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            border: 1px solid transparent;
+        }
+
+        .badge-success {
+            background: #e6ede7;
+            color: #2d5a3d;
+            border-color: #2d5a3d;
+        }
+
+        .badge-danger {
+            background: #f2e6e6;
+            color: #7a2b2b;
+            border-color: #7a2b2b;
+        }
+
+        .badge-warning {
+            background: #fdf3e0;
+            color: #8a5a1e;
+            border-color: #8a5a1e;
+        }
+
+        .badge-info {
+            background: #e6ecf2;
+            color: #1e3a5f;
+            border-color: #1e3a5f;
+        }
+
+        .badge-primary {
+            background: #f0ece4;
+            color: #1a2947;
+            border-color: #1a2947;
+        }
+
+        /* Modal: institutional */
+        .modal-content {
+            border-radius: 2px;
+            border-top: 3px solid #1a2947;
+        }
+
+        .modal-header {
+            border-bottom: 2px solid #1a2947;
+        }
+
+        .modal-header h3,
+        .modal-header h2 {
+            color: #1a2947;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #c9c5bc;
+            background: #f7f5f0;
+        }
+
+        /* Loading */
+        .spinner {
+            border-top-color: #1a2947;
+        }
+
+        /* Detail rows */
+        .detail-label {
+            color: #1a2947;
+        }
+
+        .detail-value {
+            color: #1f1f1f;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -522,46 +980,82 @@
             <p>Kenya Healthcare System</p>
         </div>
         <div class="sidebar-menu">
+
+            <!-- Dashboard (single) -->
             <a href="/dashboard/" class="sidebar-menu-item {% if active_page == 'dashboard' %}active{% endif %}">
                 <i class="fas fa-tachometer-alt"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/patients/list/" class="sidebar-menu-item {% if active_page == 'patients' %}active{% endif %}">
-                <i class="fas fa-users"></i>
-                <span>Patients</span>
-            </a>
-            <a href="/visits/list/" class="sidebar-menu-item {% if active_page == 'visits' %}active{% endif %}">
-                <i class="fas fa-stethoscope"></i>
-                <span>Visits</span>
-            </a>
-            <a href="/triage/waiting/" class="sidebar-menu-item {% if active_page == 'triage' %}active{% endif %}">
-                <i class="fas fa-chart-line"></i>
-                <span>Triage</span>
-            </a>
-            <a href="/admissions/list/" class="sidebar-menu-item {% if active_page == 'admissions' %}active{% endif %}">
-                <i class="fas fa-hospital-user"></i>
-                <span>Admissions</span>
-            </a>
-            <a href="/laboratory/requests/" class="sidebar-menu-item {% if active_page == 'laboratory' %}active{% endif %}">
-                <i class="fas fa-microscope"></i>
-                <span>Laboratory</span>
-            </a>
-            <a href="/pharmacy/prescriptions/" class="sidebar-menu-item {% if active_page == 'pharmacy' %}active{% endif %}">
-                <i class="fas fa-capsules"></i>
-                <span>Pharmacy</span>
-            </a>
-            <a href="/referrals/list/" class="sidebar-menu-item {% if active_page == 'referrals' %}active{% endif %}">
-                <i class="fas fa-share-alt"></i>
-                <span>Referrals</span>
-            </a>
-            <a href="/reports/" class="sidebar-menu-item {% if active_page == 'reports' %}active{% endif %}">
-                <i class="fas fa-chart-bar"></i>
-                <span>Reports</span>
-            </a>
-            <a href="/accounts/users/" class="sidebar-menu-item {% if active_page == 'accounts' %}active{% endif %}">
-                <i class="fas fa-user-cog"></i>
-                <span>Administration</span>
-            </a>
+
+            <!-- Patient Care (dropdown) -->
+            <div class="sidebar-group {% if active_page in 'patients,visits,triage,admissions' %}open{% endif %}">
+                <div class="sidebar-group-toggle" onclick="toggleSidebarGroup(this)">
+                    <i class="fas fa-user-injured group-icon"></i>
+                    <span class="group-label">Patient Care</span>
+                    <i class="fas fa-chevron-right group-chevron"></i>
+                </div>
+                <div class="sidebar-group-items">
+                    <a href="/patients/list/" class="sidebar-menu-item {% if active_page == 'patients' %}active{% endif %}">
+                        <i class="fas fa-users"></i>
+                        <span>Patients</span>
+                    </a>
+                    <a href="/visits/list/" class="sidebar-menu-item {% if active_page == 'visits' %}active{% endif %}">
+                        <i class="fas fa-stethoscope"></i>
+                        <span>Visits</span>
+                    </a>
+                    <a href="/triage/waiting/" class="sidebar-menu-item {% if active_page == 'triage' %}active{% endif %}">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Triage</span>
+                    </a>
+                    <a href="/admissions/list/" class="sidebar-menu-item {% if active_page == 'admissions' %}active{% endif %}">
+                        <i class="fas fa-hospital-user"></i>
+                        <span>Admissions</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Clinical Services (dropdown) -->
+            <div class="sidebar-group {% if active_page in 'laboratory,pharmacy,referrals' %}open{% endif %}">
+                <div class="sidebar-group-toggle" onclick="toggleSidebarGroup(this)">
+                    <i class="fas fa-flask group-icon"></i>
+                    <span class="group-label">Clinical Services</span>
+                    <i class="fas fa-chevron-right group-chevron"></i>
+                </div>
+                <div class="sidebar-group-items">
+                    <a href="/laboratory/requests/" class="sidebar-menu-item {% if active_page == 'laboratory' %}active{% endif %}">
+                        <i class="fas fa-microscope"></i>
+                        <span>Laboratory</span>
+                    </a>
+                    <a href="/pharmacy/prescriptions/" class="sidebar-menu-item {% if active_page == 'pharmacy' %}active{% endif %}">
+                        <i class="fas fa-capsules"></i>
+                        <span>Pharmacy</span>
+                    </a>
+                    <a href="/referrals/list/" class="sidebar-menu-item {% if active_page == 'referrals' %}active{% endif %}">
+                        <i class="fas fa-share-alt"></i>
+                        <span>Referrals</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Administration (dropdown) -->
+            <div class="sidebar-group {% if active_page in 'reports,accounts' %}open{% endif %}">
+                <div class="sidebar-group-toggle" onclick="toggleSidebarGroup(this)">
+                    <i class="fas fa-briefcase group-icon"></i>
+                    <span class="group-label">Administration</span>
+                    <i class="fas fa-chevron-right group-chevron"></i>
+                </div>
+                <div class="sidebar-group-items">
+                    <a href="/reports/" class="sidebar-menu-item {% if active_page == 'reports' %}active{% endif %}">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                    <a href="/accounts/users/" class="sidebar-menu-item {% if active_page == 'accounts' %}active{% endif %}">
+                        <i class="fas fa-user-cog"></i>
+                        <span>User Administration</span>
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -586,22 +1080,22 @@
         </div>
 
         <!-- Notifications Panel -->
-        <div id="notificationsPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 350px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1500; max-height: 500px; overflow-y: auto;">
-            <div style="padding: 15px; border-bottom: 1px solid #e2e8f0;">
-                <strong>Notifications</strong>
+        <div id="notificationsPanel" style="display: none; position: fixed; top: 70px; right: 20px; width: 350px; background: white; border-radius: 2px; border-top: 3px solid #1a2947; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1500; max-height: 500px; overflow-y: auto;">
+            <div style="padding: 15px; border-bottom: 2px solid #1a2947; color: #1a2947; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
+                Notifications
             </div>
             <div id="notificationsList"></div>
         </div>
 
         <!-- User Menu -->
-        <div id="userMenu" style="display: none; position: fixed; top: 70px; right: 20px; width: 200px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1500;">
-            <a href="/accounts/profile/" style="display: block; padding: 12px 15px; text-decoration: none; color: #2d3748; border-bottom: 1px solid #e2e8f0;">
+        <div id="userMenu" style="display: none; position: fixed; top: 70px; right: 20px; width: 220px; background: white; border-radius: 2px; border-top: 3px solid #1a2947; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 1500;">
+            <a href="/accounts/profile/" style="display: block; padding: 12px 15px; text-decoration: none; color: #1a2947; border-bottom: 1px solid #e2e8f0;">
                 <i class="fas fa-user"></i> Profile
             </a>
-            <a href="/accounts/settings/" style="display: block; padding: 12px 15px; text-decoration: none; color: #2d3748; border-bottom: 1px solid #e2e8f0;">
+            <a href="/accounts/settings/" style="display: block; padding: 12px 15px; text-decoration: none; color: #1a2947; border-bottom: 1px solid #e2e8f0;">
                 <i class="fas fa-cog"></i> Settings
             </a>
-            <a href="javascript:void(0)" onclick="logout()" style="display: block; padding: 12px 15px; text-decoration: none; color: #f56565;">
+            <a href="javascript:void(0)" onclick="logout()" style="display: block; padding: 12px 15px; text-decoration: none; color: #7a2b2b; font-weight: 700;">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
         </div>
@@ -616,11 +1110,32 @@
     </div>
 
     <script>
-        // Global API functions
+        // ============================================================
+        // SIDEBAR DROPDOWN TOGGLE
+        // ============================================================
+        function toggleSidebarGroup(el) {
+            const group = el.closest('.sidebar-group');
+            if (!group) return;
+            group.classList.toggle('open');
+        }
+
+        // ============================================================
+        // GLOBAL API + AUTH
+        // ============================================================
         const API_BASE = '/api';
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        // Enhanced apiCall function with authentication token
+        // Safe JSON parser — prevents HTML error pages from breaking .json()
+        async function safeJson(response) {
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                return await response.json();
+            }
+            const text = await response.text();
+            return { error: 'Server returned non-JSON response (HTTP ' + response.status + ')' };
+        }
+
+        // Enhanced apiCall with authentication token
         async function apiCall(endpoint, method = 'GET', data = null) {
             const token = localStorage.getItem('access_token');
             
@@ -679,12 +1194,17 @@
                     return null;
                 }
                 
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || 'API call failed');
+                if (response.status === 404) {
+                    console.warn('Endpoint not found:', endpoint);
+                    return null;
                 }
                 
-                return response.json();
+                if (!response.ok) {
+                    const error = await safeJson(response);
+                    throw new Error(error.message || error.error || 'API call failed');
+                }
+                
+                return await safeJson(response);
             } catch (error) {
                 console.error(`API call failed: ${endpoint}`, error);
                 throw error;
@@ -710,6 +1230,9 @@
             alertDiv.style.right = '20px';
             alertDiv.style.zIndex = '2000';
             alertDiv.style.minWidth = '300px';
+            alertDiv.style.fontFamily = "'Times New Roman', serif";
+            alertDiv.style.fontWeight = '700';
+            alertDiv.style.letterSpacing = '0.03em';
             document.body.appendChild(alertDiv);
             
             setTimeout(() => {
@@ -745,9 +1268,9 @@
         async function loadNotifications() {
             try {
                 const data = await apiCall('/dashboard/notifications/unread/');
-                if (!data) return;
+                if (!data || data.error) return;
                 
-                const count = data.count || 0;
+                const count = data.count || data.unread_count || 0;
                 const notifications = data.notifications || [];
                 
                 const countEl = document.getElementById('notificationCount');
@@ -759,7 +1282,7 @@
                 container.innerHTML = '';
                 
                 if (notifications.length === 0) {
-                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #718096;">No notifications</div>';
+                    container.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b6b6b; font-style: italic;">No notifications</div>';
                 } else {
                     notifications.forEach(notif => {
                         const div = document.createElement('div');
@@ -768,9 +1291,9 @@
                         div.style.cursor = 'pointer';
                         div.onclick = () => markNotificationRead(notif.id);
                         div.innerHTML = `
-                            <div><strong>${escapeHtml(notif.title)}</strong></div>
-                            <div style="font-size: 0.85rem; color: #718096;">${escapeHtml(notif.message)}</div>
-                            <div style="font-size: 0.7rem; color: #a0aec0; margin-top: 5px;">${notif.time_ago || 'Just now'}</div>
+                            <div><strong style="color: #1a2947;">${escapeHtml(notif.title)}</strong></div>
+                            <div style="font-size: 0.85rem; color: #4a4a4a;">${escapeHtml(notif.message)}</div>
+                            <div style="font-size: 0.75rem; color: #6b6b6b; margin-top: 5px; font-style: italic;">${notif.time_ago || 'Just now'}</div>
                         `;
                         container.appendChild(div);
                     });
