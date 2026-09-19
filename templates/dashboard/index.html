@@ -5,6 +5,7 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
+{% block dashboard_styles %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet">
@@ -1099,7 +1100,9 @@
         }
     }
 </style>
+{% endblock %}
 
+{% block dashboard_body %}
 <!-- Admin Quick Actions - Only visible to admin users -->
 {% if user.role == 'super_admin' or user.role == 'admin' %}
 <div class="admin-actions">
@@ -1265,7 +1268,9 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block dashboard_scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     let visitsChart, admissionsChart;
@@ -1668,4 +1673,5 @@
         }, 60000);
     });
 </script>
+{% endblock %}
 {% endblock %}
