@@ -586,3 +586,41 @@ class AuditLogViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(timestamp__lte=end_date)
         
         return queryset.select_related('user')
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def users_page(request):
+    """Render the user management page."""
+    return render(request, 'accounts/users.html')
+
+
+@login_required
+def departments_page(request):
+    """Render the departments page."""
+    return render(request, 'accounts/departments.html')
+
+
+@login_required
+def profile_page(request):
+    """Render the current user's profile page."""
+    return render(request, 'accounts/profile.html')
+
+
+@login_required
+def settings_page(request):
+    """Render the settings page."""
+    return render(request, 'accounts/settings.html')
+
+
+@login_required
+def audit_page(request):
+    """Render the audit log page."""
+    return render(request, 'accounts/audit.html')

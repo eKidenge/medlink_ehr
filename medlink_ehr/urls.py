@@ -60,7 +60,8 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     
     # API URLs (all under /api/ prefix)
-    path('api/', include('apps.accounts.urls')),
+    # NOTE: accounts is NOT included here — its API lives under /accounts/api/
+    # because apps/accounts/urls.py mounts the router at 'api/'.
     path('api/patients/', include('apps.patients.urls')),
     path('api/visits/', include('apps.visits.urls')),
     path('api/triage/', include('apps.triage.urls')),
