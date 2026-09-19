@@ -322,3 +322,41 @@ class VisitViewSet(viewsets.ModelViewSet):
         }
         
         return Response(stats)
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def visits_list_page(request):
+    """Render the visits list page."""
+    return render(request, 'visits/list.html')
+
+
+@login_required
+def visit_check_in_page(request):
+    """Render the check-in page."""
+    return render(request, 'visits/check_in.html')
+
+
+@login_required
+def visit_create_page(request):
+    """Render the visit creation page."""
+    return render(request, 'visits/create.html')
+
+
+@login_required
+def visit_detail_page(request, pk):
+    """Render a single visit detail page."""
+    return render(request, 'visits/detail.html', {'visit_id': pk})
+
+
+@login_required
+def visit_queue_page(request):
+    """Render the queue page."""
+    return render(request, 'visits/queue.html')

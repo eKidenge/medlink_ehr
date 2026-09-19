@@ -32,10 +32,23 @@ class ReportTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = ReportTemplateSerializer
     permission_classes = [IsAuthenticated, IsAdminOrSuperAdmin]
     
-    @action(detail=True, methods=['post'])
-    def generate(self, request, pk=None):
-        """Generate report from template"""
-        template = self.get_object()
+    @action(detail=False, methods=['post'])
+    def generate(self, request):
+        """Generate report by report_type (frontend uses this)"""
+        report_type = request.data.get('report_type')
+        if not report_type:
+            return Response(
+                {'error': 'report_type required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            template = ReportTemplate.objects.get(report_type=report_type)
+        except ReportTemplate.DoesNotExist:
+            return Response(
+                {'error': f'No template found for report type "{report_type}"'},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
         # Create report job
         job = ReportJob.objects.create(
@@ -46,6 +59,26 @@ class ReportTemplateViewSet(viewsets.ModelViewSet):
         )
         
         # Process report (in production, use Celery)
+        self._process_report(job)
+        
+        return Response({
+            'job_id': job.id,
+            'status': job.status,
+            'message': 'Report generation started'
+        })
+    
+    @action(detail=True, methods=['post'], url_path='generate-from-template')
+    def generate_from_template(self, request, pk=None):
+        """Generate report from a specific template id"""
+        template = self.get_object()
+        
+        job = ReportJob.objects.create(
+            template=template,
+            requested_by=request.user,
+            parameters=request.data.get('parameters', {}),
+            output_format=request.data.get('format', template.default_format)
+        )
+        
         self._process_report(job)
         
         return Response({
@@ -517,3 +550,35 @@ class AuditReportViewSet(viewsets.ModelViewSet):
             'message': 'Audit report generated',
             'report': AuditReportSerializer(report).data
         })
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def reports_index_page(request):
+    """Render the reports dashboard page."""
+    return render(request, 'reports/index.html')
+
+
+@login_required
+def reports_generate_page(request):
+    """Render the report generation page."""
+    return render(request, 'reports/generate.html')
+
+
+@login_required
+def reports_templates_page(request):
+    """Render the report templates page."""
+    return render(request, 'reports/templates.html')
+
+
+@login_required
+def reports_view_page(request, job_id=None):
+    """Render a single report job view page."""
+    return render(request, 'reports/view.html', {'job_id': job_id})

@@ -6,18 +6,105 @@
 
 {% block content %}
 <style>
-    .rx-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        margin-bottom: 15px;
-        border-left: 4px solid #667eea;
-        transition: all 0.3s ease;
+    /* Government styling for pharmacy pages */
+    body,
+    body * {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
     }
-    .rx-card.pending { border-left-color: #ecc94b; }
-    .rx-card.dispensed { border-left-color: #48bb78; }
-    .rx-card.cancelled { border-left-color: #f56565; opacity: 0.7; }
-    .rx-card:hover { transform: translateX(5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #1a2947;
+        padding-bottom: 12px;
+    }
+
+    .card-title {
+        color: #1a2947;
+        font-weight: 700;
+    }
+
+    .data-table thead tr {
+        background: #f0ece4;
+        border-bottom: 2px solid #1a2947;
+    }
+
+    .data-table th {
+        color: #1a2947;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+    }
+
+    .stat-card:hover {
+        border-top-color: #8b6f3d;
+    }
+
+    .stat-info h3 {
+        color: #1a2947;
+    }
+
+    .stat-info p {
+        color: #4a4a4a;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .btn {
+        border-radius: 2px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        background: #1a2947;
+        border: 2px solid #1a2947;
+    }
+
+    .btn-primary:hover {
+        background: #8b6f3d;
+        border-color: #8b6f3d;
+    }
+
+    .badge {
+        border-radius: 2px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .badge-success { background: #e6ede7; color: #2d5a3d; border: 1px solid #2d5a3d; }
+    .badge-warning { background: #fdf3e0; color: #8a5a1e; border: 1px solid #8a5a1e; }
+    .badge-danger  { background: #f2e6e6; color: #7a2b2b; border: 1px solid #7a2b2b; }
+    .badge-info    { background: #e6ecf2; color: #1e3a5f; border: 1px solid #1e3a5f; }
+
+    .form-control {
+        border: 1px solid #c9c5bc;
+        border-radius: 2px;
+        background: #ffffff;
+    }
+
+    .form-control:focus {
+        border-color: #1a2947;
+        box-shadow: 0 0 0 3px rgba(26, 41, 71, 0.1);
+    }
 </style>
 
 <div class="stats-grid" id="rxStats"></div>

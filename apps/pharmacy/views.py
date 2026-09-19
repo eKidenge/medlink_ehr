@@ -289,3 +289,41 @@ class StockTransactionViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.filter(created_at__date__lte=date_to)
         
         return queryset
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def pharmacy_prescriptions_page(request):
+    """Render the pharmacy prescriptions page."""
+    return render(request, 'pharmacy/prescriptions.html')
+
+
+@login_required
+def pharmacy_create_page(request):
+    """Render the prescription creation page."""
+    return render(request, 'pharmacy/create.html')
+
+
+@login_required
+def pharmacy_detail_page(request, pk):
+    """Render a single prescription detail page."""
+    return render(request, 'pharmacy/detail.html', {'prescription_id': pk})
+
+
+@login_required
+def pharmacy_dispensary_page(request):
+    """Render the dispensary page."""
+    return render(request, 'pharmacy/dispensary.html')
+
+
+@login_required
+def pharmacy_inventory_page(request):
+    """Render the inventory page."""
+    return render(request, 'pharmacy/inventory.html')

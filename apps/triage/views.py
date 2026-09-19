@@ -289,3 +289,35 @@ class TriageQueueViewSet(viewsets.ReadOnlyModelViewSet):
             item.save()
         
         return Response({'message': 'Queue entry completed'})
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def triage_list_page(request):
+    """Render the triage records list page."""
+    return render(request, 'triage/list.html')
+
+
+@login_required
+def triage_waiting_page(request):
+    """Render the waiting list page."""
+    return render(request, 'triage/waiting.html')
+
+
+@login_required
+def triage_queue_page(request):
+    """Render the triage queue page."""
+    return render(request, 'triage/queue.html')
+
+
+@login_required
+def triage_assessment_page(request, pk=None):
+    """Render the triage assessment page for a specific visit."""
+    return render(request, 'triage/assessment.html', {'visit_id': pk})

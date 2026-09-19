@@ -6,52 +6,268 @@
 
 {% block content %}
 <style>
-    .status-admitted { background: #4299e1; color: white; }
-    .status-critical { background: #f56565; color: white; }
-    .status-stable { background: #48bb78; color: white; }
-    .status-discharged { background: #a0aec0; color: white; }
-    .bed-status { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 5px; }
-    .bed-available { background: #48bb78; }
-    .bed-occupied { background: #f56565; }
-    .bed-maintenance { background: #ecc94b; }
+    /* ============================================================
+       Government styling for admissions list
+       ============================================================ */
+
+    .quick-actions,
+    .quick-actions *,
+    .stats-grid,
+    .stats-grid *,
+    .card,
+    .card *,
+    .data-table,
+    .data-table *,
+    .modal,
+    .modal *,
+    .form-control,
+    .form-group {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+    }
+
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+    }
+
+    .card-header {
+        border-bottom: 2px solid #1a2947;
+        padding-bottom: 12px;
+    }
+
+    .card-title {
+        color: #1a2947;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .data-table thead tr {
+        background: #f0ece4;
+        border-bottom: 2px solid #1a2947;
+    }
+
+    .data-table th {
+        color: #1a2947;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        font-size: 0.82rem;
+    }
+
+    .data-table tbody tr:hover {
+        background: #f7f5f0;
+    }
+
+    .stat-card {
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+    }
+
+    .stat-card:hover {
+        border-top-color: #8b6f3d;
+    }
+
+    .stat-info h3 {
+        color: #1a2947;
+        font-weight: 700;
+    }
+
+    .stat-info p {
+        color: #4a4a4a;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .btn {
+        border-radius: 2px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .btn-primary {
+        background: #1a2947;
+        border: 2px solid #1a2947;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background: #8b6f3d;
+        border-color: #8b6f3d;
+    }
+
+    .btn-success {
+        background: #2d5a3d;
+        border: 2px solid #2d5a3d;
+        color: #ffffff;
+    }
+
+    .btn-success:hover {
+        background: #1f3d29;
+        border-color: #1f3d29;
+    }
+
+    .btn-info {
+        background: #1e3a5f;
+        border: 2px solid #1e3a5f;
+        color: #ffffff;
+    }
+
+    .btn-info:hover {
+        background: #142a47;
+        border-color: #142a47;
+    }
+
+    .btn-secondary {
+        background: #6b6b6b;
+        border: 2px solid #6b6b6b;
+        color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+        background: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    .btn-sm {
+        padding: 4px 10px;
+        font-size: 0.72rem;
+    }
+
+    .badge {
+        border-radius: 2px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        border: 1px solid;
+    }
+
+    .status-admitted {
+        background: #e6ecf2;
+        color: #1e3a5f;
+        border-color: #1e3a5f;
+    }
+
+    .status-critical {
+        background: #f2e6e6;
+        color: #7a2b2b;
+        border-color: #7a2b2b;
+    }
+
+    .status-stable {
+        background: #e6ede7;
+        color: #2d5a3d;
+        border-color: #2d5a3d;
+    }
+
+    .status-discharged {
+        background: #f0ece4;
+        color: #4a4a4a;
+        border-color: #4a4a4a;
+    }
+
+    .bed-status {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+    }
+
+    .bed-available { background: #2d5a3d; }
+    .bed-occupied { background: #7a2b2b; }
+    .bed-maintenance { background: #8a5a1e; }
+
+    .form-control {
+        border: 1px solid #c9c5bc;
+        border-radius: 2px;
+        background: #ffffff;
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #1a2947;
+        box-shadow: 0 0 0 3px rgba(26, 41, 71, 0.1);
+    }
+
+    .form-label {
+        color: #1a2947;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .modal-content {
+        border-radius: 2px;
+        border-top: 3px solid #1a2947;
+        background: #ffffff;
+    }
+
+    .modal-header {
+        border-bottom: 2px solid #1a2947;
+    }
+
+    .modal-header h3 {
+        color: #1a2947;
+        font-weight: 700;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #c9c5bc;
+        background: #f7f5f0;
+    }
 </style>
 
 <div class="quick-actions">
     <button class="btn btn-primary" onclick="window.location.href='/admissions/create/'">
         <i class="fas fa-plus"></i> New Admission
     </button>
-    <button class="btn btn-info" onclick="window.location.href='/admissions/wards/'">
+    <button class="btn btn-info" onclick="window.location.href='/admissions/wards-page/'">
         <i class="fas fa-building"></i> Ward Management
     </button>
-    <button class="btn btn-success" onclick="window.location.href='/admissions/beds/'">
+    <button class="btn btn-success" onclick="window.location.href='/admissions/beds-page/'">
         <i class="fas fa-bed"></i> Bed Management
     </button>
 </div>
 
 <div class="stats-grid" id="admissionStats">
     <div class="stat-card">
-        <div class="stat-icon" style="background: #4299e1;"><i class="fas fa-procedures"></i></div>
+        <div class="stat-icon" style="background: #1e3a5f; color: #ffffff;"><i class="fas fa-procedures"></i></div>
         <div class="stat-info">
             <h3 id="currentAdmissions">0</h3>
             <p>Current Admissions</p>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background: #48bb78;"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-icon" style="background: #2d5a3d; color: #ffffff;"><i class="fas fa-check-circle"></i></div>
         <div class="stat-info">
             <h3 id="todayDischarges">0</h3>
             <p>Discharged Today</p>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background: #f56565;"><i class="fas fa-bed"></i></div>
+        <div class="stat-icon" style="background: #7a2b2b; color: #ffffff;"><i class="fas fa-bed"></i></div>
         <div class="stat-info">
             <h3 id="availableBeds">0</h3>
             <p>Available Beds</p>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon" style="background: #ecc94b;"><i class="fas fa-chart-line"></i></div>
+        <div class="stat-icon" style="background: #8a5a1e; color: #ffffff;"><i class="fas fa-chart-line"></i></div>
         <div class="stat-info">
             <h3 id="occupancyRate">0</h3>
             <p>Occupancy Rate</p>

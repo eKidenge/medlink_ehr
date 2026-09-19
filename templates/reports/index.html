@@ -7,15 +7,58 @@
 {% block content %}
 <style>
     .report-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #c9c5bc;
+        border-top: 3px solid #1a2947;
+        border-radius: 2px;
+        padding: 24px 20px;
         text-align: center;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
-    .report-card:hover { transform: translateY(-5px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-    .report-icon { font-size: 48px; margin-bottom: 15px; }
+
+    .report-card:hover {
+        background: #f7f5f0;
+        border-top-color: #8b6f3d;
+        transform: translateX(3px);
+        box-shadow: 0 4px 12px rgba(15, 27, 51, 0.12);
+    }
+
+    .report-icon {
+        font-size: 2.5rem;
+        margin-bottom: 15px;
+        color: #1a2947;
+    }
+
+    .report-card:hover .report-icon {
+        color: #8b6f3d;
+    }
+
+    .report-card h3 {
+        color: #1a2947;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 6px;
+        letter-spacing: 0.01em;
+    }
+
+    .report-card p {
+        color: #4a4a4a;
+        font-size: 0.85rem;
+        font-style: italic;
+    }
+
+    /* Force serif on this page */
+    .report-card,
+    .report-card * {
+        font-family: 'Times New Roman', 'Source Serif 4', Georgia, serif !important;
+    }
+
+    .report-icon i {
+        font-family: "Font Awesome 6 Free" !important;
+        font-weight: 900 !important;
+        font-style: normal !important;
+    }
 </style>
 
 <div class="stats-grid">

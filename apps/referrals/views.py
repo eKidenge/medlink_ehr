@@ -365,3 +365,35 @@ class ReferralNoteViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(referral_id=referral_id)
         
         return queryset
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def referrals_list_page(request):
+    """Render the referrals list page."""
+    return render(request, 'referrals/list.html')
+
+
+@login_required
+def referral_create_page(request):
+    """Render the referral creation page."""
+    return render(request, 'referrals/create.html')
+
+
+@login_required
+def referral_detail_page(request, pk):
+    """Render a single referral detail page."""
+    return render(request, 'referrals/detail.html', {'referral_id': pk})
+
+
+@login_required
+def referral_verify_page(request):
+    """Render the referral verification page."""
+    return render(request, 'referrals/verify.html')

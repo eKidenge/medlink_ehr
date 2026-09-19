@@ -354,3 +354,47 @@ class DailyRoundViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(round_date__date=date)
         
         return queryset
+
+
+# ============================================================
+# HTML PAGE VIEWS (render templates, no DRF)
+# ============================================================
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def admissions_list_page(request):
+    """Render the admissions list page."""
+    return render(request, 'admissions/list.html')
+
+
+@login_required
+def admission_create_page(request):
+    """Render the admission creation page."""
+    return render(request, 'admissions/create.html')
+
+
+@login_required
+def admission_detail_page(request, pk):
+    """Render a single admission detail page."""
+    return render(request, 'admissions/detail.html', {'admission_id': pk})
+
+
+@login_required
+def admissions_wards_page(request):
+    """Render the wards management page."""
+    return render(request, 'admissions/wards.html')
+
+
+@login_required
+def admissions_beds_page(request):
+    """Render the beds management page."""
+    return render(request, 'admissions/beds.html')
+
+
+@login_required
+def admissions_rounds_page(request):
+    """Render the daily rounds page."""
+    return render(request, 'admissions/rounds.html')
