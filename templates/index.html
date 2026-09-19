@@ -4,10 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Scaton EHR - Modern healthcare operations platform for Kenyan hospitals, clinics, chemists, pharmacies, labs, and diagnostic centres.">
-  <meta name="keywords" content="EHR, EMR, HMS, HMIS, Hospital Management System, Kenya, Healthcare Software">
+  <meta name="description" content="Scaton EHR — Electronic Health Records and hospital operations platform for Kenya.">
   <meta name="csrf-token" content="{{ csrf_token }}">
-  <title>Scaton EHR — Healthcare Operations Platform for Kenya</title>
+  <title>SCATON EHR — Modern Healthcare, Made Simple</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,20 +19,17 @@
 
     :root {
       --navy: #0a1a2f;
-      --navy-light: #12263f;
       --navy-mid: #1e3a5f;
       --teal: #0d9488;
-      --teal-light: #14b8a6;
       --teal-glow: #5eead4;
+      --sky: #38bdf8;
       --crimson: #be123c;
       --cream: #f8fafc;
-      --gray-50: #f9fafb;
       --gray-100: #f3f4f6;
       --gray-200: #e5e7eb;
-      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
       --gray-500: #6b7280;
       --gray-700: #374151;
-      --gray-900: #111827;
       --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -53,8 +49,7 @@
        ============================================ */
     .site-header {
       position: fixed;
-      top: 0;
-      width: 100%;
+      top: 0; width: 100%;
       z-index: 60;
       background: rgba(10, 26, 47, 0.96);
       backdrop-filter: blur(14px);
@@ -76,36 +71,56 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       text-decoration: none;
       flex-shrink: 0;
     }
-    .brand-mark {
-      width: 40px;
-      height: 40px;
+    .brand-logo {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 14px rgba(94, 234, 212, 0.35));
+      transition: var(--transition);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 4px;
+      border: 1px solid rgba(94, 234, 212, 0.15);
+    }
+    .brand-logo:hover {
+      transform: scale(1.06) rotate(-3deg);
+      filter: drop-shadow(0 0 26px rgba(94, 234, 212, 0.6));
+    }
+    /* Fallback glyph shown if logo.png is missing */
+    .brand-mark-fallback {
+      width: 52px;
+      height: 52px;
       background: linear-gradient(135deg, #0d9488, #1e3a5f);
-      border-radius: 10px;
-      display: flex;
+      border-radius: 14px;
+      display: none;
       align-items: center;
       justify-content: center;
       box-shadow: 0 0 24px rgba(13, 148, 136, 0.4);
     }
-    .brand-mark i { color: #5eead4; font-size: 18px; }
-    .brand-text-wrap { display: flex; flex-direction: column; line-height: 1.1; }
+    .brand-mark-fallback i { color: #5eead4; font-size: 22px; }
+
+    .brand-text-wrap { display: flex; flex-direction: column; line-height: 1.05; }
     .brand-name {
       font-family: 'Playfair Display', serif;
-      font-size: 1.35rem;
-      font-weight: 800;
+      font-size: 1.55rem;
+      font-weight: 900;
       color: #ffffff;
-      letter-spacing: -0.3px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.05;
     }
     .brand-name span { color: #5eead4; }
     .brand-tag {
       font-size: 0.6rem;
-      letter-spacing: 0.18em;
+      letter-spacing: 0.24em;
       color: #7ea8d4;
       text-transform: uppercase;
-      font-weight: 600;
+      font-weight: 700;
+      margin-top: 3px;
     }
 
     .main-nav {
@@ -117,45 +132,63 @@
     .main-nav a {
       color: #b8cee6;
       font-size: 0.82rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
       position: relative;
     }
+    .main-nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 2px;
+      background: #5eead4;
+      transition: var(--transition);
+      border-radius: 2px;
+    }
     .main-nav a:hover { color: #5eead4; }
+    .main-nav a:hover::after { width: 100%; }
 
     .header-cta {
       display: flex;
       align-items: center;
       gap: 14px;
     }
-    .icon-btn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 1px solid rgba(94, 234, 212, 0.2);
-      background: rgba(94, 234, 212, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #5eead4;
+    .btn-outline-nav {
+      padding: 10px 22px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1.5px solid rgba(94, 234, 212, 0.25);
+      color: #b8cee6;
+      border-radius: 40px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
-    .icon-btn:hover {
-      background: rgba(94, 234, 212, 0.15);
+    .btn-outline-nav:hover {
       border-color: #5eead4;
+      color: #ffffff;
+      background: rgba(13, 148, 136, 0.12);
       transform: translateY(-2px);
     }
-    .btn-talk {
+    .btn-solid-nav {
       padding: 10px 24px;
       background: linear-gradient(135deg, #0d9488, #2563eb);
       color: #ffffff;
       border-radius: 40px;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
@@ -163,9 +196,8 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      white-space: nowrap;
     }
-    .btn-talk:hover {
+    .btn-solid-nav:hover {
       transform: translateY(-2px);
       box-shadow: 0 10px 30px rgba(13, 148, 136, 0.5);
     }
@@ -174,90 +206,112 @@
       background: transparent;
       border: 1px solid rgba(94, 234, 212, 0.2);
       color: #5eead4;
-      width: 40px;
-      height: 40px;
+      width: 40px; height: 40px;
       border-radius: 10px;
       cursor: pointer;
     }
 
     /* ============================================
-       HERO — split with background photo
+       HERO — photo background + navy overlay
        ============================================ */
     .hero {
       position: relative;
       min-height: 100vh;
       display: flex;
       align-items: center;
-      padding: 140px 0 80px;
+      padding: 150px 0 90px;
       overflow: hidden;
       background: var(--navy);
     }
     .hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
+      position: absolute; inset: 0; z-index: 1;
     }
     .hero-bg img {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       object-fit: cover;
-      filter: brightness(0.55) saturate(0.9);
+      filter: brightness(0.5) saturate(0.9);
     }
+    /* Navy gradient fades left → right so text is readable and photo shows on the right */
     .hero-bg::after {
       content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(100deg, rgba(10, 26, 47, 0.98) 0%, rgba(10, 26, 47, 0.85) 45%, rgba(10, 26, 47, 0.6) 100%);
+      position: absolute; inset: 0;
+      background: linear-gradient(100deg,
+        rgba(10, 26, 47, 0.98) 0%,
+        rgba(10, 26, 47, 0.88) 45%,
+        rgba(10, 26, 47, 0.55) 100%);
     }
     .hero-inner {
-      position: relative;
-      z-index: 2;
+      position: relative; z-index: 2;
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 32px;
       width: 100%;
-      display: grid;
-      grid-template-columns: 1.15fr 1fr;
-      gap: 60px;
-      align-items: center;
     }
-    @media (max-width: 1024px) {
-      .hero-inner { grid-template-columns: 1fr; }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(13, 148, 136, 0.15);
+      border: 1px solid rgba(94, 234, 212, 0.25);
+      border-radius: 40px;
+      color: #5eead4;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: #5eead4;
+      border-radius: 50%;
+      animation: pulseDot 1.6s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.4); }
     }
 
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-size: clamp(2.6rem, 6vw, 4.6rem);
       font-weight: 800;
       line-height: 1.02;
       color: #ffffff;
       letter-spacing: -0.02em;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
+      max-width: 900px;
     }
     .hero h1 .accent { color: #38bdf8; }
 
     .hero-lead {
-      font-size: 1.1rem;
+      font-size: 1.12rem;
       color: #b8cee6;
-      max-width: 620px;
+      max-width: 640px;
       line-height: 1.7;
-      margin-bottom: 36px;
+      margin-bottom: 34px;
     }
 
+    /* 5-tile workflow row — Reception, Doctor, Lab, Pharmacy, Billing */
     .hero-tiles {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 12px;
-      margin-bottom: 32px;
-      max-width: 640px;
+      margin-bottom: 34px;
+      max-width: 700px;
     }
-    @media (max-width: 640px) {
-      .hero-tiles { grid-template-columns: repeat(3, 1fr); }
+    @media (max-width: 700px) {
+      .hero-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 480px) {
+      .hero-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
     .hero-tile {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(94, 234, 212, 0.15);
       border-radius: 10px;
-      padding: 14px 12px;
+      padding: 14px 14px;
       text-align: left;
       backdrop-filter: blur(6px);
       transition: var(--transition);
@@ -269,32 +323,34 @@
     }
     .hero-tile-num {
       display: block;
-      font-size: 0.65rem;
+      font-size: 0.62rem;
       color: #5eead4;
-      font-weight: 700;
-      letter-spacing: 0.15em;
+      font-weight: 800;
+      letter-spacing: 0.2em;
       margin-bottom: 6px;
     }
     .hero-tile-label {
       font-size: 0.85rem;
       color: #ffffff;
-      font-weight: 600;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
 
     .hero-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 14px;
-      margin-bottom: 36px;
+      margin-bottom: 44px;
     }
     .btn-hero-primary {
-      padding: 14px 32px;
+      padding: 16px 34px;
       background: linear-gradient(135deg, #0d9488, #2563eb);
       color: #ffffff;
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
@@ -308,14 +364,14 @@
       box-shadow: 0 15px 40px rgba(13, 148, 136, 0.55);
     }
     .btn-hero-outline {
-      padding: 14px 32px;
+      padding: 16px 34px;
       background: rgba(255, 255, 255, 0.04);
       border: 1.5px solid rgba(94, 234, 212, 0.3);
       color: #ffffff;
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
@@ -329,38 +385,30 @@
       transform: translateY(-3px);
     }
 
-    .hero-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      max-width: 780px;
+    .hero-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 900px;
+      padding: 22px 0;
+      border-top: 1px solid rgba(94, 234, 212, 0.1);
     }
-    .hero-bar-item {
-      flex: 1 1 auto;
-      min-width: 200px;
-      padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(94, 234, 212, 0.15);
-      border-radius: 40px;
+    .hero-strip-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       color: #b8cee6;
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      backdrop-filter: blur(6px);
     }
-    .hero-bar-item i { color: #5eead4; }
+    .hero-strip-item i { color: #5eead4; font-size: 0.9rem; }
 
     /* ============================================
        SECTIONS — shared
        ============================================ */
-    .section {
-      padding: 100px 0;
-      position: relative;
-    }
+    .section { padding: 100px 0; }
     .section-container {
       max-width: 1400px;
       margin: 0 auto;
@@ -370,7 +418,7 @@
       display: inline-block;
       font-size: 0.72rem;
       font-weight: 700;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
       color: #0d9488;
       margin-bottom: 14px;
@@ -388,30 +436,24 @@
       color: #4b5563;
       max-width: 720px;
       line-height: 1.7;
-      margin-bottom: 40px;
     }
 
     /* ============================================
-       WHY CHOOSE — left text + 4 feature cards
+       WHY / BENEFITS
        ============================================ */
     .why-grid {
       display: grid;
-      grid-template-columns: 1fr 1.2fr;
+      grid-template-columns: 1fr 1.15fr;
       gap: 60px;
       align-items: start;
     }
-    @media (max-width: 1024px) {
-      .why-grid { grid-template-columns: 1fr; gap: 40px; }
-    }
-
+    @media (max-width: 1024px) { .why-grid { grid-template-columns: 1fr; gap: 40px; } }
     .why-cards {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 20px;
     }
-    @media (max-width: 640px) {
-      .why-cards { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 640px) { .why-cards { grid-template-columns: 1fr; } }
     .why-card {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -428,14 +470,14 @@
       display: block;
       font-size: 0.65rem;
       font-weight: 700;
-      letter-spacing: 0.16em;
+      letter-spacing: 0.2em;
       color: #0d9488;
       text-transform: uppercase;
       margin-bottom: 12px;
     }
     .why-card h4 {
       font-family: 'Inter', sans-serif;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: #0a1a2f;
       margin-bottom: 12px;
@@ -448,43 +490,32 @@
     }
 
     /* ============================================
-       FEATURE PROOF — 6 cards in grid
+       FEATURES
        ============================================ */
-    .feature-proof {
-      background: #f8fafc;
-    }
-    .feature-proof-head {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .feature-proof-head h2 {
+    .features { background: #f8fafc; }
+    .features-head { text-align: center; margin-bottom: 60px; }
+    .features-head h2 {
       font-size: clamp(2rem, 4vw, 2.75rem);
       font-weight: 800;
       color: #0a1a2f;
       line-height: 1.15;
       margin-bottom: 20px;
-      letter-spacing: -0.015em;
     }
-    .feature-proof-head h2 .accent { color: #0d9488; }
-    .feature-proof-head p {
+    .features-head h2 .accent { color: #0d9488; }
+    .features-head p {
       font-size: 1.05rem;
       color: #4b5563;
-      max-width: 760px;
+      max-width: 720px;
       margin: 0 auto;
       line-height: 1.7;
     }
-
     .feature-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
     }
-    @media (max-width: 1024px) {
-      .feature-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .feature-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 1024px) { .feature-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } }
     .feature-card {
       background: #ffffff;
       border: 1px solid #e5e7eb;
@@ -498,13 +529,10 @@
       transform: translateY(-6px);
     }
     .feature-card .fc-icon {
-      width: 48px;
-      height: 48px;
+      width: 48px; height: 48px;
       border-radius: 12px;
       background: linear-gradient(135deg, rgba(13, 148, 136, 0.12), rgba(30, 58, 95, 0.1));
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       color: #0d9488;
       font-size: 1.3rem;
       margin-bottom: 20px;
@@ -515,84 +543,53 @@
       font-weight: 700;
       color: #0a1a2f;
       margin-bottom: 12px;
-      line-height: 1.35;
     }
     .feature-card p {
       font-size: 0.9rem;
       color: #4b5563;
       line-height: 1.65;
-      margin-bottom: 18px;
-    }
-    .feature-card ul {
-      list-style: none;
-      padding: 0;
-    }
-    .feature-card ul li {
-      font-size: 0.82rem;
-      color: #0d9488;
-      font-weight: 600;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .feature-card ul li::before {
-      content: '✓';
-      color: #0d9488;
-      font-weight: 800;
     }
 
     /* ============================================
-       MODULES — 6 numbered cards
+       WORKFLOW
        ============================================ */
-    .modules {
-      background: #ffffff;
-    }
-    .modules-head {
-      margin-bottom: 50px;
-    }
-    .module-grid {
+    .workflow { background: #ffffff; }
+    .workflow-head { max-width: 720px; margin-bottom: 60px; }
+    .workflow-steps {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
+      gap: 32px;
     }
-    @media (max-width: 1024px) {
-      .module-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 640px) {
-      .module-grid { grid-template-columns: 1fr; }
-    }
-    .module-card {
+    @media (max-width: 900px) { .workflow-steps { grid-template-columns: 1fr; } }
+    .step-card {
       background: #ffffff;
       border: 1px solid #e5e7eb;
       border-radius: 16px;
-      padding: 32px 28px;
+      padding: 36px 30px;
       transition: var(--transition);
-      position: relative;
     }
-    .module-card:hover {
+    .step-card:hover {
       border-color: #0d9488;
-      box-shadow: 0 20px 50px rgba(13, 148, 136, 0.12);
-      transform: translateY(-6px);
+      box-shadow: 0 20px 50px rgba(13, 148, 136, 0.1);
+      transform: translateY(-4px);
     }
-    .module-eyebrow {
-      display: inline-block;
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
+    .step-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.8rem;
+      font-weight: 800;
       color: #0d9488;
-      text-transform: uppercase;
+      opacity: 0.25;
+      line-height: 1;
       margin-bottom: 14px;
     }
-    .module-card h3 {
+    .step-card h3 {
       font-family: 'Inter', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: #0a1a2f;
-      margin-bottom: 14px;
-      line-height: 1.35;
+      margin-bottom: 12px;
     }
-    .module-card p {
+    .step-card p {
       font-size: 0.9rem;
       color: #4b5563;
       line-height: 1.65;
@@ -601,29 +598,28 @@
     /* ============================================
        INTEGRATIONS
        ============================================ */
-    .integrations {
-      background: #f8fafc;
-      text-align: center;
+    .integrations { background: #f8fafc; text-align: center; }
+    .integrations h2 {
+      max-width: 780px;
+      margin: 0 auto 60px;
+      font-size: clamp(2rem, 4vw, 2.5rem);
+      font-weight: 800;
+      color: #0a1a2f;
+      line-height: 1.2;
     }
     .integration-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 24px;
-      margin-top: 50px;
     }
-    @media (max-width: 900px) {
-      .integration-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 540px) {
-      .integration-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 900px) { .integration-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .integration-grid { grid-template-columns: 1fr; } }
     .integration-card {
       background: #ffffff;
       border: 1px solid #e5e7eb;
       border-radius: 16px;
       padding: 30px 24px;
       transition: var(--transition);
-      text-align: center;
     }
     .integration-card:hover {
       border-color: #0d9488;
@@ -631,13 +627,10 @@
       transform: translateY(-4px);
     }
     .integration-card .int-icon {
-      width: 60px;
-      height: 60px;
+      width: 60px; height: 60px;
       border-radius: 14px;
       background: linear-gradient(135deg, rgba(13, 148, 136, 0.1), rgba(30, 58, 95, 0.08));
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       color: #0d9488;
       font-size: 1.5rem;
       margin: 0 auto 18px;
@@ -656,96 +649,17 @@
     }
 
     /* ============================================
-       WORKFLOW STEPS
-       ============================================ */
-    .workflow {
-      background: #ffffff;
-    }
-    .workflow-head {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .workflow-head h2 {
-      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-      font-weight: 800;
-      color: #0a1a2f;
-      line-height: 1.2;
-      margin-bottom: 16px;
-    }
-    .workflow-head p {
-      font-size: 1rem;
-      color: #4b5563;
-      max-width: 700px;
-      margin: 0 auto;
-    }
-    .workflow-steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      margin-top: 40px;
-    }
-    @media (max-width: 900px) {
-      .workflow-steps { grid-template-columns: 1fr; }
-    }
-    .step-card {
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 34px 30px;
-      position: relative;
-      transition: var(--transition);
-    }
-    .step-card:hover {
-      border-color: #0d9488;
-      box-shadow: 0 20px 50px rgba(13, 148, 136, 0.1);
-      transform: translateY(-4px);
-    }
-    .step-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.6rem;
-      font-weight: 800;
-      color: #0d9488;
-      opacity: 0.25;
-      margin-bottom: 12px;
-      line-height: 1;
-    }
-    .step-eyebrow {
-      display: block;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      color: #0d9488;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-    .step-card h3 {
-      font-family: 'Inter', sans-serif;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #0a1a2f;
-      margin-bottom: 14px;
-      line-height: 1.3;
-    }
-    .step-card p {
-      font-size: 0.9rem;
-      color: #4b5563;
-      line-height: 1.65;
-    }
-
-    /* ============================================
-       SECURITY SECTION
+       SECURITY
        ============================================ */
     .security {
       background: linear-gradient(135deg, #0a1a2f 0%, #12263f 100%);
       color: #ffffff;
-      text-align: center;
       position: relative;
       overflow: hidden;
     }
     .security::before {
       content: '';
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background: radial-gradient(circle at 30% 30%, rgba(13, 148, 136, 0.15) 0%, transparent 60%);
     }
     .security .section-container { position: relative; z-index: 2; }
@@ -756,12 +670,13 @@
       color: #ffffff;
       line-height: 1.2;
       margin-bottom: 20px;
+      max-width: 780px;
     }
     .security .lead {
       font-size: 1.05rem;
       color: #b8cee6;
       max-width: 720px;
-      margin: 0 auto 50px;
+      margin-bottom: 50px;
       line-height: 1.7;
     }
     .security-grid {
@@ -769,12 +684,8 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 30px;
       max-width: 1000px;
-      margin: 0 auto;
-      text-align: left;
     }
-    @media (max-width: 640px) {
-      .security-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 640px) { .security-grid { grid-template-columns: 1fr; } }
     .security-item {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(94, 234, 212, 0.12);
@@ -787,13 +698,10 @@
       border-color: rgba(94, 234, 212, 0.35);
     }
     .security-item .si-icon {
-      width: 44px;
-      height: 44px;
+      width: 44px; height: 44px;
       border-radius: 12px;
       background: rgba(94, 234, 212, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       color: #5eead4;
       font-size: 1.15rem;
       margin-bottom: 16px;
@@ -814,10 +722,7 @@
     /* ============================================
        CTA
        ============================================ */
-    .cta-section {
-      padding: 100px 0;
-      background: #f8fafc;
-    }
+    .cta-section { padding: 100px 0; background: #f8fafc; }
     .cta-card {
       max-width: 1000px;
       margin: 0 auto;
@@ -832,8 +737,7 @@
     }
     .cta-card::before {
       content: '';
-      position: absolute;
-      inset: 0;
+      position: absolute; inset: 0;
       background: radial-gradient(circle at 80% 20%, rgba(94, 234, 212, 0.15) 0%, transparent 50%);
     }
     .cta-card > * { position: relative; z-index: 2; }
@@ -863,7 +767,7 @@
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
@@ -884,7 +788,7 @@
       border-radius: 12px;
       font-size: 0.85rem;
       font-weight: 700;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       text-decoration: none;
       transition: var(--transition);
@@ -905,35 +809,32 @@
       background: #0a1a2f;
       color: #b8cee6;
       padding: 70px 0 30px;
-      position: relative;
     }
     .footer-grid {
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 32px;
       display: grid;
-      grid-template-columns: 1.6fr 1fr 1.2fr 1fr;
+      grid-template-columns: 1.6fr 1fr 1fr 1fr;
       gap: 50px;
       margin-bottom: 50px;
     }
-    @media (max-width: 1024px) {
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
-    }
-    @media (max-width: 640px) {
-      .footer-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 1024px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 40px; } }
+    @media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr; } }
     .footer-brand {
       display: flex;
       align-items: center;
       gap: 12px;
       margin-bottom: 20px;
     }
-    .footer-brand .brand-mark { width: 38px; height: 38px; }
+    .footer-brand .brand-logo { width: 44px; height: 44px; }
     .footer-brand-name {
       font-family: 'Playfair Display', serif;
-      font-size: 1.25rem;
-      font-weight: 800;
+      font-size: 1.35rem;
+      font-weight: 900;
       color: #ffffff;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
     .footer-brand-name span { color: #5eead4; }
     .footer-desc {
@@ -941,6 +842,7 @@
       color: #7ea8d4;
       line-height: 1.7;
       margin-bottom: 20px;
+      max-width: 340px;
     }
     .footer-contact {
       font-size: 0.85rem;
@@ -952,8 +854,8 @@
     .footer-col h5 {
       font-family: 'Inter', sans-serif;
       font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
+      font-weight: 800;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
       color: #5eead4;
       margin-bottom: 20px;
@@ -965,6 +867,8 @@
       text-decoration: none;
       font-size: 0.88rem;
       transition: var(--transition);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
     .footer-col ul li a:hover { color: #5eead4; }
     .footer-bottom {
@@ -983,22 +887,22 @@
       color: #7ea8d4;
       text-decoration: none;
       margin-left: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
     .footer-bottom a:hover { color: #5eead4; }
 
-    /* ============================================
-       RESPONSIVE
-       ============================================ */
     @media (max-width: 900px) {
       .main-nav { display: none; }
-      .header-cta .icon-btn { display: none; }
+      .btn-outline-nav { display: none; }
       .mobile-toggle { display: flex; align-items: center; justify-content: center; }
       .header-row { padding: 14px 20px; gap: 20px; }
-      .hero-inner { padding: 0 20px; }
       .section-container { padding: 0 20px; }
       .section { padding: 70px 0; }
       .footer-grid { padding: 0 20px; }
       .footer-bottom { padding: 24px 20px 0; }
+      .brand-name { font-size: 1.2rem; }
+      .brand-logo, .brand-mark-fallback { width: 42px; height: 42px; }
     }
   </style>
 </head>
@@ -1007,26 +911,28 @@
   <header class="site-header" id="siteHeader">
     <div class="header-row">
       <a href="/" class="brand">
-        <div class="brand-mark"><i class="fas fa-heartbeat"></i></div>
+        <img src="{% static 'images/logo.png' %}"
+             alt="SCATON EHR Logo"
+             class="brand-logo"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="brand-mark-fallback"><i class="fas fa-heartbeat"></i></div>
         <div class="brand-text-wrap">
-          <span class="brand-name">Scaton<span>EHR</span></span>
-          <span class="brand-tag">Healthcare Operations Platform</span>
+          <span class="brand-name">SCATON <span>EHR</span></span>
+          <span class="brand-tag">HEALTHCARE OPERATIONS</span>
         </div>
       </a>
 
       <nav class="main-nav">
         <a href="#benefits">Benefits</a>
         <a href="#features">Features</a>
-        <a href="#pricing">Pricing</a>
         <a href="#workflows">Workflows</a>
-        <a href="#modules">Modules</a>
         <a href="#security">Security</a>
         <a href="#contact">Contact</a>
       </nav>
 
       <div class="header-cta">
-        <a href="/login/" class="icon-btn" title="Sign in"><i class="fas fa-sign-in-alt"></i></a>
-        <a href="#contact" class="btn-talk">Talk to us <i class="fas fa-arrow-right"></i></a>
+        <a href="/login/" class="btn-outline-nav">Sign In</a>
+        <a href="/register/" class="btn-solid-nav">Get Started <i class="fas fa-arrow-right"></i></a>
         <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle menu">
           <i class="fas fa-bars"></i>
         </button>
@@ -1037,169 +943,119 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-bg">
-      <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1600&q=80" alt="Healthcare team">
+      <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1600&q=80" alt="Healthcare team at work">
     </div>
     <div class="hero-inner">
-      <div>
-        <h1>
-          Run care<br>
-          with <span class="accent">clarity.</span>
-        </h1>
-        <p class="hero-lead">
-          Scaton EHR gives reception, clinicians, pharmacy, lab, and finance one shared patient journey, so daily work feels clearer for staff and easier to follow for managers.
-        </p>
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Built for Kenyan Healthcare
+      </div>
+      <h1>
+        The smarter way<br>
+        to run <span class="accent">modern care.</span>
+      </h1>
+      <p class="hero-lead">
+        Scaton EHR brings patient records, clinical workflows, pharmacy, laboratory, and billing onto one connected platform — so your team spends less time chasing paperwork and more time caring for people.
+      </p>
 
-        <div class="hero-tiles">
-          <div class="hero-tile"><span class="hero-tile-num">01</span><span class="hero-tile-label">Reception</span></div>
-          <div class="hero-tile"><span class="hero-tile-num">02</span><span class="hero-tile-label">Doctor</span></div>
-          <div class="hero-tile"><span class="hero-tile-num">03</span><span class="hero-tile-label">Lab</span></div>
-          <div class="hero-tile"><span class="hero-tile-num">04</span><span class="hero-tile-label">Pharmacy</span></div>
-          <div class="hero-tile"><span class="hero-tile-num">05</span><span class="hero-tile-label">Billing</span></div>
-        </div>
+      <div class="hero-tiles">
+        <div class="hero-tile"><span class="hero-tile-num">01</span><span class="hero-tile-label">Reception</span></div>
+        <div class="hero-tile"><span class="hero-tile-num">02</span><span class="hero-tile-label">Doctor</span></div>
+        <div class="hero-tile"><span class="hero-tile-num">03</span><span class="hero-tile-label">Lab</span></div>
+        <div class="hero-tile"><span class="hero-tile-num">04</span><span class="hero-tile-label">Pharmacy</span></div>
+        <div class="hero-tile"><span class="hero-tile-num">05</span><span class="hero-tile-label">Billing</span></div>
+      </div>
 
-        <div class="hero-actions">
-          <a href="#contact" class="btn-hero-primary">Talk to us <i class="fas fa-arrow-right"></i></a>
-          <a href="#workflows" class="btn-hero-outline">See the flow <i class="fas fa-arrow-right"></i></a>
-        </div>
+      <div class="hero-actions">
+        <a href="/register/" class="btn-hero-primary">Start Free Trial <i class="fas fa-arrow-right"></i></a>
+        <a href="#features" class="btn-hero-outline">Explore Features <i class="fas fa-arrow-right"></i></a>
+      </div>
 
-        <div class="hero-bar">
-          <div class="hero-bar-item"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Same patient story</div>
-          <div class="hero-bar-item"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Billing follows care</div>
-          <div class="hero-bar-item"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Managers see the day</div>
-        </div>
+      <div class="hero-strip">
+        <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Patient records in one place</div>
+        <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Billing follows care</div>
+        <div class="hero-strip-item"><i class="fas fa-check-circle"></i> Built for real clinical teams</div>
       </div>
     </div>
   </section>
 
-  <!-- WHY CHOOSE -->
+  <!-- BENEFITS -->
   <section class="section" id="benefits">
     <div class="section-container">
       <div class="why-grid">
         <div>
-          <span class="eyebrow">Why facilities choose Scaton EHR</span>
-          <h2 class="section-title">Software should make the care journey easier to run, not harder to explain.</h2>
+          <span class="eyebrow">Why Scaton EHR</span>
+          <h2 class="section-title">Software that gets out of the way of patient care.</h2>
           <p class="section-lead">
-            Scaton EHR gives Kenyan healthcare teams a clearer operating layer for patients, clinical work, pharmacy, diagnostics, billing, and management.
+            Your team shouldn't have to fight the system to do their jobs. Scaton EHR removes the friction between registration, consultation, diagnostics, dispensing, and payment — so every step stays connected to the same patient story.
           </p>
-          <div class="hero-actions" style="margin-bottom:0;">
-            <a href="#pricing" class="btn-hero-primary" style="background: linear-gradient(135deg, #0d9488, #1e3a5f); color:#fff;">See packages</a>
-            <a href="#contact" class="btn-hero-outline" style="border-color:#0d9488; color:#0d9488; background:transparent;">Talk to us</a>
-          </div>
         </div>
 
         <div class="why-cards">
           <div class="why-card">
-            <span class="mini-eyebrow">Live patient flow</span>
-            <h4>Know where every patient is</h4>
-            <p>Registration, active visits, queues, doctor handoffs, lab requests, prescriptions, invoices, and receipts stay attached to the same patient journey.</p>
+            <span class="mini-eyebrow">Patient records</span>
+            <h4>One patient, one journey</h4>
+            <p>Registration, consultations, test results, prescriptions, and payment history all live under a single patient record — no more duplicated files.</p>
           </div>
           <div class="why-card">
-            <span class="mini-eyebrow">Care-to-cash control</span>
-            <h4>Bill from the work already done</h4>
-            <p>Charges can follow appointments, lab orders, pharmacy dispensing, admission activity, M-Pesa collections, eTIMS-ready records, SHA preparation, and insurer workflows.</p>
+            <span class="mini-eyebrow">Billing</span>
+            <h4>Charges follow the care</h4>
+            <p>Services rendered in the lab, pharmacy, or consultation room flow straight into the invoice — accurate, traceable, and reconciled automatically.</p>
           </div>
           <div class="why-card">
-            <span class="mini-eyebrow">Package follows operations</span>
-            <h4>Fit the facility you run today</h4>
-            <p>Choose the facility type, modules, branches, staff seats, departments, beds, and pharmacy counters you need now, then expand when the operation grows.</p>
+            <span class="mini-eyebrow">Operations</span>
+            <h4>Fit for your facility</h4>
+            <p>Whether you run a small clinic or a multi-branch hospital, configure modules, users, and workflows to match how you actually work.</p>
           </div>
           <div class="why-card">
-            <span class="mini-eyebrow">Role-based daily work</span>
-            <h4>Give every role a clear desk</h4>
-            <p>Reception, clinicians, nurses, laboratory, pharmacy, billing, ADT, SHA, and administrators see the tools they need without exposing everything to everyone.</p>
+            <span class="mini-eyebrow">Access control</span>
+            <h4>Every role, the right tools</h4>
+            <p>Doctors, nurses, pharmacists, lab techs, receptionists, and administrators each get a workspace built for their responsibilities — nothing more, nothing less.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- FEATURE PROOF -->
-  <section class="section feature-proof" id="features">
+  <!-- FEATURES -->
+  <section class="section features" id="features">
     <div class="section-container">
-      <div class="feature-proof-head">
-        <h2>What changes when care, billing, and <span class="accent">records finally work together.</span></h2>
-        <p>For hospitals, clinics, medical centres, chemists, pharmacies, and referral facilities that need one readable flow from patient intake to clinical care, payment, and reporting.</p>
+      <div class="features-head">
+        <span class="eyebrow">Features</span>
+        <h2>Everything your facility needs, <span class="accent">connected.</span></h2>
+        <p>From the front desk to the finance office — one platform that keeps the entire patient journey in view.</p>
       </div>
 
       <div class="feature-grid">
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-heartbeat"></i></div>
-          <h3>Patient flow that stays visible</h3>
-          <p>Track registration, active visits, queues, consultation, diagnostic requests, dispensing, invoices, payments, and billing status without rebuilding the story from separate tools.</p>
-          <ul>
-            <li>Reception, clinical, lab, pharmacy, and billing together</li>
-          </ul>
+          <div class="fc-icon"><i class="fas fa-user-injured"></i></div>
+          <h3>Patient Management</h3>
+          <p>Register patients, store clinical history, manage appointments, and access complete records from anywhere — all in a single searchable database.</p>
         </div>
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-sliders-h"></i></div>
-          <h3>Setup that matches your facility</h3>
-          <p>Start from the actual facility type you run in Kenya, whether that is a clinic, medical centre, hospital, chemist, pharmacy, diagnostic centre, or multi-branch group.</p>
-          <ul>
-            <li>Facility type, branches, beds, desks, and departments</li>
-          </ul>
+          <div class="fc-icon"><i class="fas fa-stethoscope"></i></div>
+          <h3>Clinical Workbench</h3>
+          <p>Doctors and clinical officers get queue visibility, patient history, structured notes, diagnosis capture, and one-click lab or pharmacy requests.</p>
         </div>
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-chart-bar"></i></div>
-          <h3>Management visibility without manual chasing</h3>
-          <p>Give owners and administrators clearer views of patient flow, staff activity, revenue movement, branch activity, and service performance without waiting for manual summaries.</p>
-          <ul>
-            <li>Operational views for owners, admins, and finance</li>
-          </ul>
+          <div class="fc-icon"><i class="fas fa-microscope"></i></div>
+          <h3>Laboratory</h3>
+          <p>Receive orders, track samples, record results, and release reports — with automatic charges pushed to the patient's invoice.</p>
         </div>
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-lock"></i></div>
-          <h3>Roles, permissions, and accountability</h3>
-          <p>Use role-based access and traceable actions so patient records, prescriptions, billing actions, claims activity, and staff movement stay easier to govern.</p>
-          <ul>
-            <li>Cleaner control across sensitive workflows</li>
-          </ul>
+          <div class="fc-icon"><i class="fas fa-capsules"></i></div>
+          <h3>Pharmacy</h3>
+          <p>Manage inventory, dispense prescriptions, track stock movement, and flag low or expiring medications before they become a problem.</p>
         </div>
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-coins"></i></div>
-          <h3>Kenya-ready finance workflows</h3>
-          <p>Connect M-Pesa collections, invoices, pharmacy movement, claims visibility, SHA preparation, diagnostics, and discharge billing around the same patient journey.</p>
-          <ul>
-            <li>M-Pesa, eTIMS-ready records, SHA, and insurer visibility</li>
-          </ul>
+          <div class="fc-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+          <h3>Billing &amp; Payments</h3>
+          <p>Generate invoices tied to the visit, accept M-Pesa and cash, track outstanding balances, and reconcile every shilling against the care delivered.</p>
         </div>
         <div class="feature-card">
-          <div class="fc-icon"><i class="fas fa-arrow-up-right-dots"></i></div>
-          <h3>Commercial fit that can grow with you</h3>
-          <p>Start with a clinic, chemist, pharmacy, medical centre, or hospital setup and expand modules, seats, beds, branches, help desks, and departments when the business is ready.</p>
-          <ul>
-            <li>Packages shaped around facility size and growth</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- INTEGRATIONS -->
-  <section class="section integrations">
-    <div class="section-container">
-      <span class="eyebrow">Works with platforms you trust</span>
-      <h2 class="section-title" style="max-width:780px;margin-left:auto;margin-right:auto;">Integrated with Kenya's top payment, health, and insurance systems.</h2>
-
-      <div class="integration-grid">
-        <div class="integration-card">
-          <div class="int-icon"><i class="fas fa-mobile-alt"></i></div>
-          <h4>Instant M-Pesa Payments</h4>
-          <p>Collect patient payments seamlessly through secure, built-in M-Pesa integration.</p>
-        </div>
-        <div class="integration-card">
-          <div class="int-icon"><i class="fas fa-file-shield"></i></div>
-          <h4>Insurance Made Simple</h4>
-          <p>Route e-claims across 360+ insurers with cleaner reconciliation for Kenyan hospitals.</p>
-        </div>
-        <div class="integration-card">
-          <div class="int-icon"><i class="fas fa-chart-line"></i></div>
-          <h4>One-Click MoH Reports</h4>
-          <p>Generate monthly Ministry of Health disease reports instantly with no manual rework.</p>
-        </div>
-        <div class="integration-card">
-          <div class="int-icon"><i class="fas fa-check-double"></i></div>
-          <h4>SHA Workflow Validation</h4>
-          <p>Validate beneficiary access, pre-authorization, and claim readiness against current SHA rules before submission.</p>
+          <div class="fc-icon"><i class="fas fa-chart-line"></i></div>
+          <h3>Reports &amp; Analytics</h3>
+          <p>Live dashboards for patient flow, revenue, staff activity, and MoH reporting — no more manual spreadsheets at month-end.</p>
         </div>
       </div>
     </div>
@@ -1209,73 +1065,57 @@
   <section class="section workflow" id="workflows">
     <div class="section-container">
       <div class="workflow-head">
-        <span class="eyebrow">From arrival to payment. Context stays visible.</span>
-        <h2>Register the patient, start the visit, send them to the doctor, order lab work, dispense medicine, raise the invoice, and prepare SHA or insurer work from the same journey.</h2>
-        <p>Move from booking to doctor review, investigations, pharmacy, claims preparation, and billing without losing the patient story.</p>
+        <span class="eyebrow">One connected workflow</span>
+        <h2 class="section-title">From arrival to payment, nothing falls through.</h2>
+        <p class="section-lead">Every handoff stays visible. Every action stays traceable. Your team always knows what's next.</p>
       </div>
 
       <div class="workflow-steps">
         <div class="step-card">
           <div class="step-num">01</div>
-          <span class="step-eyebrow">Front desk</span>
-          <h3>Reception opens a clean visit</h3>
-          <p>Search the patient, register if needed, book the appointment, start the visit, and send the patient to the right queue without duplicating records.</p>
+          <h3>Reception registers the visit</h3>
+          <p>Search for existing patients, register new ones, book appointments, and route patients to the right department — in seconds.</p>
         </div>
         <div class="step-card">
           <div class="step-num">02</div>
-          <span class="step-eyebrow">Clinical care</span>
-          <h3>Doctor works from one patient view</h3>
-          <p>Clinical notes, diagnosis, orders, prescriptions, and previous activity stay together so the consultation does not depend on paper or memory.</p>
+          <h3>Clinician delivers the care</h3>
+          <p>Consultations, notes, diagnoses, lab orders, and prescriptions all captured in one view — no switching between systems.</p>
         </div>
         <div class="step-card">
           <div class="step-num">03</div>
-          <span class="step-eyebrow">Revenue clarity</span>
           <h3>Lab, pharmacy, and billing close the loop</h3>
-          <p>Requests become worklist items, dispensing can create charges, invoices stay tied to the visit, and SHA or insurer checks can use the same patient context.</p>
+          <p>Tests are processed, medications dispensed, invoices generated, and payments recorded — all tied to the same visit.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- MODULES -->
-  <section class="section modules" id="modules">
+  <!-- INTEGRATIONS -->
+  <section class="section integrations">
     <div class="section-container">
-      <div class="modules-head">
-        <span class="eyebrow">Modules that work together</span>
-        <h2 class="section-title">Choose the workflows your facility actually runs.</h2>
-        <p class="section-lead">Start with reception, clinical work, and billing, then add lab, pharmacy, wards, SHA workflows, branches, roles, and reporting as your facility grows.</p>
-      </div>
+      <span class="eyebrow">Integrations</span>
+      <h2>Connects to the tools Kenyan healthcare already runs on.</h2>
 
-      <div class="module-grid">
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>Appointments and reception</h3>
-          <p>Register patients, avoid duplicate records, schedule visits, start active encounters, and move patients into the right department queue.</p>
+      <div class="integration-grid">
+        <div class="integration-card">
+          <div class="int-icon"><i class="fas fa-mobile-alt"></i></div>
+          <h4>M-Pesa</h4>
+          <p>Accept mobile payments and reconcile transactions against patient invoices automatically.</p>
         </div>
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>Doctors and clinical workbench</h3>
-          <p>Give clinicians queue context, patient history, notes, diagnosis, lab ordering, prescription capture, and clear next actions.</p>
+        <div class="integration-card">
+          <div class="int-icon"><i class="fas fa-file-shield"></i></div>
+          <h4>Insurance &amp; SHA</h4>
+          <p>Prepare claims, track submissions, and manage insurer correspondence from a single record.</p>
         </div>
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>Billing and settlements</h3>
-          <p>Review invoices, receive payments, monitor balances, handle discharge billing, and keep M-Pesa and eTIMS-ready records close to the visit.</p>
+        <div class="integration-card">
+          <div class="int-icon"><i class="fas fa-chart-pie"></i></div>
+          <h4>MoH Reporting</h4>
+          <p>Generate standard Ministry of Health reports on demand, with the right data already captured.</p>
         </div>
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>Laboratory and diagnostics</h3>
-          <p>Receive doctor orders, collect samples, record results, mark review status, release reports, and keep diagnostic charges visible.</p>
-        </div>
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>Pharmacy and stock movement</h3>
-          <p>Search prescriptions, choose store and batch, dispense medicine, connect pharmacy billing, and keep stock movement accountable.</p>
-        </div>
-        <div class="module-card">
-          <span class="module-eyebrow">Operational module</span>
-          <h3>ADT, SHA, roles, and reporting</h3>
-          <p>Support wards, beds, admissions, transfers, discharge, SHA readiness, staff roles, permissions, branches, and management visibility.</p>
+        <div class="integration-card">
+          <div class="int-icon"><i class="fas fa-receipt"></i></div>
+          <h4>eTIMS Ready</h4>
+          <p>Stay compliant with KRA tax requirements while keeping your billing workflow smooth.</p>
         </div>
       </div>
     </div>
@@ -1284,20 +1124,22 @@
   <!-- SECURITY -->
   <section class="section security" id="security">
     <div class="section-container">
-      <span class="eyebrow">Security you can defend</span>
-      <h2>Built to the standard your patients deserve.</h2>
-      <p class="lead">Scaton EHR is engineered with role-based access, encrypted records, and a full audit trail so your facility stays accountable and your patients stay protected.</p>
+      <span class="eyebrow">Security &amp; Governance</span>
+      <h2>Built to protect patient data at every level.</h2>
+      <p class="lead">
+        Healthcare systems handle the most sensitive information in any industry. Scaton EHR is engineered with that responsibility at its core.
+      </p>
 
       <div class="security-grid">
         <div class="security-item">
           <div class="si-icon"><i class="fas fa-user-shield"></i></div>
-          <h4>Role-based access</h4>
-          <p>Doctors, nurses, receptionists, pharmacists, and admins each see the workflows they need without exposing every record to everyone.</p>
+          <h4>Role-based access control</h4>
+          <p>Precise permissions ensure every user only reaches the records and actions appropriate to their role.</p>
         </div>
         <div class="security-item">
           <div class="si-icon"><i class="fas fa-clipboard-list"></i></div>
-          <h4>Full audit trail</h4>
-          <p>Every important access and workflow action can stay traceable, which matters for healthcare governance and finance review.</p>
+          <h4>Complete audit trail</h4>
+          <p>Every access, change, and workflow action is logged — so accountability is always a click away.</p>
         </div>
       </div>
     </div>
@@ -1307,13 +1149,11 @@
   <section class="section cta-section" id="contact">
     <div class="section-container">
       <div class="cta-card">
-        <h2>Let's talk about your hospital's needs.</h2>
-        <p>Questions about Scaton EHR? We're here to help you get started with a rollout that fits your facility.</p>
-
+        <h2>Ready to modernize your facility?</h2>
+        <p>Talk to us about a rollout that fits your facility, or start exploring the platform on your own.</p>
         <div class="cta-actions">
-          <a href="/register/" class="btn-cta-primary">Schedule a Demo <i class="fas fa-arrow-right"></i></a>
-          <a href="mailto:support@scaton.co.ke" class="btn-cta-outline">Email Support <i class="fas fa-envelope"></i></a>
-          <a href="https://wa.me/254114271816" target="_blank" class="btn-cta-outline">WhatsApp <i class="fab fa-whatsapp"></i></a>
+          <a href="/register/" class="btn-cta-primary">Create Account <i class="fas fa-arrow-right"></i></a>
+          <a href="/login/" class="btn-cta-outline">Sign In <i class="fas fa-sign-in-alt"></i></a>
         </div>
       </div>
     </div>
@@ -1324,56 +1164,53 @@
     <div class="footer-grid">
       <div>
         <div class="footer-brand">
-          <div class="brand-mark"><i class="fas fa-heartbeat"></i></div>
-          <span class="footer-brand-name">Scaton<span>EHR</span></span>
+          <img src="{% static 'images/logo.png' %}"
+               alt="SCATON EHR Logo"
+               class="brand-logo"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="brand-mark-fallback" style="width:44px;height:44px;"><i class="fas fa-heartbeat"></i></div>
+          <span class="footer-brand-name">SCATON <span>EHR</span></span>
         </div>
-        <p class="footer-desc">A modern healthcare operations platform for Kenyan hospitals, clinics, chemists, pharmacies, labs, and diagnostic teams that need connected records, billing, and daily operational control.</p>
-        <p class="footer-contact">Admin: <a href="mailto:admin@scaton.co.ke">admin@scaton.co.ke</a></p>
+        <p class="footer-desc">A modern healthcare operations platform built for Kenyan hospitals, clinics, pharmacies, laboratories, and diagnostic centres.</p>
+        <p class="footer-contact">Email: <a href="mailto:info@scaton.co.ke">info@scaton.co.ke</a></p>
         <p class="footer-contact">Support: <a href="mailto:support@scaton.co.ke">support@scaton.co.ke</a></p>
-        <p class="footer-contact">WhatsApp: <a href="https://wa.me/254114271816" target="_blank">+254 114 271 816</a></p>
       </div>
 
       <div class="footer-col">
-        <h5>Solutions</h5>
+        <h5>Platform</h5>
         <ul>
-          <li><a href="#">Hospital operations</a></li>
-          <li><a href="#">EMR and EHR</a></li>
-          <li><a href="#">Clinic workflows</a></li>
-          <li><a href="#">Pharmacy operations</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#workflows">Workflows</a></li>
+          <li><a href="#security">Security</a></li>
+          <li><a href="#benefits">Benefits</a></li>
         </ul>
       </div>
 
       <div class="footer-col">
-        <h5>Resources</h5>
+        <h5>Company</h5>
         <ul>
-          <li><a href="#">Resource hub</a></li>
-          <li><a href="#">HMS buyer guide</a></li>
-          <li><a href="#">Compare options</a></li>
-          <li><a href="#">Cloud workflow guide</a></li>
-          <li><a href="#">Kenya HMS guide</a></li>
-          <li><a href="#">eTIMS guide</a></li>
-          <li><a href="#">Chemist POS guide</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Partners</a></li>
         </ul>
       </div>
 
       <div class="footer-col">
         <h5>Access</h5>
         <ul>
-          <li><a href="#contact">Contact</a></li>
-          <li><a href="#contact">Talk to sales</a></li>
-          <li><a href="#contact">Contact support</a></li>
-          <li><a href="#">Billing workflows</a></li>
-          <li><a href="#">Mobile access</a></li>
-          <li><a href="#">Africa coverage</a></li>
+          <li><a href="/login/">Sign In</a></li>
+          <li><a href="/register/">Get Started</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Documentation</a></li>
         </ul>
       </div>
     </div>
 
     <div class="footer-bottom">
-      <span>© 2026 Scaton EHR. All rights reserved.</span>
+      <span>© 2026 SCATON EHR. ALL RIGHTS RESERVED.</span>
       <span>
         <a href="#">Privacy</a>
-        <a href="#">Patient notice</a>
         <a href="#">Terms</a>
         <a href="#">Security</a>
       </span>
@@ -1382,14 +1219,12 @@
 
   <script>
     (function() {
-      // Sticky header on scroll
       const header = document.getElementById('siteHeader');
       window.addEventListener('scroll', function() {
         if (window.scrollY > 40) header.classList.add('scrolled');
         else header.classList.remove('scrolled');
       });
 
-      // Mobile toggle — reveals nav in a simple dropdown
       const toggle = document.getElementById('mobileToggle');
       const nav = document.querySelector('.main-nav');
       if (toggle && nav) {
@@ -1413,7 +1248,6 @@
         });
       }
 
-      // Smooth scroll for in-page anchors
       document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', function(e) {
           const id = this.getAttribute('href');
