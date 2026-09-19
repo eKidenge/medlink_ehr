@@ -113,8 +113,8 @@
       padding: 0.5rem 0;
       position: relative;
       transition: all 0.3s ease;
-      font-size: 0.85rem;
-      letter-spacing: 0.1em;
+      font-size: 0.9rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
     .header-unique .nav-link::after {
@@ -225,6 +225,42 @@
       text-transform: uppercase;
     }
 
+    /* Header layout — logo, nav links, auth all straight in a row */
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px 32px;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      margin-left: 24px;
+      margin-right: auto;
+    }
+    .header-auth {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 900px) {
+      .header-nav { display: none; }
+      .header-auth { display: none; }
+      .header-row { justify-content: space-between; }
+    }
+
     /* ============================================
        COMPONENTS
        ============================================ */
@@ -246,6 +282,7 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
       font-size: 0.9rem;
+      text-decoration: none;
     }
     .btn-primary::before {
       content: '';
@@ -276,6 +313,7 @@
       letter-spacing: 0.05em;
       text-transform: uppercase;
       font-size: 0.9rem;
+      text-decoration: none;
     }
     .btn-outline:hover { border-color: var(--secondary); color: var(--secondary); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(13,148,136,0.15); }
 
@@ -304,7 +342,7 @@
     .blog-image-wrapper::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(to top, rgba(0,0,0,0.3), transparent); opacity: 0; transition: var(--transition); }
     .blog-card:hover .blog-image-wrapper::after { opacity: 1; }
 
-    .hero-section { position: relative; overflow: hidden; background: var(--gradient-hero); min-height: 90vh; display: flex; align-items: center; padding-top: 80px; }
+    .hero-section { position: relative; overflow: hidden; background: var(--gradient-hero); min-height: 90vh; display: flex; align-items: center; padding-top: 100px; }
     .hero-blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.3; animation: blob 10s ease-in-out infinite; }
     .hero-blob-1 { width: 400px; height: 400px; background: rgba(30,58,95,0.25); top: -100px; right: -100px; animation-delay: 0s; }
     .hero-blob-2 { width: 300px; height: 300px; background: rgba(13,148,136,0.2); bottom: -50px; left: -50px; animation-delay: -3s; }
@@ -364,7 +402,7 @@
 
     @media (max-width: 768px) {
       .stat-number { font-size: 2rem; }
-      .hero-section { min-height: auto; padding: 6rem 0 3rem; }
+      .hero-section { min-height: auto; padding: 8rem 0 3rem; }
       .service-card { padding: 1.5rem; }
       .testimonial-card { padding: 1.5rem; }
       .header-unique .logo-text { font-size: 1.3rem; }
@@ -380,48 +418,44 @@
 
   <!-- HEADER -->
   <header class="header-unique" id="navbar">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-      <a href="/" class="flex items-center space-x-3 group">
+    <div class="header-row">
+      <!-- Brand -->
+      <a href="/" class="header-brand">
         <img src="{% static 'images/logo.png' %}" alt="Scaton EHR Logo" class="logo-img" onerror="this.style.display='none'">
         <span class="logo-text">SCATON EHR</span>
-        <span class="hidden md:inline-block badge"></span>
       </a>
 
-      <div class="hidden md:flex items-center space-x-8">
-        <a href="/dashboard/" class="nav-link">Dashboard</a>
-        <a href="/patients/list/" class="nav-link">Patients</a>
-        <a href="/visits/list/" class="nav-link">Visits</a>
-        <a href="/admissions/list/" class="nav-link">Admissions</a>
-        <a href="/laboratory/requests/" class="nav-link">Laboratory</a>
-        <a href="/pharmacy/prescriptions/" class="nav-link">Pharmacy</a>
-        <a href="/reports/" class="nav-link">Reports</a>
-      </div>
+      <!-- Public Nav — only Home, About Us, Contact -->
+      <nav class="header-nav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="#about" class="nav-link">About Us</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </nav>
 
-      <div class="hidden md:flex items-center space-x-4">
+      <!-- Auth buttons — far right -->
+      <div class="header-auth">
         <a href="/login/" class="btn-outline-nav">
-          <i class="fas fa-sign-in-alt"></i> Sign In
+          <i class="fas fa-sign-in-alt"></i> Login
         </a>
         <a href="/register/" class="btn-primary-nav">
           Get Started <i class="fas fa-arrow-right ml-1"></i>
         </a>
       </div>
 
+      <!-- Mobile menu toggle -->
       <button id="mobileMenuBtn" class="mobile-menu-btn md:hidden" aria-label="Toggle mobile menu">
         <i class="fas fa-bars text-2xl"></i>
       </button>
     </div>
 
+    <!-- Mobile Menu -->
     <div id="mobileMenu" class="mobile-menu hidden md:hidden">
       <div class="flex flex-col space-y-1 p-4">
-        <a href="/dashboard/"><i class="fas fa-tachometer-alt mr-3 w-5 text-teal-400"></i>Dashboard</a>
-        <a href="/patients/list/"><i class="fas fa-users mr-3 w-5 text-teal-400"></i>Patients</a>
-        <a href="/visits/list/"><i class="fas fa-stethoscope mr-3 w-5 text-teal-400"></i>Visits</a>
-        <a href="/admissions/list/"><i class="fas fa-hospital-user mr-3 w-5 text-teal-400"></i>Admissions</a>
-        <a href="/laboratory/requests/"><i class="fas fa-microscope mr-3 w-5 text-teal-400"></i>Laboratory</a>
-        <a href="/pharmacy/prescriptions/"><i class="fas fa-capsules mr-3 w-5 text-teal-400"></i>Pharmacy</a>
-        <a href="/reports/"><i class="fas fa-chart-bar mr-3 w-5 text-teal-400"></i>Reports</a>
+        <a href="/"><i class="fas fa-home mr-3 w-5 text-teal-400"></i>Home</a>
+        <a href="#about"><i class="fas fa-info-circle mr-3 w-5 text-teal-400"></i>About Us</a>
+        <a href="#contact"><i class="fas fa-envelope mr-3 w-5 text-teal-400"></i>Contact</a>
         <hr class="my-2 border-gray-700/40">
-        <a href="/login/" class="text-teal-300 font-semibold"><i class="fas fa-sign-in-alt mr-3 w-5"></i>Sign In</a>
+        <a href="/login/" class="text-teal-300 font-semibold"><i class="fas fa-sign-in-alt mr-3 w-5"></i>Login</a>
         <a href="/register/" class="btn-primary-nav justify-center w-full mt-1">Get Started</a>
       </div>
     </div>
@@ -451,8 +485,8 @@
               <a href="/register/" class="btn-primary">
                 Start Free Trial <i class="fas fa-arrow-right ml-2"></i>
               </a>
-              <a href="/dashboard/" class="btn-outline">
-                <i class="fas fa-play mr-2"></i> View Dashboard
+              <a href="/login/" class="btn-outline">
+                <i class="fas fa-sign-in-alt mr-2"></i> Login
               </a>
             </div>
             <div class="flex flex-wrap items-center gap-6">
@@ -676,7 +710,7 @@
         <p class="text-white text-lg mb-8 opacity-90 max-w-2xl mx-auto animate-fadeInUp delay-100">Join healthcare facilities in Kenya that have already modernized their operations with Scaton EHR.</p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp delay-200">
           <a href="/register/" class="btn-primary bg-white text-blue-900 hover:bg-white/90 shadow-lg shadow-blue-900/30">Start Your Journey <i class="fas fa-arrow-right ml-2"></i></a>
-          <a href="/dashboard/" class="btn-outline border-2 border-white text-white hover:bg-white hover:text-blue-900 hover:border-white">Open Dashboard <i class="fas fa-tachometer-alt ml-2"></i></a>
+          <a href="/login/" class="btn-outline border-2 border-white text-white hover:bg-white hover:text-blue-900 hover:border-white">Login to System <i class="fas fa-sign-in-alt ml-2"></i></a>
         </div>
       </div>
     </section>
@@ -741,26 +775,18 @@
           </div>
         </div>
         <div>
-          <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+          <h4 class="text-lg font-semibold mb-4">Company</h4>
           <ul class="space-y-2">
-            <li><a href="/dashboard/" class="footer-link">Dashboard</a></li>
-            <li><a href="/patients/list/" class="footer-link">Patients</a></li>
-            <li><a href="/visits/list/" class="footer-link">Visits</a></li>
-            <li><a href="/admissions/list/" class="footer-link">Admissions</a></li>
-            <li><a href="/laboratory/requests/" class="footer-link">Laboratory</a></li>
-            <li><a href="/pharmacy/prescriptions/" class="footer-link">Pharmacy</a></li>
-            <li><a href="/reports/" class="footer-link">Reports</a></li>
+            <li><a href="/" class="footer-link">Home</a></li>
+            <li><a href="#about" class="footer-link">About Us</a></li>
+            <li><a href="#contact" class="footer-link">Contact</a></li>
           </ul>
         </div>
         <div>
-          <h4 class="text-lg font-semibold mb-4">Resources</h4>
+          <h4 class="text-lg font-semibold mb-4">Account</h4>
           <ul class="space-y-2">
-            <li><a href="/accounts/profile-page/" class="footer-link">My Profile</a></li>
-            <li><a href="/accounts/settings-page/" class="footer-link">Account Settings</a></li>
-            <li><a href="/accounts/users-page/" class="footer-link">User Administration</a></li>
-            <li><a href="/accounts/departments-page/" class="footer-link">Departments</a></li>
-            <li><a href="/accounts/audit-page/" class="footer-link">Audit Logs</a></li>
-            <li><a href="/login/" class="footer-link">Sign In</a></li>
+            <li><a href="/login/" class="footer-link">Login</a></li>
+            <li><a href="/register/" class="footer-link">Create Account</a></li>
           </ul>
         </div>
         <div>
