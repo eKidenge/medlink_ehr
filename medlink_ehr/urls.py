@@ -60,7 +60,7 @@ urlpatterns = [
     path('reports/', include('apps.reports.urls')),
     
     # API URLs (all under /api/ prefix)
-    path('api/accounts/', include('apps.accounts.urls')),
+    path('api/', include('apps.accounts.urls')),
     path('api/patients/', include('apps.patients.urls')),
     path('api/visits/', include('apps.visits.urls')),
     path('api/triage/', include('apps.triage.urls')),
@@ -69,7 +69,7 @@ urlpatterns = [
     path('api/pharmacy/', include('apps.pharmacy.urls')),
     path('api/referrals/', include('apps.referrals.urls')),
     path('api/reports/', include('apps.reports.urls')),
-    path('api/dashboard/', include('apps.dashboard.urls')),
+    path('api/', include('apps.dashboard.urls')),
 ]
 
 # Serve media and static files in development
